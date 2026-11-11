@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#060913">
+  <title>AetherPulse Extreme - 1-Click Web Installer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  <style>
+    :root {
+      --bg-base: #060913;
+      --bg-surface: rgba(15, 23, 42, 0.75);
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.45);
+      --success: #10b981;
+      --text-high: #f8fafc;
+      --text-mid: #94a3b8;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-base) 70%);
+      color: var(--text-high);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(16px, 4vw, 40px);
+    }
+    .container { width: 100%; max-width: 840px; display: flex; flex-direction: column; gap: 24px; }
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      padding-bottom: 12px;
+    }
+    .logo-badge {
+      width: 64px; height: 64px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 35px var(--primary-glow);
+    }
+    .logo-badge svg { width: 36px; height: 36px; fill: white; }
+    h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.5px; }
+    h1 span { color: var(--primary); }
+    .subtitle { font-size: 1.05rem; color: var(--text-mid); max-width: 600px; line-height: 1.5; }
+
+    .flasher-card {
+      background: var(--bg-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: clamp(24px, 5vw, 40px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+    .version-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 999px;
+      background: rgba(59, 130, 246, 0.15); color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.85rem; font-weight: 700;
+    }
+    
+    .btn-install {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white; font-weight: 800; font-size: 1.1rem;
+      padding: 16px 36px; border-radius: var(--radius-md);
+      border: none; cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 10px 25px var(--primary-glow);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .btn-install:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 35px rgba(59, 130, 246, 0.6);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px; width: 100%; margin-top: 10px; text-align: left;
+    }
+    .step-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+    .step-num { font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 6px; }
+    .step-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 4px; }
+    .step-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.4; }
+
+    .specs-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .specs-card h3 { font-size: 1.1rem; font-weight: 700; }
+    .specs-list {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;
+      font-size: 0.85rem; color: var(--text-mid);
+    }
+    .specs-item { display: flex; align-items: center; gap: 8px; }
+    .specs-item svg { width: 18px; height: 18px; fill: var(--success); flex-shrink: 0; }
+
+    footer {
+      text-align: center; font-size: 0.82rem; color: var(--text-mid);
+      margin-top: 20px; display: flex; flex-direction: column; gap: 8px;
+    }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
+      </div>
+      <h1>AETHER<span>PULSE</span> EXTREME</h1>
+      <p class="subtitle">State-of-the-Art Wi-Fi Repeater & Range Extender for ESP32. Flash directly from your web browser in 30 seconds with zero drivers.</p>
+    </header>
+
+    <div class="flasher-card">
+      <div class="version-tag">
+        <span style="width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+        Latest Automated Build • v1.0.0
+      </div>
+
+      <h2 style="font-size:1.45rem; font-weight:800;">1-Click Web Serial Installer</h2>
+      <p style="font-size:0.9rem; color:var(--text-mid); max-width:540px;">
+        Connect your ESP32 board to your computer via USB (Google Chrome or Microsoft Edge required), then click the button below to flash the latest firmware.
+      </p>
+
+      <div style="margin: 12px 0;">
+        <esp-web-install-button manifest="manifest.json">
+          <button slot="activate" class="btn-install">
+            <svg style="width:22px;height:22px;fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+            ⚡ Install AetherPulse Extreme
+          </button>
+          <span slot="unsupported" style="color:#ef4444; font-weight:700;">
+            ⚠️ Web Serial is not supported in this browser. Please open in Google Chrome or Microsoft Edge on Desktop/Android.
+          </span>
+        </esp-web-install-button>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-box">
+          <div class="step-num">Step 1</div>
+          <div class="step-title">Connect Board</div>
+          <div class="step-desc">Plug your ESP32 board into USB. Ensure a data-capable cable is used.</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">Step 2</div>
+          <div class="step-title">Click Install</div>
+          <div class="step-desc">Click 'Install' and select your board's COM/Serial port from the browser prompt.</div>
+        </div>
+        <div class="step-box">
+          <div class="step-num">Step 3</div>
+          <div class="step-title">Connect & Enjoy</div>
+          <div class="step-desc">Connect to Wi-Fi <b>AetherPulse-Extender</b> (Pass: <code>aetherpulse123</code>) or browse to <code>http://192.168.4.1</code>.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="specs-card">
+      <h3>🚀 Architecture & Silicon Features</h3>
+      <div class="specs-list">
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>lwIP Hardware NAPT (Zero-CPU Routing)</span>
+        </div>
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>1D Kalman Filter RSSI Smoothing</span>
+        </div>
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>Anti-Jitter WIFI_PS_NONE Modem Lock</span>
+        </div>
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>103 TU Prime Beacon Anti-Collision</span>
+        </div>
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>Google-Grade Glassmorphism Web App</span>
+        </div>
+        <div class="specs-item">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>Interactive 115200 Baud Serial CLI</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div>AetherPulse Extreme Open-Source Project • Built with ❤️ for the ESP32 Community</div>
+      <div>
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank">View GitHub Repository</a> • 
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases" target="_blank">Download Binaries</a>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

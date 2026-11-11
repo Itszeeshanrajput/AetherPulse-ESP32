@@ -1,0 +1,124 @@
+name: Build, WebFlash & Auto-Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compile Firmware & Generate Binaries
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install esptool
+        run: pip install esptool
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+
+      - name: Configure Arduino Core & Install ESP32 Platform
+        run: |
+          arduino-cli config init
+          arduino-cli config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+          arduino-cli lib install ArduinoJson
+
+      - name: Compile AetherPulse Extreme Firmware
+        run: |
+          mkdir -p build_output
+          arduino-cli compile --fqbn esp32:esp32:esp32 --build-path build_output .
+
+      - name: Merge 4MB Full Flash Binary
+        run: |
+          mkdir -p bin docs
+          cp build_output/AetherPulse-ESP32.ino.bootloader.bin bin/bootloader.bin
+          cp build_output/AetherPulse-ESP32.ino.partitions.bin bin/partitions.bin
+          cp build_output/boot_app0.bin bin/boot_app0.bin
+          cp build_output/AetherPulse-ESP32.ino.bin bin/firmware.bin
+
+          # Merge binaries for 1-click web flash
+          esptool.py --chip esp32 merge_bin -o bin/aetherpulse-esp32-full.bin \
+            --flash_mode dio --flash_freq 80m --flash_size 4MB \
+            0x1000 bin/bootloader.bin \
+            0x8000 bin/partitions.bin \
+            0xe000 bin/boot_app0.bin \
+            0x10000 bin/firmware.bin
+
+          # Copy latest binaries to docs/ for ESP Web Tools WebSerial flasher
+          cp bin/*.bin docs/
+
+      - name: Commit Updated Web Flasher Binaries
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/*.bin bin/*.bin
+          git diff --quiet && git diff --staged --quiet || (git commit -m "ci: auto-update web flasher binaries [skip ci]" && git push)
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs/'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'AetherPulse Extreme (Continuous Latest Build)' }}
+          body: |
+            ### 🚀 AetherPulse Extreme - Automated Release
+            
+            This release contains the latest automated production binaries compiled by GitHub Actions CI/CD.
+
+            #### ⚡ 1-Click Browser Web Installation
+            You can flash this firmware directly in your browser without installing any tools:
+            👉 **[Open AetherPulse Web Flasher](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)**
+
+            #### 📦 Included Firmware Files
+            - `aetherpulse-esp32-full.bin`: Complete 4MB flash image (flash at offset `0x0000`)
+            - `firmware.bin`: App firmware partition (offset `0x10000`)
+            - `bootloader.bin`: Second-stage bootloader (offset `0x1000`)
+            - `partitions.bin`: Partition table (offset `0x8000`)
+            - `boot_app0.bin`: Bootloader app descriptor (offset `0xe000`)
+          files: |
+            bin/aetherpulse-esp32-full.bin
+            bin/firmware.bin
+            bin/bootloader.bin
+            bin/partitions.bin
+            bin/boot_app0.bin
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

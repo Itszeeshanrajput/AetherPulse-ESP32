@@ -1,0 +1,19 @@
+# Private sensitive credentials (ALWAYS IGNORED)
+credentials.h
+
+# Arduino & PlatformIO compilation artifacts
+.pio/
+.vscode/
+build/
+*.elf
+*.map
+
+# Binaries (ignore root/temp binaries, but track official release binaries in docs/ and bin/)
+*.bin
+!bin/*.bin
+!docs/*.bin
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+*~
