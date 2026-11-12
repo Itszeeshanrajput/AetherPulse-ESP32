@@ -3,6 +3,8 @@
 #include "config.h"
 #include "storage_manager.h"
 #include <WiFi.h>
+#include <esp_wifi.h>
+#include <vector>
 
 class KalmanFilter1D {
 public:
@@ -68,6 +70,8 @@ public:
     bool connectToNetwork(const String& ssid, const String& password);
     void disconnect();
     void triggerRoamEvaluation();
+    bool applyClonedMac(const String& macStr);
+    void resetMac();
 
     // Queries
     bool isConnected() const;

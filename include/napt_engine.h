@@ -28,9 +28,15 @@ public:
 
     NaptStats getStats();
 
+    // Port Forwarding / DNAPT
+    bool addPortForward(uint8_t proto, uint16_t extPort, const String& intIp, uint16_t intPort, const String& desc = "");
+    bool removePortForward(uint8_t proto, uint16_t extPort);
+    void applyStoredRules();
+
     // TCP MSS Clamping Hook
     void setMssClamping(uint16_t mss) { currentMss = mss; }
     uint16_t getMssClamping() const { return currentMss; }
+    uint32_t getBoundIp() const { return boundStaIp; }
 
 private:
     NaptEngine();

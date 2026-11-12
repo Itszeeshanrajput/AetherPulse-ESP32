@@ -1,6 +1,6 @@
 {
-  "name": "AetherPulse Extreme",
-  "version": "1.0.0",
+  "name": "AetherPulse Extreme v2.0 Titanium",
+  "version": "2.0.0",
   "home_assistant_domain": "esphome",
   "new_install_prompt_erase": false,
   "builds": [

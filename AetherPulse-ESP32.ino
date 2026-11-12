@@ -4,10 +4,21 @@
 #include "roaming_engine.h"
 #include "web_portal.h"
 #include "cli_shell.h"
+#include <esp_task_wdt.h>
+#include <ESPmDNS.h>
 
 void setup() {
     Serial.begin(CLI_BAUD_RATE);
     delay(500);
+
+    // Hardware Task Watchdog (TWDT) for 100% resilient auto-recovery
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = WDT_TIMEOUT_MS,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+        .trigger_panic = true
+    };
+    esp_task_wdt_init(&twdt_config);
+    esp_task_wdt_add(NULL);
 
     // Disable LCD Backlight (GPIO 27) to minimize heat and reserve 100% power/RAM
     pinMode(PIN_TFT_BL, OUTPUT);
@@ -31,12 +42,12 @@ void setup() {
                               WiFi.localIP().toString().c_str(),
                               WiFi.gatewayIP().toString().c_str(),
                               WiFi.dnsIP().toString().c_str());
-                WiFi.AP.enableNAPT(true);
+                NaptEngine::instance().enable(WiFi.localIP());
                 break;
             case ARDUINO_EVENT_WIFI_STA_LOST_IP:
             case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
                 Serial.println("\n[NET EVENT] STA Disconnected / Lost IP. Halting NAPT routing.");
-                WiFi.AP.enableNAPT(false);
+                NaptEngine::instance().disable();
                 break;
             case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
                 Serial.println("\n[NET EVENT] Station client connected to AetherPulse SoftAP.");
@@ -53,12 +64,17 @@ void setup() {
     Serial.println("[WIFI] Configuring Dual SoftAP + Station radio architecture...");
     WiFi.mode(WIFI_AP_STA);
 
-    // Configure SoftAP IP, Gateway, Subnet, Lease Start, and DNS Offer (8.8.8.8)
+    // Apply Cloned Station MAC if configured in NVS
+    if (settings.clonedMac.length() == 17) {
+        RoamingEngine::instance().applyClonedMac(settings.clonedMac);
+    }
+
+    // Configure SoftAP IP, Gateway, Subnet, Lease Start, and DNS Offer
     IPAddress ap_ip(192, 168, 4, 1);
     IPAddress ap_gw(192, 168, 4, 1);
     IPAddress ap_mask(255, 255, 255, 0);
     IPAddress ap_leaseStart(192, 168, 4, 2);
-    IPAddress ap_dns(8, 8, 8, 8); // Hand out Google DNS directly to repeater clients
+    IPAddress ap_dns = settings.adBlockEnabled ? ap_ip : IPAddress(8, 8, 8, 8);
 
     WiFi.AP.begin();
     WiFi.AP.config(ap_ip, ap_gw, ap_mask, ap_leaseStart, ap_dns);
@@ -85,6 +101,12 @@ void setup() {
     esp_wifi_set_max_tx_power(rawTx);
     Serial.printf("[RF] RF Output Power calibrated to %.2f dBm (raw: %d)\n", settings.txPowerDbm, rawTx);
 
+    // Initialize mDNS Responder (http://aetherpulse.local)
+    if (MDNS.begin(MDNS_HOSTNAME)) {
+        MDNS.addService("http", "tcp", 80);
+        Serial.printf("[mDNS] Responder active at http://%s.local\n", MDNS_HOSTNAME);
+    }
+
     // Start Web Management Portal & Captive DNS
     WebPortal::instance().init();
 
@@ -95,11 +117,12 @@ void setup() {
     RoamingEngine::instance().startScan();
 
     Serial.printf("\n>>> %s %s READY <<<\n", PROJECT_NAME, PROJECT_VERSION);
-    Serial.printf(">>> Connect to Wi-Fi '%s' (Pass: '%s') or browse to http://192.168.4.1 <<<\n\n",
-                  settings.apSSID.c_str(), settings.apPassword.c_str());
+    Serial.printf(">>> Connect to Wi-Fi '%s' (Pass: '%s') or browse to http://192.168.4.1 or http://%s.local <<<\n\n",
+                  settings.apSSID.c_str(), settings.apPassword.c_str(), MDNS_HOSTNAME);
 }
 
 void loop() {
+    esp_task_wdt_reset(); // Feed hardware watchdog
     CliShell::instance().update();
     WebPortal::instance().update();
     RoamingEngine::instance().update();

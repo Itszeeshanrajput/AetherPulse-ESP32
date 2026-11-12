@@ -9,7 +9,7 @@ StorageManager& StorageManager::instance() {
     return s;
 }
 
-StorageManager::StorageManager() {}
+StorageManager::StorageManager() : adBlockCounterSession(0) {}
 
 bool StorageManager::begin() {
     bool ok = prefs.begin("aetherpulse", false);
@@ -47,8 +47,10 @@ void StorageManager::loadDefaults(RepeaterSettings& s) {
     s.autoRoamEnabled = true;
     s.roamThresholdDbm = ROAM_RSSI_TRIGGER_DBM;
     s.roamHysteresisDbm = ROAM_HYSTERESIS_DELTA_DBM;
-    s.adBlockEnabled = false;
+    s.adBlockEnabled = true;
     s.adminPassword = "admin";
+    s.clonedMac = "";
+    s.adBlocksTotal = 0;
 }
 
 std::vector<KnownNetwork> StorageManager::getKnownNetworks() {
@@ -129,6 +131,82 @@ bool StorageManager::clearKnownNetworks() {
     return true;
 }
 
+std::vector<PortForwardRule> StorageManager::getPortForwards() {
+    std::vector<PortForwardRule> list;
+    int count = prefs.getInt("pf_count", 0);
+    for (int i = 0; i < count; i++) {
+        String kp = "pf_p_" + String(i);
+        String ke = "pf_e_" + String(i);
+        String ki = "pf_i_" + String(i);
+        String kd = "pf_d_" + String(i);
+        String kdesc = "pf_c_" + String(i);
+        if (prefs.isKey(ke.c_str())) {
+            PortForwardRule r;
+            r.protocol = (uint8_t)prefs.getInt(kp.c_str(), 6);
+            r.externalPort = (uint16_t)prefs.getInt(ke.c_str(), 0);
+            r.internalIp = prefs.getString(ki.c_str(), "192.168.4.2");
+            r.internalPort = (uint16_t)prefs.getInt(kd.c_str(), 0);
+            r.description = prefs.getString(kdesc.c_str(), "");
+            if (r.externalPort > 0 && r.internalPort > 0) {
+                list.push_back(r);
+            }
+        }
+    }
+    return list;
+}
+
+bool StorageManager::savePortForwards(const std::vector<PortForwardRule>& rules) {
+    int oldCount = prefs.getInt("pf_count", 0);
+    for (int i = 0; i < oldCount + 2; i++) {
+        prefs.remove(("pf_p_" + String(i)).c_str());
+        prefs.remove(("pf_e_" + String(i)).c_str());
+        prefs.remove(("pf_i_" + String(i)).c_str());
+        prefs.remove(("pf_d_" + String(i)).c_str());
+        prefs.remove(("pf_c_" + String(i)).c_str());
+    }
+    int count = min((int)rules.size(), NAPT_MAX_PORTMAPS);
+    prefs.putInt("pf_count", count);
+    for (int i = 0; i < count; i++) {
+        prefs.putInt(("pf_p_" + String(i)).c_str(), rules[i].protocol);
+        prefs.putInt(("pf_e_" + String(i)).c_str(), rules[i].externalPort);
+        prefs.putString(("pf_i_" + String(i)).c_str(), rules[i].internalIp);
+        prefs.putInt(("pf_d_" + String(i)).c_str(), rules[i].internalPort);
+        prefs.putString(("pf_c_" + String(i)).c_str(), rules[i].description);
+    }
+    return true;
+}
+
+bool StorageManager::addPortForward(uint8_t proto, uint16_t extPort, const String& intIp, uint16_t intPort, const String& desc) {
+    auto list = getPortForwards();
+    for (auto& r : list) {
+        if (r.protocol == proto && r.externalPort == extPort) {
+            r.internalIp = intIp;
+            r.internalPort = intPort;
+            r.description = desc;
+            return savePortForwards(list);
+        }
+    }
+    PortForwardRule rule;
+    rule.protocol = proto;
+    rule.externalPort = extPort;
+    rule.internalIp = intIp;
+    rule.internalPort = intPort;
+    rule.description = desc;
+    list.push_back(rule);
+    return savePortForwards(list);
+}
+
+bool StorageManager::removePortForward(uint8_t proto, uint16_t extPort) {
+    auto list = getPortForwards();
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        if (it->protocol == proto && it->externalPort == extPort) {
+            list.erase(it);
+            return savePortForwards(list);
+        }
+    }
+    return false;
+}
+
 RepeaterSettings StorageManager::getSettings() {
     RepeaterSettings s;
     loadDefaults(s);
@@ -147,6 +225,8 @@ RepeaterSettings StorageManager::getSettings() {
     s.roamHysteresisDbm = prefs.getFloat("roam_hy", s.roamHysteresisDbm);
     s.adBlockEnabled = prefs.getBool("ad_blk", s.adBlockEnabled);
     s.adminPassword = prefs.getString("adm_pwd", s.adminPassword);
+    s.clonedMac = prefs.getString("cloned_mac", "");
+    s.adBlocksTotal = prefs.getUInt("ad_blocks_tot", 0);
     return s;
 }
 
@@ -163,5 +243,32 @@ bool StorageManager::saveSettings(const RepeaterSettings& s) {
     prefs.putFloat("roam_hy", s.roamHysteresisDbm);
     prefs.putBool("ad_blk", s.adBlockEnabled);
     prefs.putString("adm_pwd", s.adminPassword);
+    prefs.putString("cloned_mac", s.clonedMac);
+    prefs.putUInt("ad_blocks_tot", s.adBlocksTotal);
     return true;
+}
+
+void StorageManager::setClonedMac(const String& mac) {
+    auto s = getSettings();
+    s.clonedMac = mac;
+    saveSettings(s);
+}
+
+void StorageManager::setAdBlockEnabled(bool enabled) {
+    auto s = getSettings();
+    s.adBlockEnabled = enabled;
+    saveSettings(s);
+}
+
+void StorageManager::incrementAdBlockCount() {
+    adBlockCounterSession++;
+    if (adBlockCounterSession % 10 == 0) {
+        auto s = getSettings();
+        s.adBlocksTotal += 10;
+        prefs.putUInt("ad_blocks_tot", s.adBlocksTotal);
+    }
+}
+
+uint32_t StorageManager::getAdBlockCount() {
+    return prefs.getUInt("ad_blocks_tot", 0) + (adBlockCounterSession % 10);
 }

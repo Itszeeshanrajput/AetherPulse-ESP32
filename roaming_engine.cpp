@@ -1,5 +1,6 @@
 #include "roaming_engine.h"
 #include "napt_engine.h"
+#include <esp_mac.h>
 
 RoamingEngine& RoamingEngine::instance() {
     static RoamingEngine r;
@@ -21,7 +22,7 @@ void RoamingEngine::init() {
     digitalWrite(PIN_RGB_GREEN, HIGH);
     digitalWrite(PIN_RGB_BLUE, HIGH);
 
-    Serial.println("[ROAM] 1D Kalman Roaming Engine initialized.");
+    Serial.println("[ROAM] 1D Kalman Roaming Engine & Anti-Jitter Subsystem initialized.");
 }
 
 bool RoamingEngine::isConnected() const {
@@ -55,16 +56,31 @@ bool RoamingEngine::connectToNetwork(const String& ssid, const String& password)
     updateLedStatus();
 
     WiFi.disconnect();
-    delay(100);
+    delay(50);
 
     // Enforce WIFI_PS_NONE for zero modem-sleep jitter
     esp_wifi_set_ps(WIFI_PS_NONE);
 
-    WiFi.begin(ssid.c_str(), password.c_str());
+    // Single-Radio Channel Alignment & Fast Scan
+    int targetChannel = 0;
+    for (const auto& ap : lastScanResults) {
+        if (ap.ssid == ssid) {
+            targetChannel = ap.channel;
+            break;
+        }
+    }
+
+    if (targetChannel > 0) {
+        Serial.printf("[WIFI] Channel alignment: Locking radio to Channel %d (skipping multi-band scan)\n", targetChannel);
+        esp_wifi_set_channel(targetChannel, WIFI_SECOND_CHAN_NONE);
+        WiFi.begin(ssid.c_str(), password.c_str(), targetChannel);
+    } else {
+        WiFi.begin(ssid.c_str(), password.c_str());
+    }
 
     unsigned long start = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - start < 10000) {
-        delay(200);
+        delay(150);
         Serial.print(".");
     }
     Serial.println();
@@ -107,6 +123,35 @@ void RoamingEngine::disconnect() {
     state = ROAM_STATE_IDLE;
     updateLedStatus();
     Serial.println("[WIFI] Disconnected from upstream network.");
+}
+
+bool RoamingEngine::applyClonedMac(const String& macStr) {
+    if (macStr.length() != 17) return false;
+    uint8_t mac[6];
+    if (sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+        esp_err_t err = esp_wifi_set_mac(WIFI_IF_STA, mac);
+        if (err == ESP_OK) {
+            StorageManager::instance().setClonedMac(macStr);
+            Serial.printf("[MAC] Station MAC successfully spoofed to: %s\n", macStr.c_str());
+            return true;
+        } else {
+            Serial.printf("[MAC] esp_wifi_set_mac failed: 0x%x\n", err);
+        }
+    }
+    return false;
+}
+
+void RoamingEngine::resetMac() {
+    uint8_t defaultMac[6];
+    if (esp_read_mac(defaultMac, ESP_MAC_WIFI_STA) == ESP_OK) {
+        esp_wifi_set_mac(WIFI_IF_STA, defaultMac);
+        StorageManager::instance().setClonedMac("");
+        char buf[18];
+        snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+                 defaultMac[0], defaultMac[1], defaultMac[2], defaultMac[3], defaultMac[4], defaultMac[5]);
+        Serial.printf("[MAC] Restored default factory MAC: %s\n", buf);
+    }
 }
 
 void RoamingEngine::startScan() {
@@ -164,12 +209,13 @@ void RoamingEngine::triggerRoamEvaluation() {
 
     // Check if we have an active link
     if (!isConnected()) {
-        // Try auto-connecting to any known network in range
+        // Try auto-connecting to any known network in range, ordered by priority
         auto known = StorageManager::instance().getKnownNetworks();
-        for (const auto& ap : lastScanResults) {
-            for (const auto& k : known) {
+        for (const auto& k : known) {
+            for (const auto& ap : lastScanResults) {
                 if (ap.ssid == k.ssid && ap.rssi > -88) {
-                    Serial.printf("[ROAM] Auto-connecting to known network in range: %s (%d dBm)\n", k.ssid.c_str(), ap.rssi);
+                    Serial.printf("[ROAM] Auto-connecting to priority network in range: %s (%d dBm, Prio: %d)\n",
+                                  k.ssid.c_str(), ap.rssi, k.priority);
                     connectToNetwork(k.ssid, k.password);
                     return;
                 }
@@ -180,7 +226,6 @@ void RoamingEngine::triggerRoamEvaluation() {
 
     // If connected, check signal degradation
     if (currentRssiFiltered < settings.roamThresholdDbm) {
-        // Find best candidate from known networks
         auto known = StorageManager::instance().getKnownNetworks();
         ScannedApInfo bestCand;
         bestCand.rssi = -100;
@@ -188,7 +233,6 @@ void RoamingEngine::triggerRoamEvaluation() {
 
         for (const auto& ap : lastScanResults) {
             for (const auto& k : known) {
-                // Either a stronger AP of a different known network, or a different BSSID of the same SSID
                 if (ap.ssid == k.ssid && (ap.bssid != currentBssid || ap.ssid != currentSsid)) {
                     if (ap.rssi > bestCand.rssi) {
                         bestCand = ap;
@@ -209,7 +253,6 @@ void RoamingEngine::triggerRoamEvaluation() {
                 Serial.printf("[ROAM] Candidate identified: '%s' (%s, %.1f dBm vs current %.1f dBm). Evaluating dwell time...\n",
                               candidateSsid.c_str(), candidateBssid.c_str(), candidateRssi, currentRssiFiltered);
             } else {
-                // Candidate sustained
                 if (millis() - candidateFirstSeenTime >= ROAM_DWELL_TIME_MS) {
                     Serial.printf("[ROAM] Dwell time (3s) verified! Executing SEAMLESS HANDOVER to '%s'...\n", candidateSsid.c_str());
                     executeHandover();
