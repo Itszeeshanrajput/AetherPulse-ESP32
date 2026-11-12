@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b0f19" />
+      <stop offset="50%" stop-color="#060913" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.6" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="380" rx="18" fill="url(#bgGrad)" />
+
+  <!-- Decorative Circuit Wave Lines -->
+  <path d="M 0 180 Q 300 80, 600 180 T 1200 180" fill="none" stroke="rgba(14, 165, 233, 0.15)" stroke-width="2" />
+  <path d="M 0 220 Q 300 320, 600 220 T 1200 220" fill="none" stroke="rgba(139, 92, 246, 0.15)" stroke-width="2" />
+  <circle cx="600" cy="190" r="280" fill="none" stroke="rgba(14, 165, 233, 0.05)" stroke-width="1" />
+  <circle cx="600" cy="190" r="180" fill="none" stroke="rgba(139, 92, 246, 0.06)" stroke-width="1" />
+
+  <!-- Central Logo Box -->
+  <g transform="translate(90, 65)">
+    <rect x="0" y="0" width="84" height="84" rx="22" fill="url(#glowGrad)" filter="url(#glow)" opacity="0.35" />
+    <rect x="0" y="0" width="84" height="84" rx="22" fill="url(#glowGrad)" />
+    <!-- Wi-Fi Waves Symbol -->
+    <path d="M 42 24 C 29 24 18 29 10 38 L 42 74 L 74 38 C 66 29 55 24 42 24 Z" fill="#ffffff" />
+    <circle cx="42" cy="70" r="3.5" fill="#0ea5e9" />
+  </g>
+
+  <!-- Title & Subtitle -->
+  <text x="200" y="108" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-1">
+    AETHER<tspan fill="#0ea5e9">PULSE</tspan> <tspan fill="#8b5cf6">v2.0 TITANIUM</tspan>
+  </text>
+  <text x="200" y="138" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="16" fill="#38bdf8" letter-spacing="0.5">
+    Created &amp; Engineered by Zeeshan Rajput • High-Performance ESP32 Silicon Firmware
+  </text>
+  <text x="200" y="162" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="400" font-size="14" fill="#94a3b8">
+    Zero-Jitter Dual-Radio Extender • lwIP DNAPT Port Forwarding • MAC Spoofing • DNS AdBlocker Sinkhole
+  </text>
+
+  <!-- Feature Badges Row -->
+  <g transform="translate(90, 215)">
+    <!-- Badge 1: DNAPT -->
+    <rect x="0" y="0" width="235" height="80" rx="14" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <text x="20" y="34" font-family="-apple-system, sans-serif" font-weight="800" font-size="14" fill="#34d399">🔀 lwIP DNAPT ROUTER</text>
+    <text x="20" y="56" font-family="monospace" font-size="11.5" fill="#94a3b8">TCP/UDP Port Forwarding</text>
+
+    <!-- Badge 2: MAC Cloning -->
+    <rect x="255" y="0" width="235" height="80" rx="14" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <text x="275" y="34" font-family="-apple-system, sans-serif" font-weight="800" font-size="14" fill="#38bdf8">🛡️ MAC SPOOFING</text>
+    <text x="275" y="56" font-family="monospace" font-size="11.5" fill="#94a3b8">Captive Portal Bypass</text>
+
+    <!-- Badge 3: AdBlock -->
+    <rect x="510" y="0" width="235" height="80" rx="14" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <text x="530" y="34" font-family="-apple-system, sans-serif" font-weight="800" font-size="14" fill="#a78bfa">🚫 DNS ADBLOCKER</text>
+    <text x="530" y="56" font-family="monospace" font-size="11.5" fill="#94a3b8">Port 53 UDP Sinkhole</text>
+
+    <!-- Badge 4: 1-Click Flash -->
+    <rect x="765" y="0" width="255" height="80" rx="14" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <text x="785" y="34" font-family="-apple-system, sans-serif" font-weight="800" font-size="14" fill="#f43f5e">⚡ 1-CLICK WEB INSTALL</text>
+    <text x="785" y="56" font-family="monospace" font-size="11.5" fill="#94a3b8">Web Serial In Browser</text>
+  </g>
+
+  <!-- Author Signature Footer -->
+  <text x="1110" y="358" text-anchor="end" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#64748b">
+    github.com/Itszeeshanrajput/AetherPulse-ESP32
+  </text>
+</svg>

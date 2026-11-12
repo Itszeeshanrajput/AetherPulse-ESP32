@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.75" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.85" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Browser Window Wrapper -->
+  <rect width="1000" height="640" rx="16" fill="url(#bg)" stroke="#334155" stroke-width="1.5" />
+  
+  <!-- Window Titlebar -->
+  <rect width="1000" height="42" rx="16" fill="#0f172a" />
+  <circle cx="24" cy="21" r="6" fill="#ef4444" />
+  <circle cx="44" cy="21" r="6" fill="#f59e0b" />
+  <circle cx="64" cy="21" r="6" fill="#10b981" />
+  <rect x="250" y="8" width="500" height="26" rx="6" fill="#1e293b" />
+  <text x="500" y="25" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8" text-anchor="middle">http://192.168.4.1/ — AetherPulse Extreme Web Portal</text>
+
+  <!-- Content Padding -->
+  <g transform="translate(36, 60)">
+    <!-- Header -->
+    <text x="0" y="30" font-family="'Inter', sans-serif" font-weight="900" font-size="24" fill="#ffffff">AETHER<tspan fill="#3b82f6">PULSE</tspan> EXTREME</text>
+    <text x="0" y="50" font-family="'Inter', sans-serif" font-size="12" fill="#94a3b8">Zero-Jitter Wi-Fi Repeater &amp; Smart Range Extender</text>
+    <rect x="740" y="10" width="180" height="34" rx="17" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1" />
+    <circle cx="760" cy="27" r="4" fill="#10b981" />
+    <text x="774" y="32" font-family="'Inter', sans-serif" font-weight="700" font-size="12" fill="#34d399">ONLINE &amp; ROUTING</text>
+
+    <!-- 3 Metrics Cards -->
+    <!-- Card 1 -->
+    <g transform="translate(0, 80)">
+      <rect width="290" height="130" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
+      <text x="18" y="28" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">UPSTREAM UPLINK</text>
+      <text x="240" y="28" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#3b82f6">CH 11</text>
+      <text x="18" y="60" font-family="'Inter', sans-serif" font-size="20" font-weight="800" fill="#ffffff">Nayatel</text>
+      <text x="18" y="80" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">IP: 192.168.18.77 (GW: .1)</text>
+      <rect x="18" y="102" width="254" height="6" rx="3" fill="#1e293b" />
+      <rect x="18" y="102" width="180" height="6" rx="3" fill="#10b981" />
+      <text x="18" y="96" font-family="'Inter', sans-serif" font-size="10" fill="#94a3b8">Filtered RSSI: <tspan font-weight="700" fill="#fff">-66.3 dBm</tspan></text>
+    </g>
+
+    <!-- Card 2 -->
+    <g transform="translate(315, 80)">
+      <rect width="290" height="130" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
+      <text x="18" y="28" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">REPEATER BROADCAST</text>
+      <text x="220" y="28" font-family="'JetBrains Mono', monospace" font-size="11" fill="#3b82f6">192.168.4.1</text>
+      <text x="18" y="60" font-family="'Inter', sans-serif" font-size="17" font-weight="800" fill="#ffffff">AetherPulse-Extender</text>
+      <text x="18" y="80" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">DTIM: 1 • Beacon: 103 TU</text>
+      <text x="18" y="112" font-family="'Inter', sans-serif" font-size="12" fill="#94a3b8">Connected Clients: <tspan font-size="16" font-weight="800" fill="#3b82f6">1 / 8</tspan></text>
+    </g>
+
+    <!-- Card 3 -->
+    <g transform="translate(630, 80)">
+      <rect width="290" height="130" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
+      <text x="18" y="28" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">L3 ROUTING ENGINE</text>
+      <text x="240" y="28" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#10b981">ACTIVE</text>
+      <text x="18" y="60" font-family="'Inter', sans-serif" font-size="20" font-weight="800" fill="#ffffff">lwIP NAPT</text>
+      <text x="18" y="80" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">MSS: 1412 B • WIFI_PS_NONE</text>
+      <text x="18" y="112" font-family="'Inter', sans-serif" font-size="11" fill="#94a3b8">Free DRAM: <tspan font-weight="700" fill="#fff">188 KB</tspan> • Uptime: <tspan font-weight="700" fill="#fff">14m</tspan></text>
+    </g>
+
+    <!-- Spectrum Scanner Section -->
+    <g transform="translate(0, 230)">
+      <rect width="920" height="310" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" />
+      <text x="24" y="32" font-family="'Inter', sans-serif" font-size="15" font-weight="700" fill="#ffffff">2.4 GHz RF Spectrum Scanner</text>
+      <text x="24" y="48" font-family="'Inter', sans-serif" font-size="11" fill="#94a3b8">Real-time live multi-AP signal quality &amp; channel metrics</text>
+
+      <!-- Table Header -->
+      <line x1="24" y1="65" x2="896" y2="65" stroke="#334155" stroke-width="1" />
+      <text x="30" y="84" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#64748b">SSID NAME</text>
+      <text x="280" y="84" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#64748b">BSSID MAC</text>
+      <text x="480" y="84" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#64748b">SIGNAL QUALITY</text>
+      <text x="650" y="84" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#64748b">CHANNEL</text>
+      <text x="760" y="84" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#64748b">ACTION</text>
+      <line x1="24" y1="95" x2="896" y2="95" stroke="#334155" stroke-width="1" />
+
+      <!-- Row 1 -->
+      <text x="30" y="125" font-family="'Inter', sans-serif" font-size="13" font-weight="700" fill="#ffffff">Nayatel</text>
+      <text x="280" y="125" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">A8:D4:E0:14:2D:40</text>
+      <rect x="480" y="110" width="86" height="22" rx="11" fill="rgba(16, 185, 129, 0.15)" />
+      <text x="496" y="125" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#34d399">-66 dBm</text>
+      <text x="660" y="125" font-family="'Inter', sans-serif" font-size="12" fill="#fff">CH 11</text>
+      <rect x="760" y="108" width="75" height="26" rx="6" fill="#3b82f6" />
+      <text x="778" y="125" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#fff">Active</text>
+
+      <!-- Row 2 -->
+      <line x1="24" y1="145" x2="896" y2="145" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+      <text x="30" y="175" font-family="'Inter', sans-serif" font-size="13" font-weight="700" fill="#ffffff">Shahzad Saleem</text>
+      <text x="280" y="175" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">D8:32:14:A3:51:20</text>
+      <rect x="480" y="160" width="86" height="22" rx="11" fill="rgba(59, 130, 246, 0.15)" />
+      <text x="496" y="175" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#60a5fa">-71 dBm</text>
+      <text x="660" y="175" font-family="'Inter', sans-serif" font-size="12" fill="#fff">CH 9</text>
+      <rect x="760" y="158" width="75" height="26" rx="6" fill="rgba(255,255,255,0.06)" />
+      <text x="775" y="175" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Switch</text>
+
+      <!-- Row 3 -->
+      <line x1="24" y1="195" x2="896" y2="195" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+      <text x="30" y="225" font-family="'Inter', sans-serif" font-size="13" font-weight="700" fill="#ffffff">H#419 -2.4 Ghz</text>
+      <text x="280" y="225" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">7C:D9:A0:42:F4:94</text>
+      <rect x="480" y="210" width="86" height="22" rx="11" fill="rgba(245, 158, 11, 0.15)" />
+      <text x="496" y="225" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#fbbf24">-78 dBm</text>
+      <text x="660" y="225" font-family="'Inter', sans-serif" font-size="12" fill="#fff">CH 6</text>
+      <rect x="760" y="208" width="75" height="26" rx="6" fill="rgba(255,255,255,0.06)" />
+      <text x="775" y="225" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Switch</text>
+
+      <!-- Row 4 -->
+      <line x1="24" y1="245" x2="896" y2="245" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+      <text x="30" y="275" font-family="'Inter', sans-serif" font-size="13" font-weight="700" fill="#ffffff">Musa Bhai</text>
+      <text x="280" y="275" font-family="'JetBrains Mono', monospace" font-size="11" fill="#94a3b8">14:EB:08:3A:0E:2C</text>
+      <rect x="480" y="260" width="86" height="22" rx="11" fill="rgba(245, 158, 11, 0.15)" />
+      <text x="496" y="275" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#fbbf24">-80 dBm</text>
+      <text x="660" y="275" font-family="'Inter', sans-serif" font-size="12" fill="#fff">CH 1</text>
+      <rect x="760" y="258" width="75" height="26" rx="6" fill="rgba(255,255,255,0.06)" />
+      <text x="775" y="275" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#94a3b8">Switch</text>
+    </g>
+  </g>
+</svg>

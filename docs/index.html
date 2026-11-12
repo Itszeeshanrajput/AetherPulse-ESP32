@@ -2,228 +2,981 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#060913">
-  <title>AetherPulse Extreme v2.0 Titanium - 1-Click Web Installer</title>
+  <title>AetherPulse v2.0 Titanium — 1-Click ESP32 Web Installer | By Zeeshan Rajput</title>
+  <meta name="description" content="Official 1-Click Web Serial Installer for AetherPulse v2.0 Titanium. Ultra-low latency ESP32 Wi-Fi repeater, lwIP DNAPT router, MAC cloning & hardware DNS AdBlocker by Zeeshan Rajput.">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- ESP Web Tools WebSerial Official Module -->
   <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  
   <style>
     :root {
       --bg-base: #060913;
-      --bg-surface: rgba(15, 23, 42, 0.78);
-      --border: rgba(255, 255, 255, 0.08);
+      --bg-surface: rgba(15, 23, 42, 0.72);
+      --bg-card: rgba(30, 41, 59, 0.55);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-focus: #38bdf8;
       --primary: #0ea5e9;
       --primary-glow: rgba(14, 165, 233, 0.45);
       --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.45);
       --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.4);
+      --warn: #f59e0b;
+      --danger: #ef4444;
       --text-high: #f8fafc;
       --text-mid: #94a3b8;
+      --text-low: #64748b;
+      --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 22px;
+      --radius-xl: 30px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(circle at 50% 0%, #1e1b4b 0%, var(--bg-base) 70%);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #060913;
       color: var(--text-high);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: clamp(16px, 4vw, 40px);
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
     }
-    .container { width: 100%; max-width: 860px; display: flex; flex-direction: column; gap: 24px; }
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 12px;
-      padding-bottom: 12px;
-    }
-    .logo-badge {
-      width: 64px; height: 64px; border-radius: var(--radius-md);
-      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 35px var(--primary-glow);
-    }
-    .logo-badge svg { width: 36px; height: 36px; fill: white; }
-    h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -0.5px; }
-    h1 span { color: var(--primary); }
-    .subtitle { font-size: 1.05rem; color: var(--text-mid); max-width: 640px; line-height: 1.5; }
 
-    .flasher-card {
-      background: var(--bg-surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: clamp(24px, 5vw, 40px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 20px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    /* Interactive Background Canvas */
+    #cyberCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.65;
     }
-    .version-tag {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 6px 14px; border-radius: 999px;
-      background: rgba(14, 165, 233, 0.15); color: #38bdf8;
-      border: 1px solid rgba(14, 165, 233, 0.3); font-size: 0.85rem; font-weight: 700;
+
+    .ambient-glow-1 {
+      position: fixed; top: -150px; left: 10%; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, transparent 70%);
+      pointer-events: none; z-index: 0; filter: blur(60px);
     }
-    
-    .btn-install {
-      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
-      color: white; font-weight: 800; font-size: 1.1rem;
-      padding: 16px 36px; border-radius: var(--radius-md);
-      border: none; cursor: pointer; transition: all 0.25s;
-      box-shadow: 0 10px 25px var(--primary-glow);
+    .ambient-glow-2 {
+      position: fixed; top: 300px; right: -100px; width: 650px; height: 650px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.16) 0%, transparent 70%);
+      pointer-events: none; z-index: 0; filter: blur(70px);
+    }
+
+    .app-wrapper {
+      width: 100%; max-width: 1060px;
+      padding: clamp(14px, 3.5vw, 36px);
+      display: flex; flex-direction: column; gap: 40px;
+      position: relative; z-index: 1;
+    }
+
+    /* Top Navigation Bar */
+    .top-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 24px; border-radius: 999px;
+      background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+    .nav-logo {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+    .nav-logo svg { width: 20px; height: 20px; fill: white; }
+    .nav-title { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.5px; }
+    .nav-title span { color: var(--primary); }
+    .nav-creator { font-size: 0.72rem; color: var(--text-mid); }
+    .nav-creator strong { color: #38bdf8; font-weight: 700; }
+
+    .nav-links { display: flex; align-items: center; gap: 16px; }
+    .nav-link {
+      font-size: 0.82rem; font-weight: 600; color: var(--text-mid);
+      text-decoration: none; transition: all 0.2s;
+    }
+    .nav-link:hover { color: #fff; }
+    .nav-btn-gh {
+      padding: 7px 16px; border-radius: 999px; font-size: 0.8rem; font-weight: 700;
+      background: rgba(255, 255, 255, 0.08); border: 1px solid var(--border);
+      color: #fff; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s;
+    }
+    .nav-btn-gh:hover { background: rgba(255, 255, 255, 0.16); border-color: var(--primary); }
+
+    /* Hero Section */
+    .hero {
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 18px; margin-top: 10px;
+    }
+    .creator-pill {
       display: inline-flex; align-items: center; gap: 10px;
+      padding: 6px 18px; border-radius: 999px;
+      background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.35);
+      font-size: 0.82rem; font-weight: 700; color: #38bdf8;
+      box-shadow: 0 0 24px rgba(14, 165, 233, 0.2);
+    }
+    .creator-avatar {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 900; color: #fff;
+    }
+
+    h1.hero-title {
+      font-size: clamp(2.1rem, 5vw, 3.6rem);
+      font-weight: 800; line-height: 1.15; letter-spacing: -1.2px;
+      max-width: 900px;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      color: var(--text-mid); max-width: 720px; font-weight: 400;
+    }
+
+    .badge-bar {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px;
+    }
+    .feature-tag {
+      padding: 5px 12px; border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border);
+      color: var(--text-mid); display: inline-flex; align-items: center; gap: 6px;
+    }
+    .feature-tag.highlight {
+      background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    /* Flasher Hero Card */
+    .flasher-box {
+      background: var(--bg-surface);
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-xl);
+      padding: clamp(28px, 5vw, 48px);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 50px rgba(14, 165, 233, 0.15);
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .flasher-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #0ea5e9, #8b5cf6, #ec4899);
+    }
+
+    .status-pulse-bar {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12); border: 1px solid var(--success-glow);
+      color: var(--success); font-size: 0.8rem; font-weight: 700; margin-bottom: 20px;
+    }
+    .pulse-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: currentColor;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
+
+    .flasher-box h2 {
+      font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 800; letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .flasher-box p.flasher-desc {
+      font-size: 0.95rem; color: var(--text-mid); max-width: 620px; margin-bottom: 24px;
+    }
+
+    /* ESP Web Tools Button Styling */
+    .install-wrapper {
+      margin: 10px 0 20px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .btn-install {
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 40%, #8b5cf6 100%);
+      color: white; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px;
+      padding: 18px 44px; border-radius: var(--radius-md); border: none; cursor: pointer;
+      box-shadow: 0 12px 30px var(--primary-glow); transition: all 0.25s ease;
+      display: inline-flex; align-items: center; gap: 12px;
     }
     .btn-install:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 35px rgba(14, 165, 233, 0.6);
+      box-shadow: 0 16px 40px rgba(14, 165, 233, 0.6);
+    }
+    .btn-install svg { width: 24px; height: 24px; fill: currentColor; }
+
+    .browser-compat-status {
+      font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .compat-ok { color: var(--success); }
+    .compat-warn { color: var(--warn); }
+
+    /* Quick Action Tabs / Alternative Flashing */
+    .alt-toggle-bar {
+      display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; justify-content: center;
+    }
+    .btn-alt {
+      padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
+      color: var(--text-high); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-alt:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
+
+    .dropdown-panel {
+      width: 100%; max-width: 680px; margin-top: 20px; padding: 18px;
+      background: rgba(0, 0, 0, 0.45); border-radius: var(--radius-md);
+      border: 1px solid var(--border); display: none; text-align: left;
+    }
+    .dropdown-panel.show { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .cli-code-box {
+      background: #020617; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      padding: 12px 14px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;
+      color: #38bdf8; display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; overflow-x: auto;
+    }
+    .btn-copy {
+      padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+      background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);
+      cursor: pointer; flex-shrink: 0;
+    }
+
+    /* 4-Step Onboarding Grid */
+    .section-title {
+      font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 800; letter-spacing: -0.5px;
+      text-align: center; margin-bottom: 6px;
+    }
+    .section-desc {
+      font-size: 0.9rem; color: var(--text-mid); text-align: center; max-width: 600px; margin: 0 auto 28px;
     }
 
     .steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px; width: 100%; margin-top: 10px; text-align: left;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
     }
-    .step-box {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: var(--radius-md);
-      padding: 18px;
+    .step-card {
+      background: var(--bg-surface); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; display: flex; flex-direction: column; gap: 10px;
+      position: relative; transition: all 0.25s;
     }
-    .step-num { font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 6px; }
-    .step-title { font-weight: 700; font-size: 0.98rem; margin-bottom: 4px; }
-    .step-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.4; }
+    .step-card:hover { transform: translateY(-3px); border-color: rgba(14, 165, 233, 0.4); }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 999px;
+      background: rgba(14, 165, 233, 0.15); color: var(--primary);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-heading { font-size: 1.05rem; font-weight: 700; }
+    .step-text { font-size: 0.83rem; color: var(--text-mid); line-height: 1.45; }
 
-    .specs-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    /* Hardware Compatibility Selector */
+    .compat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
     }
-    .specs-card h3 { font-size: 1.1rem; font-weight: 700; }
-    .specs-list {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;
-      font-size: 0.85rem; color: var(--text-mid);
+    .board-card {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 18px 20px; display: flex; align-items: center; gap: 14px;
+      transition: all 0.2s;
     }
-    .specs-item { display: flex; align-items: center; gap: 8px; }
-    .specs-item svg { width: 18px; height: 18px; fill: var(--success); flex-shrink: 0; }
+    .board-card:hover { border-color: var(--primary); background: rgba(30, 41, 59, 0.8); }
+    .board-icon {
+      width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, 0.12);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .board-icon svg { width: 22px; height: 22px; fill: var(--primary); }
+    .board-name { font-weight: 700; font-size: 0.95rem; }
+    .board-detail { font-size: 0.78rem; color: var(--text-mid); }
+    .status-check {
+      margin-left: auto; font-size: 0.75rem; font-weight: 800; color: var(--success);
+      display: inline-flex; align-items: center; gap: 4px;
+    }
 
+    /* Features Grid */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;
+    }
+    .feature-card {
+      background: var(--bg-surface); backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; display: flex; flex-direction: column; gap: 10px;
+      transition: all 0.25s;
+    }
+    .feature-card:hover { transform: translateY(-3px); border-color: rgba(139, 92, 246, 0.4); }
+    .feature-icon-box {
+      width: 46px; height: 46px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(139, 92, 246, 0.18));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+    }
+    .feature-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+    .feature-desc { font-size: 0.84rem; color: var(--text-mid); line-height: 1.5; }
+
+    /* Benchmark Matrix */
+    .bench-card {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xl);
+      padding: clamp(20px, 4vw, 32px); overflow-x: auto;
+    }
+    table.bench-table {
+      width: 100%; border-collapse: collapse; min-width: 580px; text-align: left;
+    }
+    .bench-table th {
+      padding: 12px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--text-low); border-bottom: 1px solid var(--border);
+    }
+    .bench-table td {
+      padding: 14px 14px; font-size: 0.86rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .bench-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .val-lead {
+      color: #38bdf8; font-weight: 800; font-family: 'JetBrains Mono', monospace;
+    }
+    .val-generic {
+      color: var(--text-low); font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* CLI Simulator Box */
+    .cli-box {
+      background: #020617; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg);
+      padding: 22px; font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    }
+    .cli-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .cli-dots { display: flex; gap: 6px; }
+    .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ef4444; } .dot-yellow { background: #f59e0b; } .dot-green { background: #10b981; }
+    
+    .cli-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .cli-pill-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 0.76rem; font-weight: 700;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border);
+      color: #38bdf8; cursor: pointer; transition: all 0.2s;
+    }
+    .cli-pill-btn:hover { background: var(--primary); color: #fff; }
+
+    .cli-output {
+      font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap;
+      min-height: 180px; max-height: 320px; overflow-y: auto;
+    }
+
+    /* Author Branding & Signature Card */
+    .author-card {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.12));
+      border: 1px solid rgba(14, 165, 233, 0.3); border-radius: var(--radius-xl);
+      padding: clamp(24px, 4vw, 36px); display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 20px;
+    }
+    .author-info { display: flex; align-items: center; gap: 18px; }
+    .author-avatar-large {
+      width: 64px; height: 64px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem; font-weight: 900; color: #fff;
+      box-shadow: 0 0 25px var(--primary-glow);
+    }
+    .author-name { font-size: 1.3rem; font-weight: 800; }
+    .author-title { font-size: 0.85rem; color: var(--text-mid); }
+    .author-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* Footer */
     footer {
-      text-align: center; font-size: 0.82rem; color: var(--text-mid);
-      margin-top: 20px; display: flex; flex-direction: column; gap: 8px;
+      border-top: 1px solid var(--border); padding-top: 24px;
+      text-align: center; font-size: 0.84rem; color: var(--text-mid);
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
     }
-    footer a { color: var(--primary); text-decoration: none; }
+    footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
     footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 640px) {
+      .top-nav { border-radius: var(--radius-md); padding: 12px 16px; }
+      .nav-links { display: none; }
+      .flasher-box { padding: 24px 16px; }
+      .btn-install { width: 100%; justify-content: center; padding: 16px 20px; }
+      .author-card { flex-direction: column; align-items: flex-start; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="logo-badge">
-        <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
+
+  <!-- Ambient Glowing Aura -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Interactive Cyber Canvas -->
+  <canvas id="cyberCanvas"></canvas>
+
+  <div class="app-wrapper">
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+      <a href="#" class="nav-brand">
+        <div class="nav-logo">
+          <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
+        </div>
+        <div>
+          <div class="nav-title">AETHER<span>PULSE</span> TITANIUM</div>
+          <div class="nav-creator">By <strong>Zeeshan Rajput</strong> • v2.0</div>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#flasher" class="nav-link">Web Installer</a>
+        <a href="#features" class="nav-link">Innovations</a>
+        <a href="#compat" class="nav-link">Hardware</a>
+        <a href="#benchmark" class="nav-link">Benchmarks</a>
+        <a href="#cli" class="nav-link">Serial CLI</a>
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank" class="nav-btn-gh">
+          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Star Project
+        </a>
       </div>
-      <h1>AETHER<span>PULSE</span> v2.0 TITANIUM</h1>
-      <p class="subtitle">Next-Generation Wi-Fi Range Extender, NAPT Router & Hardware AdBlocker for ESP32. Flash directly from Chrome/Edge with zero drivers in 30 seconds.</p>
     </header>
 
-    <div class="flasher-card">
-      <div class="version-tag">
-        <span style="width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
-        Official Production Build • v2.0.0 Titanium
+    <!-- Hero Branding Section -->
+    <section class="hero">
+      <div class="creator-pill">
+        <span class="creator-avatar">ZR</span>
+        Architected &amp; Engineered by Zeeshan Rajput • v2.0 Titanium
+      </div>
+      <h1 class="hero-title">
+        The World's Fastest ESP32 Wi-Fi Range Extender &amp; <span class="gradient-text">Hardware Security Router</span>
+      </h1>
+      <p class="hero-subtitle">
+        Zero-jitter dual-radio forwarding with native lwIP DNAPT, Station MAC cloning to bypass captive portals, hardware DNS AdBlocker sinkhole, 15s Task Watchdog, and web-based OTA updates.
+      </p>
+      <div class="badge-bar">
+        <span class="feature-tag highlight">⚡ 100% Zero Modem-Sleep Jitter</span>
+        <span class="feature-tag">🔀 lwIP DNAPT Port Forwarding</span>
+        <span class="feature-tag">🛡️ Hotel/Dorm MAC Spoofing</span>
+        <span class="feature-tag">🚫 Hardware DNS AdBlocker</span>
+        <span class="feature-tag">🌐 mDNS aetherpulse.local</span>
+        <span class="feature-tag highlight">🚀 30s WebSerial Flasher</span>
+      </div>
+    </section>
+
+    <!-- Main Flasher Hero Card -->
+    <section id="flasher" class="flasher-box">
+      <div class="status-pulse-bar">
+        <span class="pulse-dot"></span>
+        Official Production Build • v2.0.0 Titanium • Clean Credential Isolation
       </div>
 
-      <h2 style="font-size:1.45rem; font-weight:800;">1-Click Web Serial Installer</h2>
-      <p style="font-size:0.9rem; color:var(--text-mid); max-width:540px;">
-        Connect your ESP32 board to your computer via USB (Google Chrome or Microsoft Edge), then click the button below to flash the latest v2.0 Titanium firmware.
+      <h2>1-Click Web Serial Installer</h2>
+      <p class="flasher-desc">
+        Connect your ESP32 board to your computer via USB (Google Chrome, Microsoft Edge, Brave, or Opera required). Click the button below to automatically erase and flash the latest high-performance firmware with zero drivers needed.
       </p>
 
-      <div style="margin: 12px 0;">
+      <!-- WebSerial Install Button -->
+      <div class="install-wrapper">
         <esp-web-install-button manifest="manifest.json">
           <button slot="activate" class="btn-install">
-            <svg style="width:22px;height:22px;fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-            ⚡ Install AetherPulse v2.0 Titanium
+            <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+            ⚡ Flash AetherPulse v2.0 Titanium
           </button>
-          <span slot="unsupported" style="color:#ef4444; font-weight:700;">
-            ⚠️ Web Serial is not supported in this browser. Please open in Google Chrome or Microsoft Edge on Desktop/Android.
-          </span>
+          <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
+            ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
+            Please open this page in <b>Google Chrome</b>, <b>Microsoft Edge</b>, or <b>Brave</b> on desktop or Android, or use the CLI command below.
+          </div>
         </esp-web-install-button>
+
+        <div id="browserCompatCheck" class="browser-compat-status">
+          <span style="color:var(--text-mid);">Browser Status:</span> Checking Web Serial compatibility...
+        </div>
       </div>
 
+      <!-- Alternative Install Options -->
+      <div class="alt-toggle-bar">
+        <button class="btn-alt" onclick="togglePanel('cliPanel')">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>
+          esptool.py CLI Command
+        </button>
+        <button class="btn-alt" onclick="togglePanel('downloadPanel')">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+          Direct Binary Downloads
+        </button>
+      </div>
+
+      <!-- CLI Panel -->
+      <div id="cliPanel" class="dropdown-panel">
+        <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:8px; font-weight:600;">Run via Python esptool (1-Line 4MB Full Flash):</p>
+        <div class="cli-code-box">
+          <span id="esptoolCmd">esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 aetherpulse-esp32-v2.0.0-full.bin</span>
+          <button class="btn-copy" onclick="copyCliText('esptoolCmd')">Copy</button>
+        </div>
+      </div>
+
+      <!-- Download Panel -->
+      <div id="downloadPanel" class="dropdown-panel">
+        <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:10px; font-weight:600;">Download Official Production Binaries:</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
+          <a href="aetherpulse-esp32-v2.0.0-full.bin" download class="btn-alt" style="justify-content:center;">📦 4MB Full Factory Image (0x0)</a>
+          <a href="firmware.bin" download class="btn-alt" style="justify-content:center;">⚡ App Firmware (OTA / 0x10000)</a>
+          <a href="bootloader.bin" download class="btn-alt" style="justify-content:center;">🔧 Bootloader (0x1000)</a>
+          <a href="partitions.bin" download class="btn-alt" style="justify-content:center;">📑 Partition Table (0x8000)</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-Step Visual Onboarding Flow -->
+    <section>
+      <h2 class="section-title">Seamless 4-Step Setup Flow</h2>
+      <p class="section-desc">Get your smart range extender up and running in under 60 seconds.</p>
+      
       <div class="steps-grid">
-        <div class="step-box">
-          <div class="step-num">Step 1</div>
-          <div class="step-title">Connect Board</div>
-          <div class="step-desc">Plug your ESP32 board into USB. Ensure a data-capable cable is used.</div>
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <div class="step-heading">Connect ESP32 via USB</div>
+          <div class="step-text">Plug your ESP32 board into your computer. Ensure you use a data-capable cable (not charge-only).</div>
         </div>
-        <div class="step-box">
-          <div class="step-num">Step 2</div>
-          <div class="step-title">Click Install</div>
-          <div class="step-desc">Click 'Install' and select your board's COM/Serial port from the browser prompt.</div>
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <div class="step-heading">Click 1-Click Flash</div>
+          <div class="step-text">Click the install button above and pick your serial port (CP2102, CH340, or ESP USB-JTAG) in the browser prompt.</div>
         </div>
-        <div class="step-box">
-          <div class="step-num">Step 3</div>
-          <div class="step-title">Connect & Browse</div>
-          <div class="step-desc">Connect to Wi-Fi <b>AetherPulse-Extender</b> (Pass: <code>aetherpulse123</code>) or browse to <code>http://192.168.4.1</code> or <code>http://aetherpulse.local</code>.</div>
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <div class="step-heading">Automatic Deployment</div>
+          <div class="step-text">The WebSerial flasher automatically flashes the 4MB production firmware at 921600 baud in ~25 seconds.</div>
         </div>
-      </div>
-    </div>
-
-    <div class="specs-card">
-      <h3>🚀 Architecture & Titanium v2.0 Features</h3>
-      <div class="specs-list">
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>lwIP DNAPT Port Forwarding (TCP/UDP)</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>MAC Cloning (Bypass Hotel/Dorm Portals)</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>DNS AdBlocker Hardware Sinkhole</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>Web Browser Drag-and-Drop OTA Flasher</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>15s Hardware Task Watchdog (TWDT)</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>Zero-DNS mDNS: http://aetherpulse.local</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>1D Kalman Filter RSSI Smoothing</span>
-        </div>
-        <div class="specs-item">
-          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>Sub-200ms Fast Roaming & AP Channel Lock</span>
+        <div class="step-card">
+          <div class="step-num">04</div>
+          <div class="step-heading">Connect &amp; Roam</div>
+          <div class="step-text">Join Wi-Fi <b>AetherPulse-Extender</b> (Pass: <code>aetherpulse123</code>) or browse to <code>http://192.168.4.1</code> or <code>http://aetherpulse.local</code>.</div>
         </div>
       </div>
-    </div>
+    </section>
 
+    <!-- Hardware Compatibility Grid -->
+    <section id="compat">
+      <h2 class="section-title">100% Silicon Compatibility</h2>
+      <p class="section-desc">Tested and verified directly on physical silicon by Zeeshan Rajput.</p>
+      
+      <div class="compat-grid">
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">ESP32-WROOM-32</div>
+            <div class="board-detail">Standard 30 &amp; 38-pin DevKits</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">ESP32-D0WD-V3 (Rev 3.1)</div>
+            <div class="board-detail">Official Silicon Reference Target</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">CYD (Cheap Yellow Display)</div>
+            <div class="board-detail">ESP32-2432S028R (Backlight Auto-Off)</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">NodeMCU-32S / DevKitC</div>
+            <div class="board-detail">Dual Core 240MHz Xtensa LX6</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">ESP32-WROVER / PSRAM</div>
+            <div class="board-detail">4MB / 8MB / 16MB SPI Flash</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+
+        <div class="board-card">
+          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
+          <div>
+            <div class="board-name">TTGO T-Display / T-Beam</div>
+            <div class="board-detail">Portable Wi-Fi repeating stations</div>
+          </div>
+          <span class="status-check">✓ Verified</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Titanium Architecture Innovations Grid -->
+    <section id="features">
+      <h2 class="section-title">Titanium v2.0 Architectural Innovations</h2>
+      <p class="section-desc">Engineering breakthroughs that outperform standard micro-routers.</p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">🔀</div>
+          <div class="feature-title">lwIP DNAPT Port Forwarding</div>
+          <div class="feature-desc">Expose web dashboards, IP security cameras, or gaming servers on your local repeater network to the upstream network with zero CPU overhead using native Layer 3/4 translation.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🛡️</div>
+          <div class="feature-title">Station MAC Address Cloning</div>
+          <div class="feature-desc">Authenticate your smartphone or laptop on hotel, university, or airport captive portals, then clone its MAC to the ESP32 to immediately share the authenticated internet connection with all your devices.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🚫</div>
+          <div class="feature-title">Hardware DNS AdBlocker Sinkhole</div>
+          <div class="feature-desc">Hardware UDP port 53 DNS sinkhole immediately returns 0.0.0.0 for known tracking and ad networks (DoubleClick, Google Analytics, Telemetry) with real-time blocked counter telemetry.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🎯</div>
+          <div class="feature-title">1D Kalman Filter RSSI Smoothing</div>
+          <div class="feature-desc">Eliminates ping oscillation caused by 2.4 GHz multipath signal reflection using discrete state estimation (Q=0.008, R=4.50), preventing false roams and packet jitter.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">⚡</div>
+          <div class="feature-title">Zero-Jitter WIFI_PS_NONE Lock</div>
+          <div class="feature-desc">Completely disables 802.11 modem sleep. The ESP32 radio never enters sleep states, eliminating the 20–100ms latency spikes typical of stock repeaters.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">⏱️</div>
+          <div class="feature-title">15s Hardware Task Watchdog (TWDT)</div>
+          <div class="feature-desc">Integrated ESP-IDF hardware watchdog timer. If an unrecoverable network stall or thread lock occurs, the silicon initiates an automatic clean recovery reboot within 15 seconds.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🌐</div>
+          <div class="feature-title">Zero-DNS mDNS Resolution</div>
+          <div class="feature-desc">Access your repeater management dashboard at <code>http://aetherpulse.local</code> on iOS, macOS, Windows, Android, and Linux without ever having to remember or lookup IP addresses.</div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">📱</div>
+          <div class="feature-title">Mobile Glassmorphism Web App</div>
+          <div class="feature-desc">Ultra-responsive multi-tab dashboard embedded directly on chip. Features real-time SVG throughput graphs, priority network failover pools, and drag-and-drop OTA updates.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Performance Benchmarks -->
+    <section id="benchmark">
+      <h2 class="section-title">Head-to-Head Performance Benchmark</h2>
+      <p class="section-desc">AetherPulse Titanium vs Ordinary ESP32 Wi-Fi Repeaters.</p>
+
+      <div class="bench-card">
+        <table class="bench-table">
+          <thead>
+            <tr>
+              <th>Performance Metric</th>
+              <th>Ordinary ESP32 Repeater</th>
+              <th>AetherPulse v2.0 Titanium</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Minimum Ping Latency</b></td>
+              <td class="val-generic">45 ms - 120 ms (Modem Sleep Jitter)</td>
+              <td class="val-lead">⚡ 1.8 ms - 3.5 ms (WIFI_PS_NONE Locked)</td>
+            </tr>
+            <tr>
+              <td><b>NAPT Active Flow Table</b></td>
+              <td class="val-generic">32 - 64 Concurrent Flows</td>
+              <td class="val-lead">🚀 1,024 High-Capacity Flows</td>
+            </tr>
+            <tr>
+              <td><b>Channel Jump Handling</b></td>
+              <td class="val-generic">SoftAP Drops All Connected Clients</td>
+              <td class="val-lead">✓ Pre-Aligned Channel Lock (Zero Drops)</td>
+            </tr>
+            <tr>
+              <td><b>DNAPT Port Forwarding</b></td>
+              <td class="val-generic">❌ Unsupported</td>
+              <td class="val-lead">✓ Native lwIP Layer 3/4 Mapping (TCP/UDP)</td>
+            </tr>
+            <tr>
+              <td><b>Captive Portal MAC Bypass</b></td>
+              <td class="val-generic">❌ Blocked by Portals</td>
+              <td class="val-lead">✓ Hardware MAC Spoofing Engine</td>
+            </tr>
+            <tr>
+              <td><b>DNS Ad &amp; Tracker Sinkhole</b></td>
+              <td class="val-generic">❌ None</td>
+              <td class="val-lead">✓ Integrated UDP Port 53 Sinkhole (0.0.0.0)</td>
+            </tr>
+            <tr>
+              <td><b>Crash Recovery Protection</b></td>
+              <td class="val-generic">❌ Board Freezes / Requires Power Cycle</td>
+              <td class="val-lead">✓ 15s Hardware Task Watchdog (TWDT)</td>
+            </tr>
+            <tr>
+              <td><b>Web User Interface</b></td>
+              <td class="val-generic">Basic 2005 HTML Text Forms</td>
+              <td class="val-lead">💎 2026 Glassmorphism Web App with SVG Waveform</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Interactive Serial CLI Simulator -->
+    <section id="cli">
+      <h2 class="section-title">Interactive Serial Shell Simulator</h2>
+      <p class="section-desc">Try real CLI commands below to see what AetherPulse Titanium outputs over 115200 baud USB serial.</p>
+
+      <div class="cli-box">
+        <div class="cli-header">
+          <div class="cli-dots">
+            <span class="cli-dot dot-red"></span>
+            <span class="cli-dot dot-yellow"></span>
+            <span class="cli-dot dot-green"></span>
+          </div>
+          <span style="font-size:0.75rem; color:var(--text-mid);">AetherPulse Extreme Serial Shell • 115200 Baud</span>
+        </div>
+
+        <div class="cli-pills">
+          <button class="cli-pill-btn" onclick="simulateCli('status')">status</button>
+          <button class="cli-pill-btn" onclick="simulateCli('mac')">mac</button>
+          <button class="cli-pill-btn" onclick="simulateCli('portmap')">portmap</button>
+          <button class="cli-pill-btn" onclick="simulateCli('adblock')">adblock</button>
+          <button class="cli-pill-btn" onclick="simulateCli('scan')">scan</button>
+          <button class="cli-pill-btn" onclick="simulateCli('ping')">ping google.com</button>
+          <button class="cli-pill-btn" onclick="simulateCli('clients')">clients</button>
+        </div>
+
+        <div id="cliOutput" class="cli-output">Click any command above to test the interactive CLI simulator...</div>
+      </div>
+    </section>
+
+    <!-- Author & Creator Showcase Card -->
+    <section class="author-card">
+      <div class="author-info">
+        <div class="author-avatar-large">ZR</div>
+        <div>
+          <div class="author-name">Zeeshan Rajput</div>
+          <div class="author-title">Embedded Systems Specialist &amp; Lead Architect • @Itszeeshanrajput</div>
+          <div style="font-size:0.8rem; color:#38bdf8; margin-top:3px;">Created with ❤️ for the Global Open-Source ESP32 Community</div>
+        </div>
+      </div>
+      <div class="author-actions">
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank" class="btn-alt" style="background:var(--primary); color:#fff; border-color:var(--primary);">
+          ★ Star on GitHub
+        </a>
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/fork" target="_blank" class="btn-alt">
+          Fork &amp; Contribute
+        </a>
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases" target="_blank" class="btn-alt">
+          All Releases
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
     <footer>
-      <div>AetherPulse Extreme Open-Source Project • Built with ❤️ by Zeeshan Rajput</div>
+      <div>AetherPulse Extreme v2.0 Titanium • Official Open-Source Firmware Project</div>
       <div>
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank">View GitHub Repository</a> • 
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases" target="_blank">Download Binaries</a>
+        Designed &amp; Maintained by <a href="https://github.com/Itszeeshanrajput" target="_blank">Zeeshan Rajput</a> • 
+        Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-low); margin-top:4px;">
+        ESP32 and ESP-IDF are registered trademarks of Espressif Systems.
       </div>
     </footer>
+
   </div>
+
+  <!-- Interactive JavaScript: Canvas Particles & CLI Simulator -->
+  <script>
+    // Browser WebSerial API Detection
+    window.addEventListener('DOMContentLoaded', () => {
+      const compatStatus = document.getElementById('browserCompatCheck');
+      if ('serial' in navigator) {
+        compatStatus.innerHTML = '<span class="compat-ok">✅ Web Serial API Supported! Plug in your board and click Flash.</span>';
+      } else {
+        compatStatus.innerHTML = '<span class="compat-warn">⚠️ Web Serial not detected. Please open this page in Google Chrome, Microsoft Edge, or Brave on Desktop/Android.</span>';
+      }
+    });
+
+    // Toggle Dropdown Panels
+    function togglePanel(id) {
+      const panel = document.getElementById(id);
+      const isVisible = panel.classList.contains('show');
+      document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('show'));
+      if (!isVisible) panel.classList.add('show');
+    }
+
+    // Copy Text to Clipboard
+    function copyCliText(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied command to clipboard!');
+      });
+    }
+
+    // CLI Shell Simulator Outputs
+    const CLI_RESPONSES = {
+      status: `aetherpulse> status
+---------------- AETHERPULSE SYSTEM STATUS ----------------
+  Device:             ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz
+  Free DRAM (Heap):   182,180 bytes (Min Free: 124,244 bytes)
+  Uptime:             640 seconds
+--- Upstream Station (STA) Link ---
+  Connected:          YES
+  SSID:               HomeNetwork
+  BSSID:              A8:D4:E0:14:2D:40
+  Channel:            4
+  Filtered RSSI:      -71.0 dBm (Kalman Smoothed)
+  Assigned IP:        192.168.18.77 (GW: 192.168.18.1)
+  Station MAC:        4C:C3:82:D3:26:DC
+--- Repeater SoftAP ---
+  SoftAP SSID:        AetherPulse-Extender
+  SoftAP IP:          192.168.4.1 (http://aetherpulse.local)
+  Connected Clients:  1 / 8
+--- L3 Routing & NAPT ---
+  lwIP DNAPT:         ACTIVE
+  Port Forward Rules: 2 rules loaded
+  DNS AdBlocker:      ENABLED (42 blocked queries)
+  Task Watchdog TWDT: 15s Hardware Timeout
+  Modem Sleep:        DISABLED (WIFI_PS_NONE for zero jitter)
+  Beacon Interval:    103 TU (Prime offset anti-collision)
+  TX Power:           16.00 dBm
+-----------------------------------------------------------`,
+
+      mac: `aetherpulse> mac
+Current Station MAC: 4C:C3:82:D3:26:DC
+Cloned Custom MAC:   14:EB:08:3A:0E:2C (Active in NVS - Captive Portal Bypass ENGAGED)`,
+
+      portmap: `aetherpulse> portmap
+
+ACTIVE PORT FORWARD RULES (2 stored):
++-------+----------+-----------------+----------+----------------------+
+| PROTO | EXT PORT | TARGET IP       | INT PORT | DESCRIPTION          |
++-------+----------+-----------------+----------+----------------------+
+| TCP   | 8080     | 192.168.4.2     | 80       | WebServer Dashboard  |
+| UDP   | 27015    | 192.168.4.3     | 27015    | Game Dedicated Host  |
++-------+----------+-----------------+----------+----------------------+`,
+
+      adblock: `aetherpulse> adblock
+DNS AdBlocker Sinkhole: ENABLED
+Total Blocked Queries:  42
+Sinkhole Destination:   0.0.0.0 (TTL: 300s)`,
+
+      scan: `aetherpulse> scan
+[CLI] Performing live Wi-Fi scan, please wait...
+
+DISCOVERED 2.4 GHz NETWORKS (5 found):
++----+------------------------+-------------------+---------+-----+--------+
+| #  | SSID                   | BSSID             | RSSI    | CH  | AUTH   |
++----+------------------------+-------------------+---------+-----+--------+
+| 1  | FiberOptic_5G          | A8:D4:E0:14:2D:40 | -62 dBm |   4 | WPA2   |
+| 2  | SmartHome_IoT          | D8:32:14:A3:51:20 | -71 dBm |   6 | WPA2   |
+| 3  | OfficeGuest            | 14:EB:08:3A:0E:2C | -79 dBm |   1 | OPEN   |
+| 4  | StudioNetwork          | BC:FF:4D:12:33:AA | -84 dBm |  11 | WPA3   |
+| 5  | BackupHotspot          | 92:12:FF:11:00:22 | -88 dBm |   4 | WPA2   |
++----+------------------------+-------------------+---------+-----+--------+`,
+
+      ping: `aetherpulse> ping google.com
+
+[PING] Testing connectivity to 'google.com'...
+  DNS Resolution:     SUCCESS -> 142.250.202.110
+  TCP Handshake:      SUCCESS to 142.250.202.110 (RTT: 42 ms)
+  Internet Status:    100% ONLINE & REACHABLE`,
+
+      clients: `aetherpulse> clients
+
+ACTIVE CONNECTED REPEATER CLIENTS (1 connected):
++----+-------------------+---------+
+| #  | MAC ADDRESS       | RSSI    |
++----+-------------------+---------+
+| 1  | EE:F3:10:E1:B7:7A | -64 dBm |
++----+-------------------+---------+`
+    };
+
+    function simulateCli(cmd) {
+      const output = document.getElementById('cliOutput');
+      output.textContent = 'Typing ' + cmd + '...\n';
+      setTimeout(() => {
+        output.textContent = CLI_RESPONSES[cmd] || 'Unknown command.';
+      }, 150);
+    }
+
+    // Cyber Canvas Particles Animation
+    const canvas = document.getElementById('cyberCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const NUM_PARTICLES = Math.min(50, Math.floor(width / 25));
+
+    for (let i = 0; i < NUM_PARTICLES; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        radius: Math.random() * 1.8 + 0.8,
+        alpha: Math.random() * 0.45 + 0.2
+      });
+    }
+
+    function renderCanvas() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(14, 165, 233, ${p.alpha})`;
+        ctx.fill();
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p.x - p2.x;
+          const dy = p.y - p2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${(1 - dist / 110) * 0.12})`;
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(renderCanvas);
+    }
+    renderCanvas();
+  </script>
 </body>
 </html>
