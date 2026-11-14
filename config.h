@@ -7,11 +7,12 @@
 // ==============================================================================
 // AETHERPULSE EXTREME - HARDWARE & SYSTEM CONFIGURATION
 // Target: ESP32-D0WD-V3 (Silicon ECO 3.1) @ 240 MHz Dual-Core
+// Architect: Zeeshan Rajput (@Itszeeshanrajput)
 // ==============================================================================
 
 #define PROJECT_NAME              "AetherPulse Extreme"
-#define PROJECT_VERSION           "v2.0.0-Titanium"
-#define PROJECT_AUTHOR            "AetherPulse Core Team"
+#define PROJECT_VERSION           "v3.0.0-Quantum"
+#define PROJECT_AUTHOR            "Zeeshan Rajput"
 
 // Hardware Pin Configuration
 #define PIN_RGB_RED               4    // Active LOW LED
@@ -33,8 +34,8 @@
 // lwIP Hardware NAPT Configuration & Timers
 #define NAPT_MAX_FLOWS            1024  // Concurrent stateful connection capacity
 #define NAPT_MAX_PORTMAPS         16    // Maximum active port forwarding rules
-#define NAPT_UDP_TIMEOUT_SEC      25    // Aggressive UDP flow recycling (prevents DNS/NAT table staling)
-#define NAPT_TCP_TIMEOUT_SEC      300   // 5 minutes TCP timeout for half-open/abruptly dropped sockets
+#define NAPT_UDP_TIMEOUT_SEC      20    // Aggressive UDP flow recycling (prevents DNS/NAT table staling)
+#define NAPT_TCP_TIMEOUT_SEC      300   // 5 minutes TCP timeout for half-open sockets
 
 // Smart Roaming & Multi-AP Fast-Connect Parameters
 #define MAX_KNOWN_NETWORKS        10
@@ -43,12 +44,17 @@
 #define ROAM_DWELL_TIME_MS        3000   // Candidate must sustain strength for 3 seconds
 #define ROAM_COOLDOWN_MS          30000  // 30 seconds hold-down after roaming to prevent flapping
 
+// Sub-Millisecond On-Chip DNS Caching Daemon
+#define DNS_CACHE_MAX_ENTRIES     64    // Maximum cached domain -> IP mappings in SRAM
+#define DNS_CACHE_DEFAULT_TTL     300   // 5 minutes default TTL for cached records
+
 // Default SoftAP Broadcast Settings
 #define DEFAULT_AP_SSID           "AetherPulse-Extender"
 #define DEFAULT_AP_PASS           "aetherpulse123"
 #define DEFAULT_AP_CHANNEL        6
 #define DEFAULT_AP_MAX_CLIENTS    8
 #define DEFAULT_AP_IP             IPAddress(192, 168, 4, 1)
+#define DEFAULT_AP_ALT_IP         IPAddress(192, 168, 5, 1) // Used if upstream subnet collides with 192.168.4.x
 #define DEFAULT_AP_NETMASK        IPAddress(255, 255, 255, 0)
 
 // Hostname & Discovery
@@ -56,6 +62,10 @@
 
 // Watchdog Protection (Core 3.x TWDT)
 #define WDT_TIMEOUT_MS            15000 // 15 seconds Task Watchdog Timer
+
+// Thermal Protection Thresholds
+#define THERMAL_WARN_TEMP_C       75.0f // Warn threshold for internal die temperature
+#define THERMAL_MAX_TEMP_C        85.0f // Dynamic throttling threshold
 
 // Serial CLI Configuration
 #define CLI_BAUD_RATE             115200

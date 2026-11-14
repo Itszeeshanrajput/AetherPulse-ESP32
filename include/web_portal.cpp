@@ -3,6 +3,7 @@
 #include "roaming_engine.h"
 #include "napt_engine.h"
 #include "storage_manager.h"
+#include "dns_cache.h"
 #include <ArduinoJson.h>
 #include <esp_wifi.h>
 
@@ -12,8 +13,27 @@ WebPortal& WebPortal::instance() {
 }
 
 WebPortal::WebPortal() 
-    : server(80), dnsRunning(false), adBlockActive(false),
+    : server(80), dnsServer(nullptr), dnsRunning(false), adBlockActive(false),
       lastRateCalcTime(0), rxRateKbps(0.0f), txRateKbps(0.0f) {}
+
+void WebPortal::startCaptiveDns() {
+    if (!dnsServer) {
+        dnsServer = new DNSServer();
+        dnsServer->start(53, "*", DEFAULT_AP_IP);
+        dnsRunning = true;
+        Serial.println("[DNS] Captive DNS wildcard engaged for setup.");
+    }
+}
+
+void WebPortal::stopCaptiveDns() {
+    if (dnsServer) {
+        dnsServer->stop();
+        delete dnsServer;
+        dnsServer = nullptr;
+        dnsRunning = false;
+        Serial.println("[DNS] Captive DNS wildcard stopped and socket released.");
+    }
+}
 
 void WebPortal::init() {
     registerRoutes();
@@ -27,90 +47,154 @@ void WebPortal::init() {
         Serial.println("[DNS] Hardware AdBlock sinkhole initialized on port 53.");
     }
 
-    Serial.println("[WEB] High-Performance Web Portal v2.0 listening on port 80.");
+    // Start captive DNS initially ONLY if upstream is not connected
+    if (!RoamingEngine::instance().isConnected()) {
+        startCaptiveDns();
+    } else {
+        stopCaptiveDns();
+    }
+
+    Serial.println("[WEB] High-Performance Web Portal v3.0 Quantum listening on port 80.");
 }
 
 void WebPortal::toggleAdBlock(bool enable) {
     adBlockActive = enable;
     StorageManager::instance().setAdBlockEnabled(enable);
+
+    // Dynamically update SoftAP DHCP DNS offer
+    auto s = StorageManager::instance().getSettings();
+    IPAddress ap_ip;
+    ap_ip.fromString(s.softApIpStr.length() > 0 ? s.softApIpStr : "192.168.4.1");
+    IPAddress ap_dns = enable ? ap_ip : IPAddress(8, 8, 8, 8);
+    IPAddress ap_leaseStart(ap_ip[0], ap_ip[1], ap_ip[2], 2);
+    WiFi.AP.config(ap_ip, ap_ip, IPAddress(255, 255, 255, 0), ap_leaseStart, ap_dns);
+
     if (enable) {
         dnsAdUdp.begin(53);
         dnsUpstreamUdp.begin(0);
-        Serial.println("[DNS] AdBlock sinkhole ENGAGED.");
+        Serial.printf("[DNS] AdBlock sinkhole ENGAGED. DHCP DNS: %s\n", ap_ip.toString().c_str());
     } else {
         dnsAdUdp.stop();
         dnsUpstreamUdp.stop();
-        Serial.println("[DNS] AdBlock sinkhole DISENGAGED.");
+        Serial.println("[DNS] AdBlock sinkhole DISENGAGED. DHCP DNS: 8.8.8.8");
     }
 }
 
 void WebPortal::processAdBlockDns() {
     int len = dnsAdUdp.parsePacket();
-    if (len > 12) {
-        uint8_t buffer[512];
-        int readLen = dnsAdUdp.read(buffer, sizeof(buffer));
-        if (readLen <= 12) return;
-        IPAddress remoteIp = dnsAdUdp.remoteIP();
-        uint16_t remotePort = dnsAdUdp.remotePort();
+    if (len <= 12) return;
 
-        String domain = "";
-        int idx = 12;
-        while (idx < readLen && buffer[idx] != 0) {
-            uint8_t labelLen = buffer[idx++];
-            if (domain.length() > 0) domain += ".";
-            for (uint8_t i = 0; i < labelLen && idx < readLen; i++) {
-                domain += (char)buffer[idx++];
-            }
+    uint8_t buffer[512];
+    int readLen = dnsAdUdp.read(buffer, sizeof(buffer));
+    if (readLen <= 12) return;
+    
+    IPAddress remoteIp = dnsAdUdp.remoteIP();
+    uint16_t remotePort = dnsAdUdp.remotePort();
+
+    // Parse DNS query domain name
+    String domain = "";
+    int idx = 12;
+    while (idx < readLen && buffer[idx] != 0) {
+        uint8_t labelLen = buffer[idx++];
+        if (domain.length() > 0) domain += ".";
+        for (uint8_t i = 0; i < labelLen && idx < readLen; i++) {
+            domain += (char)buffer[idx++];
         }
-        domain.toLowerCase();
+    }
+    domain.toLowerCase();
 
-        bool isAd = (domain.indexOf("doubleclick") >= 0 ||
-                     domain.indexOf("adservice") >= 0 ||
-                     domain.indexOf("analytics") >= 0 ||
-                     domain.indexOf("telemetry") >= 0 ||
-                     domain.indexOf("pagead") >= 0 ||
-                     domain.indexOf("ads.") >= 0 ||
-                     domain.indexOf("adserver") >= 0 ||
-                     domain.indexOf("appsflyer") >= 0);
+    // 1. Check AdBlocker sinkhole
+    bool isAd = (domain.indexOf("doubleclick") >= 0 ||
+                 domain.indexOf("adservice") >= 0 ||
+                 domain.indexOf("analytics") >= 0 ||
+                 domain.indexOf("telemetry") >= 0 ||
+                 domain.indexOf("pagead") >= 0 ||
+                 domain.indexOf("ads.") >= 0 ||
+                 domain.indexOf("adserver") >= 0 ||
+                 domain.indexOf("appsflyer") >= 0);
 
-        if (isAd) {
-            uint8_t resp[512];
-            memcpy(resp, buffer, readLen);
-            resp[2] = 0x81;
-            resp[3] = 0x80;
-            resp[6] = 0x00; resp[7] = 0x01; // ANCOUNT = 1
+    if (isAd) {
+        uint8_t resp[512];
+        memcpy(resp, buffer, readLen);
+        resp[2] = 0x81;
+        resp[3] = 0x80; // Standard response, No error
+        resp[6] = 0x00; resp[7] = 0x01; // ANCOUNT = 1
+        
+        int respLen = readLen;
+        resp[respLen++] = 0xc0; resp[respLen++] = 0x0c; // Pointer to name
+        resp[respLen++] = 0x00; resp[respLen++] = 0x01; // Type A
+        resp[respLen++] = 0x00; resp[respLen++] = 0x01; // Class IN
+        resp[respLen++] = 0x00; resp[respLen++] = 0x00; resp[respLen++] = 0x01; resp[respLen++] = 0x2c; // TTL 300s
+        resp[respLen++] = 0x00; resp[respLen++] = 0x04; // Len 4
+        resp[respLen++] = 0; resp[respLen++] = 0; resp[respLen++] = 0; resp[respLen++] = 0; // 0.0.0.0
+
+        dnsAdUdp.beginPacket(remoteIp, remotePort);
+        dnsAdUdp.write(resp, respLen);
+        dnsAdUdp.endPacket();
+        StorageManager::instance().incrementAdBlockCount();
+        return;
+    }
+
+    // 2. Check Sub-Millisecond SRAM DNS Cache
+    IPAddress cachedIp;
+    if (DnsCache::instance().lookup(domain, cachedIp)) {
+        uint8_t resp[512];
+        memcpy(resp, buffer, readLen);
+        resp[2] = 0x81;
+        resp[3] = 0x80;
+        resp[6] = 0x00; resp[7] = 0x01;
+        
+        int respLen = readLen;
+        resp[respLen++] = 0xc0; resp[respLen++] = 0x0c;
+        resp[respLen++] = 0x00; resp[respLen++] = 0x01;
+        resp[respLen++] = 0x00; resp[respLen++] = 0x01;
+        resp[respLen++] = 0x00; resp[respLen++] = 0x00; resp[respLen++] = 0x01; resp[respLen++] = 0x2c;
+        resp[respLen++] = 0x00; resp[respLen++] = 0x04;
+        resp[respLen++] = cachedIp[0];
+        resp[respLen++] = cachedIp[1];
+        resp[respLen++] = cachedIp[2];
+        resp[respLen++] = cachedIp[3];
+
+        dnsAdUdp.beginPacket(remoteIp, remotePort);
+        dnsAdUdp.write(resp, respLen);
+        dnsAdUdp.endPacket();
+        return;
+    }
+
+    // 3. Cache Miss: Query upstream DNS server with 350ms window and cache response
+    IPAddress upstreamDns = WiFi.dnsIP();
+    if (upstreamDns == IPAddress(0, 0, 0, 0)) upstreamDns = IPAddress(8, 8, 8, 8);
+    dnsUpstreamUdp.beginPacket(upstreamDns, 53);
+    dnsUpstreamUdp.write(buffer, readLen);
+    dnsUpstreamUdp.endPacket();
+
+    unsigned long start = millis();
+    while (millis() - start < 350) {
+        int respLen = dnsUpstreamUdp.parsePacket();
+        if (respLen > 0) {
+            uint8_t upResp[512];
+            int n = dnsUpstreamUdp.read(upResp, sizeof(upResp));
             
-            int respLen = readLen;
-            resp[respLen++] = 0xc0; resp[respLen++] = 0x0c; // Pointer to name
-            resp[respLen++] = 0x00; resp[respLen++] = 0x01; // Type A
-            resp[respLen++] = 0x00; resp[respLen++] = 0x01; // Class IN
-            resp[respLen++] = 0x00; resp[respLen++] = 0x00; resp[respLen++] = 0x01; resp[respLen++] = 0x2c; // TTL 300s
-            resp[respLen++] = 0x00; resp[respLen++] = 0x04; // Len 4
-            resp[respLen++] = 0; resp[respLen++] = 0; resp[respLen++] = 0; resp[respLen++] = 0; // 0.0.0.0
-
+            // Forward DNS response back to client
             dnsAdUdp.beginPacket(remoteIp, remotePort);
-            dnsAdUdp.write(resp, respLen);
+            dnsAdUdp.write(upResp, n);
             dnsAdUdp.endPacket();
-            StorageManager::instance().incrementAdBlockCount();
-        } else {
-            dnsUpstreamUdp.beginPacket(IPAddress(8, 8, 8, 8), 53);
-            dnsUpstreamUdp.write(buffer, readLen);
-            dnsUpstreamUdp.endPacket();
 
-            unsigned long start = millis();
-            while (millis() - start < 80) {
-                int respLen = dnsUpstreamUdp.parsePacket();
-                if (respLen > 0) {
-                    uint8_t upResp[512];
-                    int n = dnsUpstreamUdp.read(upResp, sizeof(upResp));
-                    dnsAdUdp.beginPacket(remoteIp, remotePort);
-                    dnsAdUdp.write(upResp, n);
-                    dnsAdUdp.endPacket();
-                    break;
+            // Extract A-record from DNS response and cache it
+            if (n > readLen + 10) {
+                for (int i = readLen; i < n - 4; i++) {
+                    if (upResp[i] == 0x00 && upResp[i+1] == 0x01 && // Type A
+                        upResp[i+2] == 0x00 && upResp[i+3] == 0x01 && // Class IN
+                        i + 10 <= n && upResp[i+8] == 0x00 && upResp[i+9] == 0x04) { // Data len 4
+                        IPAddress resolved(upResp[i+10], upResp[i+11], upResp[i+12], upResp[i+13]);
+                        DnsCache::instance().insert(domain, resolved);
+                        break;
+                    }
                 }
-                delay(2);
             }
+            break;
         }
+        delay(2);
     }
 }
 
@@ -118,8 +202,11 @@ void WebPortal::update() {
     bool online = RoamingEngine::instance().isConnected();
     if (online) {
         if (dnsRunning) {
-            dnsServer.stop();
-            dnsRunning = false;
+            stopCaptiveDns();
+            if (adBlockActive) {
+                dnsAdUdp.begin(53);
+                dnsUpstreamUdp.begin(0);
+            }
             Serial.println("[DNS] Upstream online: Captive DNS wildcard disengaged. Direct Internet routing active.");
         }
         if (adBlockActive) {
@@ -127,11 +214,12 @@ void WebPortal::update() {
         }
     } else {
         if (!dnsRunning) {
-            dnsServer.start(53, "*", DEFAULT_AP_IP);
-            dnsRunning = true;
-            Serial.println("[DNS] Upstream offline: Captive DNS wildcard engaged for setup.");
+            if (adBlockActive) {
+                dnsAdUdp.stop();
+                dnsUpstreamUdp.stop();
+            }
+            startCaptiveDns();
         }
-        dnsServer.processNextRequest();
     }
 
     if (millis() - lastRateCalcTime >= 1000) {
@@ -152,7 +240,7 @@ void WebPortal::update() {
 bool WebPortal::isCaptivePortal() {
     String host = server.hostHeader();
     if (host.length() == 0) return false;
-    if (host != "192.168.4.1" && host != "aetherpulse.local") {
+    if (host != "192.168.4.1" && host != "192.168.5.1" && host != "aetherpulse.local") {
         return true;
     }
     return false;
@@ -191,6 +279,9 @@ void WebPortal::registerRoutes() {
     server.on("/ncsi.txt", HTTP_GET, sendProbeResponse);
     server.on("/connecttest.txt", HTTP_GET, sendProbeResponse);
 
+    // PWA Manifest
+    server.on("/manifest.webmanifest", HTTP_GET, [this]() { handleManifest(); });
+
     // Standard REST API
     server.on("/api/status", HTTP_GET, [this]() { handleApiStatus(); });
     server.on("/api/scan", HTTP_GET, [this]() { handleApiScan(); });
@@ -211,6 +302,14 @@ void WebPortal::registerRoutes() {
     server.on("/api/mac/set", HTTP_POST, [this]() { handleApiMacSet(); });
     server.on("/api/mac/reset", HTTP_POST, [this]() { handleApiMacReset(); });
     server.on("/api/adblock/toggle", HTTP_POST, [this]() { handleApiAdBlockToggle(); });
+
+    // v3.0 Quantum Features
+    server.on("/api/spectrum", HTTP_GET, [this]() { handleApiSpectrum(); });
+    server.on("/api/dns/stats", HTTP_GET, [this]() { handleApiDnsStats(); });
+    server.on("/api/dns/clear", HTTP_POST, [this]() { handleApiDnsClear(); });
+    server.on("/api/clients/rename", HTTP_POST, [this]() { handleApiClientsRename(); });
+    server.on("/api/clients/kick", HTTP_POST, [this]() { handleApiClientsKick(); });
+    server.on("/api/speedtest", HTTP_GET, [this]() { handleApiSpeedtest(); });
 
     // Web OTA Firmware Upload
     server.on("/api/firmware/update", HTTP_POST, [this]() {
@@ -250,6 +349,12 @@ void WebPortal::handleRoot() {
     server.send(200, "text/html", PORTAL_HTML);
 }
 
+void WebPortal::handleManifest() {
+    server.sendHeader("Content-Type", "application/manifest+json");
+    server.send(200, "application/manifest+json", 
+        "{\"name\":\"AetherPulse Enterprise\",\"short_name\":\"AetherPulse\",\"start_url\":\"/\",\"display\":\"standalone\",\"background_color\":\"#060913\",\"theme_color\":\"#0ea5e9\"}");
+}
+
 void WebPortal::handleNotFound() {
     if (isCaptivePortal()) {
         server.sendHeader("Location", "http://192.168.4.1/", true);
@@ -263,6 +368,7 @@ void WebPortal::handleApiStatus() {
     JsonDocument doc;
     auto& roam = RoamingEngine::instance();
     auto settings = StorageManager::instance().getSettings();
+    auto dnsStats = DnsCache::instance().getStats();
 
     doc["connected"] = roam.isConnected();
     doc["upstream_ssid"] = roam.getCurrentSsid();
@@ -279,12 +385,19 @@ void WebPortal::handleApiStatus() {
 
     doc["free_heap"] = ESP.getFreeHeap();
     doc["uptime"] = millis() / 1000;
+    doc["cpu_freq"] = ESP.getCpuFreqMHz();
+    doc["die_temp"] = round(temperatureRead() * 10.0f) / 10.0f;
 
     doc["rx_rate"] = rxRateKbps;
     doc["tx_rate"] = txRateKbps;
     doc["adblock_enabled"] = adBlockActive;
     doc["adblocks_total"] = StorageManager::instance().getAdBlockCount();
     doc["cloned_mac"] = settings.clonedMac;
+
+    doc["dns_hits"] = dnsStats.totalHits;
+    doc["dns_misses"] = dnsStats.totalMisses;
+    doc["dns_active_entries"] = dnsStats.activeEntries;
+    doc["best_channel"] = roam.getBestChannel();
 
     String json;
     serializeJson(doc, json);
@@ -457,6 +570,13 @@ void WebPortal::handleApiSaveSettings() {
     if (doc.containsKey("ap_pass")) s.apPassword = doc["ap_pass"].as<String>();
     if (doc.containsKey("tx_power")) s.txPowerDbm = doc["tx_power"].as<float>();
     if (doc.containsKey("auto_roam")) s.autoRoamEnabled = doc["auto_roam"].as<bool>();
+    if (doc.containsKey("adblock_enabled")) {
+        bool adEn = doc["adblock_enabled"].as<bool>();
+        if (adEn != adBlockActive) {
+            toggleAdBlock(adEn);
+        }
+        s.adBlockEnabled = adEn;
+    }
 
     StorageManager::instance().saveSettings(s);
 
@@ -481,6 +601,8 @@ void WebPortal::handleApiClients() {
                  sta_list.sta[i].mac[3], sta_list.sta[i].mac[4], sta_list.sta[i].mac[5]);
         obj["mac"] = macStr;
         obj["rssi"] = sta_list.sta[i].rssi;
+        obj["alias"] = StorageManager::instance().getClientAlias(macStr);
+        obj["vendor"] = StorageManager::instance().getVendorName(macStr);
     }
 
     String json;
@@ -575,6 +697,107 @@ void WebPortal::handleApiAdBlockToggle() {
     toggleAdBlock(!adBlockActive);
     String msg = adBlockActive ? "DNS AdBlocker engaged!" : "DNS AdBlocker disabled.";
     server.send(200, "application/json", "{\"status\":\"ok\",\"message\":\"" + msg + "\"}");
+}
+
+// v3.0 Quantum Endpoints
+void WebPortal::handleApiSpectrum() {
+    auto loads = RoamingEngine::instance().getChannelLoads();
+    int best = RoamingEngine::instance().getBestChannel();
+
+    JsonDocument doc;
+    JsonArray arr = doc["channels"].to<JsonArray>();
+    for (int i = 1; i <= 13; i++) {
+        JsonObject obj = arr.add<JsonObject>();
+        obj["channel"] = i;
+        obj["load"] = loads[i];
+    }
+    doc["best_channel"] = best;
+    doc["current_channel"] = RoamingEngine::instance().getCurrentChannel();
+
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+}
+
+void WebPortal::handleApiDnsStats() {
+    auto stats = DnsCache::instance().getStats();
+    JsonDocument doc;
+    doc["hits"] = stats.totalHits;
+    doc["misses"] = stats.totalMisses;
+    doc["active"] = stats.activeEntries;
+    doc["capacity"] = stats.capacity;
+    uint32_t total = stats.totalHits + stats.totalMisses;
+    doc["hit_rate"] = total > 0 ? (float)stats.totalHits * 100.0f / total : 0.0f;
+
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+}
+
+void WebPortal::handleApiDnsClear() {
+    DnsCache::instance().clear();
+    server.send(200, "application/json", "{\"status\":\"ok\",\"message\":\"DNS Cache flushed.\"}");
+}
+
+void WebPortal::handleApiClientsRename() {
+    if (!server.hasArg("plain")) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Missing payload\"}");
+        return;
+    }
+
+    JsonDocument doc;
+    if (deserializeJson(doc, server.arg("plain"))) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
+        return;
+    }
+
+    String mac = doc["mac"].as<String>();
+    String alias = doc["alias"].as<String>();
+    StorageManager::instance().setClientAlias(mac, alias);
+    server.send(200, "application/json", "{\"status\":\"ok\",\"message\":\"Alias updated.\"}");
+}
+
+void WebPortal::handleApiClientsKick() {
+    if (!server.hasArg("plain")) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Missing payload\"}");
+        return;
+    }
+
+    JsonDocument doc;
+    if (deserializeJson(doc, server.arg("plain"))) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Invalid JSON\"}");
+        return;
+    }
+
+    String macStr = doc["mac"].as<String>();
+    uint8_t mac[6];
+    if (sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+        uint16_t aid = 0;
+        if (esp_wifi_ap_get_sta_aid(mac, &aid) == ESP_OK) {
+            esp_wifi_deauth_sta(aid);
+            server.send(200, "application/json", "{\"status\":\"ok\",\"message\":\"Client disconnected.\"}");
+            return;
+        }
+    }
+    server.send(404, "application/json", "{\"status\":\"error\",\"message\":\"Client not found or already disconnected.\"}");
+}
+
+void WebPortal::handleApiSpeedtest() {
+    // Generate streaming dummy binary payload to benchmark SoftAP link throughput
+    size_t totalBytes = 1024 * 1024; // 1 Megabyte
+    server.setContentLength(totalBytes);
+    server.send(200, "application/octet-stream", "");
+
+    uint8_t chunk[2048];
+    memset(chunk, 0x5A, sizeof(chunk));
+    size_t sent = 0;
+    WiFiClient client = server.client();
+    while (sent < totalBytes && client.connected()) {
+        size_t toSend = (totalBytes - sent > sizeof(chunk)) ? sizeof(chunk) : (totalBytes - sent);
+        client.write(chunk, toSend);
+        sent += toSend;
+    }
 }
 
 void WebPortal::handleApiReboot() {

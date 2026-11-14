@@ -47,10 +47,11 @@ void StorageManager::loadDefaults(RepeaterSettings& s) {
     s.autoRoamEnabled = true;
     s.roamThresholdDbm = ROAM_RSSI_TRIGGER_DBM;
     s.roamHysteresisDbm = ROAM_HYSTERESIS_DELTA_DBM;
-    s.adBlockEnabled = true;
+    s.adBlockEnabled = false;
     s.adminPassword = "admin";
     s.clonedMac = "";
     s.adBlocksTotal = 0;
+    s.softApIpStr = "192.168.4.1";
 }
 
 std::vector<KnownNetwork> StorageManager::getKnownNetworks() {
@@ -227,6 +228,7 @@ RepeaterSettings StorageManager::getSettings() {
     s.adminPassword = prefs.getString("adm_pwd", s.adminPassword);
     s.clonedMac = prefs.getString("cloned_mac", "");
     s.adBlocksTotal = prefs.getUInt("ad_blocks_tot", 0);
+    s.softApIpStr = prefs.getString("ap_ip", "192.168.4.1");
     return s;
 }
 
@@ -245,6 +247,7 @@ bool StorageManager::saveSettings(const RepeaterSettings& s) {
     prefs.putString("adm_pwd", s.adminPassword);
     prefs.putString("cloned_mac", s.clonedMac);
     prefs.putUInt("ad_blocks_tot", s.adBlocksTotal);
+    prefs.putString("ap_ip", s.softApIpStr);
     return true;
 }
 
@@ -258,6 +261,58 @@ void StorageManager::setAdBlockEnabled(bool enabled) {
     auto s = getSettings();
     s.adBlockEnabled = enabled;
     saveSettings(s);
+}
+
+void StorageManager::setSoftApIp(const String& ipStr) {
+    auto s = getSettings();
+    s.softApIpStr = ipStr;
+    saveSettings(s);
+}
+
+String StorageManager::getClientAlias(const String& mac) {
+    String key = "al_" + mac;
+    key.replace(":", "");
+    if (key.length() > 15) key = key.substring(0, 15);
+    return prefs.getString(key.c_str(), "");
+}
+
+void StorageManager::setClientAlias(const String& mac, const String& alias) {
+    String key = "al_" + mac;
+    key.replace(":", "");
+    if (key.length() > 15) key = key.substring(0, 15);
+    if (alias.length() == 0) {
+        prefs.remove(key.c_str());
+    } else {
+        prefs.putString(key.c_str(), alias);
+    }
+}
+
+String StorageManager::getVendorName(const String& mac) {
+    if (mac.length() < 8) return "Unknown Device";
+    String prefix = mac.substring(0, 8);
+    prefix.toUpperCase();
+
+    // Check Randomized / Private MAC bit (b1 of first octet)
+    char c = mac.charAt(1);
+    if (c == '2' || c == '6' || c == 'A' || c == 'a' || c == 'E' || c == 'e') {
+        return "Mobile Device (Private MAC)";
+    }
+
+    if (prefix.startsWith("4C:C3") || prefix.startsWith("24:0A") || prefix.startsWith("30:AE") || 
+        prefix.startsWith("24:6F") || prefix.startsWith("3C:61") || prefix.startsWith("3C:71")) return "Espressif IoT";
+    if (prefix.startsWith("F0:18") || prefix.startsWith("F4:D4") || prefix.startsWith("AC:BC") ||
+        prefix.startsWith("BC:D0") || prefix.startsWith("7C:6D") || prefix.startsWith("3C:22")) return "Apple Device";
+    if (prefix.startsWith("00:12") || prefix.startsWith("00:16") || prefix.startsWith("28:02") ||
+        prefix.startsWith("34:23") || prefix.startsWith("78:40") || prefix.startsWith("58:C5")) return "Samsung Galaxy";
+    if (prefix.startsWith("00:13") || prefix.startsWith("00:15") || prefix.startsWith("48:51") ||
+        prefix.startsWith("68:05") || prefix.startsWith("A0:C5")) return "Intel Wi-Fi";
+    if (prefix.startsWith("54:60") || prefix.startsWith("F4:03") || prefix.startsWith("3C:5A")) return "Google Pixel";
+    if (prefix.startsWith("18:59") || prefix.startsWith("64:09") || prefix.startsWith("7C:49")) return "Xiaomi";
+    if (prefix.startsWith("50:C7") || prefix.startsWith("60:A4") || prefix.startsWith("E8:48")) return "TP-Link";
+    if (prefix.startsWith("70:9E") || prefix.startsWith("F8:46")) return "Sony PlayStation";
+    if (prefix.startsWith("28:18") || prefix.startsWith("DC:98")) return "Microsoft Xbox / PC";
+
+    return "Connected Client";
 }
 
 void StorageManager::incrementAdBlockCount() {

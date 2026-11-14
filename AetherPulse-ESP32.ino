@@ -4,6 +4,7 @@
 #include "roaming_engine.h"
 #include "web_portal.h"
 #include "cli_shell.h"
+#include "dns_cache.h"
 #include <esp_task_wdt.h>
 #include <ESPmDNS.h>
 
@@ -28,6 +29,9 @@ void setup() {
     StorageManager::instance().begin();
     auto settings = StorageManager::instance().getSettings();
 
+    // Initialize Sub-Millisecond SRAM DNS Cache
+    DnsCache::instance().init();
+
     // Initialize Hardware & Roaming Engine
     RoamingEngine::instance().init();
 
@@ -42,6 +46,12 @@ void setup() {
                               WiFi.localIP().toString().c_str(),
                               WiFi.gatewayIP().toString().c_str(),
                               WiFi.dnsIP().toString().c_str());
+                if (RoamingEngine::instance().isSubnetConflict(WiFi.localIP())) {
+                    Serial.println("[NET WARN] Subnet conflict detected (192.168.4.x)! Auto-shifting SoftAP to 192.168.5.1...");
+                    IPAddress alt_ip(192, 168, 5, 1);
+                    IPAddress alt_dns(8, 8, 8, 8);
+                    WiFi.AP.config(alt_ip, alt_ip, IPAddress(255, 255, 255, 0), IPAddress(192, 168, 5, 2), alt_dns);
+                }
                 NaptEngine::instance().enable(WiFi.localIP());
                 break;
             case ARDUINO_EVENT_WIFI_STA_LOST_IP:

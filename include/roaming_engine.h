@@ -72,6 +72,9 @@ public:
     void triggerRoamEvaluation();
     bool applyClonedMac(const String& macStr);
     void resetMac();
+    int getBestChannel();
+    std::vector<int> getChannelLoads();
+    bool isSubnetConflict(IPAddress staIp);
 
     // Queries
     bool isConnected() const;

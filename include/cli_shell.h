@@ -24,4 +24,8 @@ private:
     void handleAddKnown(const String& args);
     void handleDelKnown(const String& args);
     void handlePing(const String& args);
+    void printSpectrum();
+    void printDnsCache();
+    void handleKick(const String& args);
+    void handleRename(const String& args);
 };

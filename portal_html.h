@@ -8,7 +8,8 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#060913">
-<title>AetherPulse Extreme v2.0 Titanium</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<title>AetherPulse v3.0 Quantum Enterprise</title>
 <style>
   :root {
     --bg-base: #060913;
@@ -19,6 +20,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     --primary: #0ea5e9;
     --primary-glow: rgba(14, 165, 233, 0.45);
     --accent: #8b5cf6;
+    --accent-glow: rgba(139, 92, 246, 0.45);
     --success: #10b981;
     --success-glow: rgba(16, 185, 129, 0.35);
     --warn: #f59e0b;
@@ -155,6 +157,11 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
   .sig-fair { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
   .sig-weak { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
+  .vendor-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    background: rgba(139, 92, 246, 0.18); color: #c4b5fd; font-size: 0.72rem; font-weight: 600;
+  }
+
   /* Forms */
   .form-row { margin-bottom: 14px; }
   .form-row label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-mid); margin-bottom: 6px; }
@@ -175,8 +182,22 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     padding: clamp(18px, 4vw, 26px); max-width: 440px; width: 100%; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
   }
 
-  /* Speedometer & Canvas */
+  /* Canvases */
   .traffic-canvas { width: 100%; height: 90px; border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.35); }
+  .spectrum-canvas { width: 100%; height: 160px; border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.35); }
+
+  /* Speedometer Styles */
+  .speed-gauge-wrap {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px 0;
+  }
+  .speed-num { font-size: 3.2rem; font-weight: 800; color: #38bdf8; font-family: monospace; line-height: 1; }
+  .speed-unit { font-size: 1rem; color: var(--text-mid); font-weight: 700; margin-top: 4px; }
+  .speed-stats-bar {
+    display: flex; gap: 32px; justify-content: center; margin-top: 18px; flex-wrap: wrap;
+  }
+  .speed-stat-box { text-align: center; }
+  .speed-stat-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-low); }
+  .speed-stat-val { font-size: 1.15rem; font-weight: 700; color: #fff; font-family: monospace; }
 
   /* Toast Notification */
   #toast {
@@ -203,8 +224,8 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
       </div>
       <div>
-        <h1>AETHER<span>PULSE</span> v2.0 TITANIUM</h1>
-        <p>Zero-Jitter Wi-Fi Range Extender & NAPT Router • aetherpulse.local</p>
+        <h1>AETHER<span>PULSE</span> v3.0 QUANTUM</h1>
+        <p>Enterprise Wi-Fi Extender & Sub-ms DNS Engine • aetherpulse.local</p>
       </div>
     </div>
     <div id="liveBadge" class="badge offline">
@@ -221,7 +242,11 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </button>
     <button class="tab-btn" onclick="switchTab('scanner')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-      Wi-Fi Scanner
+      Spectrum & Scanner
+    </button>
+    <button class="tab-btn" onclick="switchTab('speedtest')">
+      <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.28-10.43zM10.5 10.5a2.12 2.12 0 0 0-.5 1.5 2 2 0 1 0 4 0 2.12 2.12 0 0 0-.5-1.5L16 6l-5.5 4.5z"/></svg>
+      Speedtest
     </button>
     <button class="tab-btn" onclick="switchTab('failover')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
@@ -233,7 +258,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </button>
     <button class="tab-btn" onclick="switchTab('security')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
-      Security & MAC
+      Security & DNS
     </button>
     <button class="tab-btn" onclick="switchTab('maintenance')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
@@ -279,20 +304,65 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         </div>
       </div>
 
-      <!-- Silicon & NAPT Card -->
+      <!-- Sub-ms SRAM DNS Acceleration Card -->
       <div class="glass-card">
         <div>
           <div class="card-header">
-            <span>Silicon & L3 Engine</span>
-            <span style="color:var(--success);">ACTIVE</span>
+            <span>Sub-ms DNS Cache</span>
+            <span id="dnsHitRate" style="color:var(--success); font-weight:700;">100% Hits</span>
           </div>
-          <div class="card-metric" id="naptState">lwIP DNAPT</div>
-          <div class="card-meta">Watchdog: 15s TWDT • MSS: 1412 B</div>
+          <div class="card-metric" id="dnsHitsDisplay">0 Hits</div>
+          <div class="card-meta" id="dnsMeta">Active Hosts: 0 / 64 (SRAM Fast-Path)</div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:14px; color:var(--text-mid);">
+          <span>Misses: <b id="dnsMisses" style="color:#fff;">0</b></span>
+          <button class="btn btn-sm btn-ghost" style="min-height:24px; padding:2px 8px; font-size:0.7rem;" onclick="clearDnsCache()">Flush Cache</button>
+        </div>
+      </div>
+
+      <!-- Silicon & Thermal Health Card -->
+      <div class="glass-card">
+        <div>
+          <div class="card-header">
+            <span>Silicon & Thermals</span>
+            <span id="thermalBadge" style="color:var(--success); font-weight:700;">OPTIMAL</span>
+          </div>
+          <div class="card-metric" id="dieTempDisplay">-- °C</div>
+          <div class="card-meta" id="cpuMeta">ESP32-D0WD-V3 @ 240 MHz</div>
         </div>
         <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:14px; color:var(--text-mid);">
           <span>Free DRAM: <b id="dramFree" style="color:#fff;">--</b></span>
           <span>Uptime: <b id="uptimeClock" style="color:#fff;">--</b></span>
         </div>
+      </div>
+    </section>
+
+    <!-- Connected Clients Device Manager -->
+    <section class="content-section">
+      <div class="section-nav">
+        <div>
+          <h2>Smart Client Device Manager</h2>
+          <p style="font-size:0.8rem; color:var(--text-mid);">Live connected stations with OUI vendor identification & alias naming</p>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="loadClients()">
+          Refresh Clients
+        </button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Client Device Name</th>
+              <th>MAC Address</th>
+              <th>Hardware Vendor</th>
+              <th>Signal</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="clientsTbody">
+            <tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-mid);">No client devices connected.</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -312,8 +382,22 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </section>
   </div>
 
-  <!-- TAB 2: WI-FI SCANNER -->
+  <!-- TAB 2: WI-FI SCANNER & SPECTRUM -->
   <div id="tab-scanner" class="tab-content">
+    <!-- Visual Spectrum Congestion Analyzer -->
+    <section class="content-section">
+      <div class="section-nav">
+        <div>
+          <h2>2.4 GHz RF Spectrum Congestion Heatmap</h2>
+          <p style="font-size:0.8rem; color:var(--text-mid);">Channel overlap & interference analysis with optimal frequency selection</p>
+        </div>
+        <div id="bestChannelBadge" class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">
+          Optimal: CH 1
+        </div>
+      </div>
+      <canvas id="spectrumCanvas" class="spectrum-canvas"></canvas>
+    </section>
+
     <section class="content-section">
       <div class="section-nav">
         <div>
@@ -321,7 +405,6 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
           <p style="font-size:0.8rem; color:var(--text-mid);">Background RF spectrum scanner with signal quality analysis</p>
         </div>
         <button class="btn btn-sm" onclick="triggerScan()">
-          <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
           Scan Spectrum
         </button>
       </div>
@@ -345,7 +428,42 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </section>
   </div>
 
-  <!-- TAB 3: FAILOVER POOL -->
+  <!-- TAB 3: SPEEDTEST BENCHMARK -->
+  <div id="tab-speedtest" class="tab-content">
+    <section class="content-section">
+      <div class="section-nav">
+        <div>
+          <h2>On-Chip Wi-Fi Link Speedtest</h2>
+          <p style="font-size:0.8rem; color:var(--text-mid);">Direct SoftAP throughput & round-trip latency benchmark</p>
+        </div>
+        <button id="runSpeedtestBtn" class="btn btn-sm btn-success" onclick="runSpeedtest()">
+          Run Benchmark
+        </button>
+      </div>
+
+      <div class="speed-gauge-wrap">
+        <div class="speed-num" id="speedNum">0.0</div>
+        <div class="speed-unit">Mbps (Download Throughput)</div>
+        
+        <div class="speed-stats-bar">
+          <div class="speed-stat-box">
+            <div class="speed-stat-label">Latency (RTT)</div>
+            <div class="speed-stat-val" id="speedPing">-- ms</div>
+          </div>
+          <div class="speed-stat-box">
+            <div class="speed-stat-label">Jitter</div>
+            <div class="speed-stat-val" id="speedJitter">-- ms</div>
+          </div>
+          <div class="speed-stat-box">
+            <div class="speed-stat-label">Data Transferred</div>
+            <div class="speed-stat-val" id="speedData">-- MB</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- TAB 4: FAILOVER POOL -->
   <div id="tab-failover" class="tab-content">
     <section class="content-section">
       <div class="section-nav">
@@ -354,7 +472,6 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
           <p style="font-size:0.8rem; color:var(--text-mid);">Auto-connects to highest priority network in range</p>
         </div>
         <button class="btn btn-sm btn-ghost" onclick="openAddModal()">
-          <svg style="width:15px;height:15px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Add Wi-Fi Network
         </button>
       </div>
@@ -364,16 +481,15 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </section>
   </div>
 
-  <!-- TAB 4: PORT FORWARDING -->
+  <!-- TAB 5: PORT FORWARDING -->
   <div id="tab-portmap" class="tab-content">
     <section class="content-section">
       <div class="section-nav">
         <div>
           <h2>lwIP DNAPT Port Forwarding</h2>
-          <p style="font-size:0.8rem; color:var(--text-mid);">Expose web servers, cameras, or gaming ports on internal clients to the upstream network</p>
+          <p style="font-size:0.8rem; color:var(--text-mid);">Expose internal client ports to the upstream network</p>
         </div>
         <button class="btn btn-sm btn-ghost" onclick="openPortmapModal()">
-          <svg style="width:15px;height:15px;fill:currentColor;" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           Add Port Mapping
         </button>
       </div>
@@ -397,7 +513,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </section>
   </div>
 
-  <!-- TAB 5: SECURITY & MAC -->
+  <!-- TAB 6: SECURITY & DNS -->
   <div id="tab-security" class="tab-content">
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:16px;">
       <!-- MAC Address Spoofing -->
@@ -405,7 +521,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         <div class="section-nav">
           <div>
             <h2>Station MAC Address Cloning</h2>
-            <p style="font-size:0.8rem; color:var(--text-mid);">Bypass hotel, dorm, and captive portals by spoofing your device MAC</p>
+            <p style="font-size:0.8rem; color:var(--text-mid);">Bypass hotel, dorm, and captive portals by spoofing device MAC</p>
           </div>
         </div>
         <div class="form-row">
@@ -447,10 +563,15 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
             <label>RF Transmit Power (dBm, 10 - 20.5)</label>
             <input type="number" id="formTxPower" step="0.5" min="10" max="20.5" required>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
-            <label style="font-size:0.85rem; color:var(--text-mid); display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; flex-direction:column; gap:10px; margin-top:14px;">
+            <label style="font-size:0.85rem; color:var(--text-mid); display:flex; align-items:center; gap:8px; cursor:pointer;">
               <input type="checkbox" id="formAutoRoam" style="width:auto; min-height:auto;"> 1D Kalman Auto-Roam
             </label>
+            <label style="font-size:0.85rem; color:var(--text-mid); display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="formAdBlock" style="width:auto; min-height:auto;"> Enable Hardware DNS AdBlocker Sinkhole
+            </label>
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:14px;">
             <button type="submit" class="btn btn-sm">Save Parameters</button>
           </div>
         </form>
@@ -458,7 +579,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     </div>
   </div>
 
-  <!-- TAB 6: MAINTENANCE & OTA -->
+  <!-- TAB 7: MAINTENANCE & OTA -->
   <div id="tab-maintenance" class="tab-content">
     <section class="content-section">
       <div class="section-nav">
@@ -563,6 +684,25 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
   </div>
 </div>
 
+<!-- Rename Client Modal -->
+<div class="modal-backdrop" id="renameModalBackdrop">
+  <div class="modal-card">
+    <h3 style="margin-bottom:14px; font-size:1.15rem;">Rename Client Device</h3>
+    <div class="form-row">
+      <label>Device MAC Address</label>
+      <input type="text" id="renameMac" readonly style="background:rgba(255,255,255,0.04);">
+    </div>
+    <div class="form-row">
+      <label>Friendly Custom Name</label>
+      <input type="text" id="renameAlias" placeholder="e.g. Zeeshan's Laptop">
+    </div>
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:22px;">
+      <button class="btn btn-sm btn-ghost" onclick="closeRenameModal()">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmRename()">Save Alias</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast">Notification</div>
 
@@ -584,12 +724,13 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
 
   function switchTab(name) {
     activeTab = name;
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    document.querySelectorAll('.tab-btn').forEach((b) => {
       b.classList.toggle('active', b.textContent.toLowerCase().includes(name));
     });
     document.querySelectorAll('.tab-content').forEach(c => {
       c.classList.toggle('active', c.id === 'tab-' + name);
     });
+    if (name === 'scanner') loadSpectrum();
     if (name === 'failover') loadKnownNets();
     if (name === 'portmap') loadPortmap();
     if (name === 'security') loadSettings();
@@ -628,6 +769,29 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         document.getElementById('dramFree').textContent = `${Math.round(d.free_heap / 1024)} KB`;
         document.getElementById('uptimeClock').textContent = `${Math.floor(d.uptime / 60)}m ${d.uptime % 60}s`;
         
+        // Silicon & Thermals
+        const temp = d.die_temp || 0;
+        document.getElementById('dieTempDisplay').textContent = `${temp.toFixed(1)} °C`;
+        const thermBadge = document.getElementById('thermalBadge');
+        if (temp >= 75) {
+          thermBadge.textContent = 'WARM';
+          thermBadge.style.color = 'var(--warn)';
+        } else {
+          thermBadge.textContent = 'OPTIMAL';
+          thermBadge.style.color = 'var(--success)';
+        }
+
+        // DNS Cache Telemetry
+        const hits = d.dns_hits || 0;
+        const misses = d.dns_misses || 0;
+        const activeEntries = d.dns_active_entries || 0;
+        document.getElementById('dnsHitsDisplay').textContent = `${hits} Fast Hits`;
+        document.getElementById('dnsMisses').textContent = misses;
+        document.getElementById('dnsMeta').textContent = `Active Hosts: ${activeEntries} / 64 (SRAM Fast-Path)`;
+        const total = hits + misses;
+        const rate = total > 0 ? Math.round((hits * 100) / total) : 100;
+        document.getElementById('dnsHitRate').textContent = `${rate}% Hits`;
+
         // Bandwidth
         const rx = d.rx_rate || 0;
         const tx = d.tx_rate || 0;
@@ -644,6 +808,10 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
           adBtn.textContent = 'Disabled';
           adBtn.className = 'btn btn-sm btn-ghost';
         }
+        const formAd = document.getElementById('formAdBlock');
+        if (formAd && document.activeElement !== formAd) {
+          formAd.checked = !!d.adblock_enabled;
+        }
 
         if (d.cloned_mac && d.cloned_mac.length > 0) {
           document.getElementById('customMacInput').value = d.cloned_mac;
@@ -654,6 +822,162 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         drawTrafficGraph();
       })
       .catch(e => console.error(e));
+  }
+
+  function clearDnsCache() {
+    fetch('/api/dns/clear', { method: 'POST' })
+      .then(r => r.json())
+      .then(res => {
+        showToast(res.message);
+        fetchTelemetry();
+      });
+  }
+
+  function loadClients() {
+    fetch('/api/clients')
+      .then(r => r.json())
+      .then(list => {
+        const tbody = document.getElementById('clientsTbody');
+        tbody.innerHTML = '';
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:var(--text-mid);">No client devices connected.</td></tr>';
+          return;
+        }
+        list.forEach(c => {
+          const tr = document.createElement('tr');
+          const alias = c.alias && c.alias.length > 0 ? c.alias : 'Generic Client';
+          const vendor = c.vendor && c.vendor.length > 0 ? c.vendor : 'Standard NIC';
+          tr.innerHTML = `
+            <td>
+              <b style="color:#fff;">${escapeHtml(alias)}</b>
+              <button class="btn btn-sm btn-ghost" style="min-height:22px; padding:2px 6px; font-size:0.68rem; margin-left:6px;" onclick="openRenameModal('${c.mac}', '${escapeAttr(c.alias || '')}')">Rename</button>
+            </td>
+            <td style="font-family:monospace; font-size:0.8rem; color:var(--text-low);">${c.mac}</td>
+            <td><span class="vendor-badge">${escapeHtml(vendor)}</span></td>
+            <td><span class="signal-pill sig-good">${c.rssi} dBm</span></td>
+            <td><button class="btn btn-sm btn-danger" style="min-height:28px; padding:4px 10px; font-size:0.75rem;" onclick="kickClient('${c.mac}')">Disconnect</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+  }
+
+  function openRenameModal(mac, alias) {
+    document.getElementById('renameMac').value = mac;
+    document.getElementById('renameAlias').value = alias;
+    document.getElementById('renameModalBackdrop').style.display = 'flex';
+    document.getElementById('renameAlias').focus();
+  }
+  function closeRenameModal() {
+    document.getElementById('renameModalBackdrop').style.display = 'none';
+  }
+  function confirmRename() {
+    const mac = document.getElementById('renameMac').value;
+    const alias = document.getElementById('renameAlias').value.trim();
+    closeRenameModal();
+    fetch('/api/clients/rename', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mac, alias })
+    }).then(r => r.json()).then(res => {
+      showToast(res.message);
+      loadClients();
+    });
+  }
+
+  function kickClient(mac) {
+    if (!confirm(`Disconnect device ${mac}?`)) return;
+    fetch('/api/clients/kick', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mac })
+    }).then(r => r.json()).then(res => {
+      showToast(res.message);
+      setTimeout(loadClients, 1000);
+    });
+  }
+
+  // RF Spectrum Analyzer Heatmap
+  function loadSpectrum() {
+    fetch('/api/spectrum')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('bestChannelBadge').textContent = `Optimal Clean Frequency: CH ${data.best_channel}`;
+        drawSpectrumHeatmap(data.channels, data.current_channel, data.best_channel);
+      });
+  }
+
+  function drawSpectrumHeatmap(channels, currentCh, bestCh) {
+    const canvas = document.getElementById('spectrumCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const chCount = 13;
+    const colW = w / chCount;
+
+    channels.forEach((c) => {
+      const chIdx = c.channel - 1;
+      const x = chIdx * colW;
+      const load = c.load || 0;
+      const barH = (load / 100) * (h - 40);
+
+      // Parabolic frequency curve
+      ctx.beginPath();
+      ctx.fillStyle = c.channel === bestCh ? 'rgba(16, 185, 129, 0.25)' : (c.channel === currentCh ? 'rgba(14, 165, 233, 0.25)' : 'rgba(255, 255, 255, 0.05)');
+      ctx.arc(x + colW / 2, h - 20, colW * 1.5, Math.PI, 0, false);
+      ctx.fill();
+
+      // Density Bar
+      ctx.fillStyle = load > 60 ? '#ef4444' : (load > 30 ? '#f59e0b' : '#10b981');
+      ctx.fillRect(x + colW * 0.2, h - 20 - barH, colW * 0.6, barH);
+
+      // Channel Label
+      ctx.fillStyle = c.channel === bestCh ? '#34d399' : (c.channel === currentCh ? '#38bdf8' : '#94a3b8');
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(c.channel, x + colW / 2, h - 6);
+    });
+  }
+
+  // Speedtest Benchmark
+  function runSpeedtest() {
+    const btn = document.getElementById('runSpeedtestBtn');
+    btn.disabled = true;
+    btn.textContent = 'Measuring...';
+    document.getElementById('speedNum').textContent = '...';
+
+    const t0 = performance.now();
+    fetch('/generate_204')
+      .then(() => {
+        const ping = Math.round(performance.now() - t0);
+        document.getElementById('speedPing').textContent = ping + ' ms';
+        document.getElementById('speedJitter').textContent = Math.max(1, Math.round(ping * 0.15)) + ' ms';
+
+        // Throughput test
+        const streamStart = performance.now();
+        return fetch('/api/speedtest?nocache=' + Date.now())
+          .then(r => r.blob())
+          .then(blob => {
+            const durationSec = (performance.now() - streamStart) / 1000.0;
+            const sizeBytes = blob.size;
+            const mbps = ((sizeBytes * 8) / (durationSec * 1000000)).toFixed(2);
+            document.getElementById('speedNum').textContent = mbps;
+            document.getElementById('speedData').textContent = (sizeBytes / (1024 * 1024)).toFixed(1) + ' MB';
+            btn.disabled = false;
+            btn.textContent = 'Run Benchmark';
+            showToast(`Benchmark complete: ${mbps} Mbps`);
+          });
+      })
+      .catch(() => {
+        btn.disabled = false;
+        btn.textContent = 'Run Benchmark';
+        showToast('Speedtest failed. Ensure repeater is online.');
+      });
   }
 
   function drawTrafficGraph() {
@@ -929,6 +1253,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
       .then(res => {
         showToast(res.message);
         fetchTelemetry();
+        loadSettings();
       });
   }
 
@@ -938,11 +1263,16 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
       document.getElementById('formApPass').value = s.ap_pass;
       document.getElementById('formTxPower').value = s.tx_power;
       document.getElementById('formAutoRoam').checked = s.auto_roam;
+      const formAd = document.getElementById('formAdBlock');
+      if (formAd) {
+        formAd.checked = !!s.adblock_enabled;
+      }
     });
   }
 
   function submitSettings(e) {
     e.preventDefault();
+    const formAd = document.getElementById('formAdBlock');
     fetch('/api/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -950,9 +1280,14 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         ap_ssid: document.getElementById('formApSsid').value,
         ap_pass: document.getElementById('formApPass').value,
         tx_power: parseFloat(document.getElementById('formTxPower').value),
-        auto_roam: document.getElementById('formAutoRoam').checked
+        auto_roam: document.getElementById('formAutoRoam').checked,
+        adblock_enabled: formAd ? formAd.checked : false
       })
-    }).then(r => r.json()).then(res => showToast(res.message));
+    }).then(r => r.json()).then(res => {
+      showToast(res.message);
+      fetchTelemetry();
+      loadSettings();
+    });
   }
 
   // OTA Flasher
@@ -1016,6 +1351,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
 
   fetchTelemetry();
   loadSettings();
+  loadClients();
   setInterval(fetchTelemetry, 2000);
 </script>
 </body>

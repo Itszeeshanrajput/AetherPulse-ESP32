@@ -3,6 +3,7 @@
 #include "napt_engine.h"
 #include "storage_manager.h"
 #include "web_portal.h"
+#include "dns_cache.h"
 #include <esp_wifi.h>
 #include <vector>
 
@@ -179,6 +180,22 @@ void CliShell::handleCommand(const String& raw) {
             Serial.printf("Total Blocked Queries:  %lu\n", (unsigned long)count);
             Serial.println("Use 'adblock on' or 'adblock off' to toggle.\n");
         }
+    } else if (cmd == "temp" || cmd == "temperature") {
+        float tempC = temperatureRead();
+        float tempF = (tempC * 1.8f) + 32.0f;
+        Serial.printf("\n[THERMAL] ESP32 Internal Die Temperature: %.1f °C / %.1f °F (%s)\n\n",
+                      tempC, tempF, tempC >= THERMAL_WARN_TEMP_C ? "WARNING: High Temperature" : "Optimal Range");
+    } else if (cmd == "spectrum" || cmd == "congestion") {
+        printSpectrum();
+    } else if (cmd == "dns_cache" || cmd == "dns") {
+        printDnsCache();
+    } else if (cmd == "clear_dns") {
+        DnsCache::instance().clear();
+        Serial.println("[CLI] Sub-Millisecond SRAM DNS Cache cleared.");
+    } else if (cmd == "kick") {
+        handleKick(args);
+    } else if (cmd == "rename") {
+        handleRename(args);
     } else if (cmd == "ping" || cmd == "test") {
         handlePing(args);
     } else if (cmd == "reboot") {
@@ -194,10 +211,16 @@ void CliShell::printHelp() {
     Serial.println("\nAVAILABLE SERIAL CLI COMMANDS:");
     Serial.println("  status                            - Display system health, Wi-Fi link, NAPT & memory");
     Serial.println("  scan                              - Trigger 2.4 GHz RF scan & display AP table");
+    Serial.println("  spectrum                          - Real-time 2.4 GHz spectrum congestion analysis");
+    Serial.println("  temp                              - Display on-chip internal die temperature");
+    Serial.println("  dns                               - Display sub-millisecond SRAM DNS cache stats & hosts");
+    Serial.println("  clear_dns                         - Flush DNS cache table");
     Serial.println("  connect <ssid> <pass>             - Manually connect to an upstream AP (use \"\" for spaces)");
     Serial.println("  disconnect                        - Drop upstream connection & return to standalone AP");
     Serial.println("  roam                              - Trigger immediate background multi-AP roam check");
-    Serial.println("  clients                           - List all active stations connected to the repeater SoftAP");
+    Serial.println("  clients                           - List active stations connected to repeater SoftAP");
+    Serial.println("  rename <mac> <alias>              - Assign friendly custom name to client device");
+    Serial.println("  kick <mac>                        - Disconnect / deauthenticate client station");
     Serial.println("  set_tx <dbm>                      - Calibrate RF output power (+10.0 to +20.5 dBm)");
     Serial.println("  list / saved                      - Display stored failover Wi-Fi network profiles");
     Serial.println("  add <ssid> <pass> [prio]          - Add or update a saved network (e.g. add \"HomeNetwork\" \"Pass\" 8)");
@@ -215,9 +238,12 @@ void CliShell::printStatus() {
     auto& roam = RoamingEngine::instance();
     auto& napt = NaptEngine::instance();
     auto settings = StorageManager::instance().getSettings();
+    auto dnsStats = DnsCache::instance().getStats();
 
     Serial.println("---------------- AETHERPULSE SYSTEM STATUS ----------------");
     Serial.printf("  Device:             ESP32-D0WD-V3 (Rev 3.1) @ %d MHz\n", ESP.getCpuFreqMHz());
+    Serial.printf("  Die Temperature:    %.1f °C (Thermal state: %s)\n", 
+                  temperatureRead(), temperatureRead() >= THERMAL_WARN_TEMP_C ? "HIGH" : "NORMAL");
     Serial.printf("  Free DRAM (Heap):   %d bytes (Min Free: %d bytes)\n", ESP.getFreeHeap(), ESP.getMinFreeHeap());
     Serial.printf("  Uptime:             %lu seconds\n", millis() / 1000);
     Serial.println("--- Upstream Station (STA) Link ---");
@@ -225,7 +251,7 @@ void CliShell::printStatus() {
     if (roam.isConnected()) {
         Serial.printf("  SSID:               %s\n", roam.getCurrentSsid().c_str());
         Serial.printf("  BSSID:              %s\n", roam.getCurrentBssid().c_str());
-        Serial.printf("  Channel:            %d\n", roam.getCurrentChannel());
+        Serial.printf("  Channel:            %d (Best Recommended: CH %d)\n", roam.getCurrentChannel(), roam.getBestChannel());
         Serial.printf("  Filtered RSSI:      %.1f dBm (Kalman Smoothed)\n", roam.getCurrentRssi());
         Serial.printf("  Assigned IP:        %s (GW: %s)\n", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
     }
@@ -234,9 +260,11 @@ void CliShell::printStatus() {
     Serial.printf("  SoftAP SSID:        %s\n", settings.apSSID.c_str());
     Serial.printf("  SoftAP IP:          %s (http://%s.local)\n", WiFi.softAPIP().toString().c_str(), MDNS_HOSTNAME);
     Serial.printf("  Connected Clients:  %d / %d\n", WiFi.softAPgetStationNum(), settings.apMaxClients);
-    Serial.println("--- L3 Routing & NAPT ---");
+    Serial.println("--- L3 Routing, NAPT & DNS Acceleration ---");
     Serial.printf("  lwIP DNAPT:         %s\n", napt.isEnabled() ? "ACTIVE" : "INACTIVE");
     Serial.printf("  Port Forward Rules: %d rules loaded\n", (int)StorageManager::instance().getPortForwards().size());
+    Serial.printf("  SRAM DNS Cache:     %lu Hits / %lu Misses (%lu Active Entries)\n",
+                  (unsigned long)dnsStats.totalHits, (unsigned long)dnsStats.totalMisses, (unsigned long)dnsStats.activeEntries);
     Serial.printf("  DNS AdBlocker:      %s (%lu blocked queries)\n", 
                   WebPortal::instance().isAdBlockActive() ? "ACTIVE" : "DISABLED", 
                   (unsigned long)StorageManager::instance().getAdBlockCount());
@@ -277,17 +305,21 @@ void CliShell::printClients() {
     wifi_sta_list_t sta_list;
     esp_wifi_ap_get_sta_list(&sta_list);
     Serial.printf("\nACTIVE CONNECTED REPEATER CLIENTS (%d connected):\n", sta_list.num);
-    Serial.println("+----+-------------------+---------+");
-    Serial.println("| #  | MAC ADDRESS       | RSSI    |");
-    Serial.println("+----+-------------------+---------+");
+    Serial.println("+----+-------------------+---------+----------------------+----------------------+");
+    Serial.println("| #  | MAC ADDRESS       | RSSI    | VENDOR               | ALIAS / NAME         |");
+    Serial.println("+----+-------------------+---------+----------------------+----------------------+");
     for (int i = 0; i < sta_list.num; i++) {
         wifi_sta_info_t sta = sta_list.sta[i];
         char mac_str[18];
         snprintf(mac_str, sizeof(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X",
                  sta.mac[0], sta.mac[1], sta.mac[2], sta.mac[3], sta.mac[4], sta.mac[5]);
-        Serial.printf("| %-2d | %-17s | %3d dBm |\n", i+1, mac_str, sta.rssi);
+        String alias = StorageManager::instance().getClientAlias(mac_str);
+        String vendor = StorageManager::instance().getVendorName(mac_str);
+        if (alias.length() == 0) alias = "-";
+        Serial.printf("| %-2d | %-17s | %3d dBm | %-20.20s | %-20.20s |\n", 
+                      i+1, mac_str, sta.rssi, vendor.c_str(), alias.c_str());
     }
-    Serial.println("+----+-------------------+---------+");
+    Serial.println("+----+-------------------+---------+----------------------+----------------------+\n");
 }
 
 void CliShell::handleConnect(const String& args) {
@@ -374,4 +406,89 @@ void CliShell::handlePing(const String& args) {
     } else {
         Serial.printf("  TCP Handshake:      FAILED (Host unreachable or port filtered)\n\n");
     }
+}
+
+void CliShell::printSpectrum() {
+    auto loads = RoamingEngine::instance().getChannelLoads();
+    int best = RoamingEngine::instance().getBestChannel();
+    int current = RoamingEngine::instance().getCurrentChannel();
+
+    Serial.println("\n2.4 GHz RF SPECTRUM CONGESTION ANALYSIS:");
+    Serial.println("+---------+----------------------+------+---------------------------+");
+    Serial.println("| CHANNEL | CONGESTION DENSITY   | LOAD | STATUS                    |");
+    Serial.println("+---------+----------------------+------+---------------------------+");
+    for (int ch = 1; ch <= 13; ch++) {
+        int bars = (loads[ch] * 20) / 100;
+        char barStr[25];
+        memset(barStr, ' ', 20);
+        for (int b = 0; b < bars && b < 20; b++) barStr[b] = '#';
+        barStr[20] = '\0';
+
+        String status = "";
+        if (ch == current) status += "[ACTIVE] ";
+        if (ch == best) status += "*RECOMMENDED OPTIMAL*";
+
+        Serial.printf("| CH %-4d | [%-20s] | %3d%% | %-25.25s |\n",
+                      ch, barStr, loads[ch], status.c_str());
+    }
+    Serial.println("+---------+----------------------+------+---------------------------+");
+    Serial.printf("Suggested Cleanest Frequency: Channel %d\n\n", best);
+}
+
+void CliShell::printDnsCache() {
+    auto stats = DnsCache::instance().getStats();
+    auto entries = DnsCache::instance().getEntries();
+    uint32_t total = stats.totalHits + stats.totalMisses;
+    float hitRate = total > 0 ? (float)stats.totalHits * 100.0f / total : 0.0f;
+
+    Serial.println("\n--- SUB-MILLISECOND SRAM DNS CACHE DAEMON ---");
+    Serial.printf("  Total Cache Hits:     %lu\n", (unsigned long)stats.totalHits);
+    Serial.printf("  Total Cache Misses:   %lu\n", (unsigned long)stats.totalMisses);
+    Serial.printf("  Cache Hit Ratio:      %.1f %%\n", hitRate);
+    Serial.printf("  Active Table Entries: %lu / %lu\n", (unsigned long)stats.activeEntries, (unsigned long)stats.capacity);
+
+    if (!entries.empty()) {
+        Serial.println("\n+--------------------------------+-----------------+----------+----------+");
+        Serial.println("| DOMAIN HOSTNAME                | RESOLVED IP     | TTL REM  | HITS     |");
+        Serial.println("+--------------------------------+-----------------+----------+----------+");
+        unsigned long now = millis();
+        for (const auto& e : entries) {
+            uint32_t remSec = (e.expireTimeMs > now) ? (e.expireTimeMs - now) / 1000 : 0;
+            Serial.printf("| %-30.30s | %-15s | %5lu s  | %-8lu |\n",
+                          e.domain.c_str(), e.ip.toString().c_str(), (unsigned long)remSec, (unsigned long)e.hits);
+        }
+        Serial.println("+--------------------------------+-----------------+----------+----------+\n");
+    } else {
+        Serial.println("  (DNS Cache is currently empty)\n");
+    }
+}
+
+void CliShell::handleKick(const String& args) {
+    auto tokens = tokenizeArgs(args);
+    if (tokens.empty()) {
+        Serial.println("Usage: kick <MAC_ADDRESS> (e.g. kick 12:34:56:78:9A:BC)");
+        return;
+    }
+    String macStr = tokens[0];
+    uint8_t mac[6];
+    if (sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+               &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+        uint16_t aid = 0;
+        if (esp_wifi_ap_get_sta_aid(mac, &aid) == ESP_OK) {
+            esp_wifi_deauth_sta(aid);
+            Serial.printf("[CLI] Station '%s' has been deauthenticated.\n", macStr.c_str());
+            return;
+        }
+    }
+    Serial.printf("[CLI] Could not find connected station with MAC '%s'.\n", macStr.c_str());
+}
+
+void CliShell::handleRename(const String& args) {
+    auto tokens = tokenizeArgs(args);
+    if (tokens.size() < 2) {
+        Serial.println("Usage: rename <MAC_ADDRESS> <ALIAS> (e.g. rename 12:34:56:78:9A:BC \"Living Room TV\")");
+        return;
+    }
+    StorageManager::instance().setClientAlias(tokens[0], tokens[1]);
+    Serial.printf("[CLI] Saved alias '%s' for MAC %s\n", tokens[1].c_str(), tokens[0].c_str());
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "config.h"
+#include "dns_cache.h"
 #include <WebServer.h>
 #include <DNSServer.h>
 #include <WiFiUdp.h>
@@ -20,11 +21,14 @@ public:
 private:
     WebPortal();
     WebServer server;
-    DNSServer dnsServer;
+    DNSServer* dnsServer;
     WiFiUDP dnsAdUdp;
     WiFiUDP dnsUpstreamUdp;
     bool dnsRunning;
     bool adBlockActive;
+
+    void startCaptiveDns();
+    void stopCaptiveDns();
 
     // Traffic telemetry tracking
     unsigned long lastRateCalcTime;
@@ -36,6 +40,7 @@ private:
     // Page handlers
     void handleRoot();
     void handleNotFound();
+    void handleManifest();
     
     // REST API endpoints
     void handleApiStatus();
@@ -58,7 +63,15 @@ private:
     void handleApiMacReset();
     void handleApiAdBlockToggle();
 
-    // DNS AdBlock sinkhole
+    // v3.0 Quantum Endpoints
+    void handleApiSpectrum();
+    void handleApiDnsStats();
+    void handleApiDnsClear();
+    void handleApiClientsRename();
+    void handleApiClientsKick();
+    void handleApiSpeedtest();
+
+    // High-performance Port 53 DNS AdBlock Sinkhole
     void processAdBlockDns();
 
     // Captive Portal Helper

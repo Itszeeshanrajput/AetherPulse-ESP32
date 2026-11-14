@@ -19,6 +19,11 @@ struct PortForwardRule {
     String description;
 };
 
+struct ClientAlias {
+    String mac;
+    String alias;
+};
+
 struct RepeaterSettings {
     String apSSID;
     String apPassword;
@@ -33,6 +38,7 @@ struct RepeaterSettings {
     String adminPassword;
     String clonedMac;        // Station MAC address spoofing
     uint32_t adBlocksTotal;  // Lifetime sinkholed ad/tracker queries
+    String softApIpStr;      // Current SoftAP Subnet IP (192.168.4.1 or 192.168.5.1)
 };
 
 class StorageManager {
@@ -59,6 +65,13 @@ public:
     bool saveSettings(const RepeaterSettings& settings);
     void setClonedMac(const String& mac);
     void setAdBlockEnabled(bool enabled);
+    void setSoftApIp(const String& ipStr);
+
+    // Client Device Aliases & OUI Vendor Detection
+    String getClientAlias(const String& mac);
+    void setClientAlias(const String& mac, const String& alias);
+    std::vector<ClientAlias> getAllClientAliases();
+    String getVendorName(const String& mac);
 
     // AdBlock Stats
     void incrementAdBlockCount();

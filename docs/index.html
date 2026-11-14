@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#060913">
-  <title>AetherPulse v2.0 Titanium — 1-Click ESP32 Web Installer | By Zeeshan Rajput</title>
-  <meta name="description" content="Official 1-Click Web Serial Installer for AetherPulse v2.0 Titanium. Ultra-low latency ESP32 Wi-Fi repeater, lwIP DNAPT router, MAC cloning & hardware DNS AdBlocker by Zeeshan Rajput.">
+  <title>AetherPulse v3.0 Quantum — 1-Click Multi-Build ESP32 Web Installer | By Zeeshan Rajput</title>
+  <meta name="description" content="Official 1-Click Multi-Version Web Serial Installer for AetherPulse ESP32 Wi-Fi repeater, lwIP DNAPT router, sub-ms DNS cache & RF congestion analyzer by Zeeshan Rajput.">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -193,7 +193,33 @@
       margin-bottom: 10px;
     }
     .flasher-box p.flasher-desc {
-      font-size: 0.95rem; color: var(--text-mid); max-width: 620px; margin-bottom: 24px;
+      font-size: 0.95rem; color: var(--text-mid); max-width: 620px; margin-bottom: 20px;
+    }
+
+    /* Multi-Version Selector Segmented Bar */
+    .version-selector-wrap {
+      display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 22px; width: 100%;
+    }
+    .version-selector-title {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; color: var(--text-mid);
+    }
+    .version-segmented-bar {
+      display: flex; gap: 8px; background: rgba(0, 0, 0, 0.45); padding: 5px;
+      border-radius: var(--radius-md); border: 1px solid var(--border); flex-wrap: wrap; justify-content: center;
+    }
+    .version-pill-btn {
+      padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; border: none; background: transparent; color: var(--text-mid);
+      transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .version-pill-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+    .version-pill-btn.active {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9); color: white;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+    .version-pill-badge {
+      font-size: 0.68rem; padding: 2px 6px; border-radius: 999px;
+      background: rgba(255, 255, 255, 0.2); color: #fff; font-weight: 800;
     }
 
     /* ESP Web Tools Button Styling */
@@ -227,6 +253,7 @@
       padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;
       background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border);
       color: var(--text-high); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+      text-decoration: none;
     }
     .btn-alt:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
 
@@ -250,238 +277,143 @@
       cursor: pointer; flex-shrink: 0;
     }
 
-    /* 4-Step Onboarding Grid */
-    .section-title {
-      font-size: clamp(1.4rem, 3vw, 1.85rem); font-weight: 800; letter-spacing: -0.5px;
-      text-align: center; margin-bottom: 6px;
-    }
-    .section-desc {
-      font-size: 0.9rem; color: var(--text-mid); text-align: center; max-width: 600px; margin: 0 auto 28px;
-    }
-
+    /* Steps & Grid */
+    .section-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; text-align: center; margin-bottom: 6px; }
+    .section-desc { font-size: 0.9rem; color: var(--text-mid); text-align: center; margin-bottom: 24px; }
+    
     .steps-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;
     }
     .step-card {
-      background: var(--bg-surface); backdrop-filter: blur(16px);
-      border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 24px; display: flex; flex-direction: column; gap: 10px;
-      position: relative; transition: all 0.25s;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 20px; display: flex; flex-direction: column; gap: 10px;
     }
-    .step-card:hover { transform: translateY(-3px); border-color: rgba(14, 165, 233, 0.4); }
     .step-num {
-      width: 32px; height: 32px; border-radius: 999px;
-      background: rgba(14, 165, 233, 0.15); color: var(--primary);
-      font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px; background: rgba(14, 165, 233, 0.15);
+      color: var(--primary); font-weight: 800; display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-family: monospace;
     }
-    .step-heading { font-size: 1.05rem; font-weight: 700; }
-    .step-text { font-size: 0.83rem; color: var(--text-mid); line-height: 1.45; }
+    .step-heading { font-weight: 700; font-size: 0.95rem; }
+    .step-text { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; }
 
-    /* Hardware Compatibility Selector */
-    .compat-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;
+    /* Matrix & Comparison */
+    .matrix-card {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: 24px; overflow-x: auto;
     }
-    .board-card {
-      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
-      padding: 18px 20px; display: flex; align-items: center; gap: 14px;
-      transition: all 0.2s;
-    }
-    .board-card:hover { border-color: var(--primary); background: rgba(30, 41, 59, 0.8); }
-    .board-icon {
-      width: 44px; height: 44px; border-radius: 12px; background: rgba(14, 165, 233, 0.12);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .board-icon svg { width: 22px; height: 22px; fill: var(--primary); }
-    .board-name { font-weight: 700; font-size: 0.95rem; }
-    .board-detail { font-size: 0.78rem; color: var(--text-mid); }
-    .status-check {
-      margin-left: auto; font-size: 0.75rem; font-weight: 800; color: var(--success);
-      display: inline-flex; align-items: center; gap: 4px;
-    }
+    .matrix-table { width: 100%; border-collapse: collapse; min-width: 580px; }
+    .matrix-table th { padding: 12px; font-size: 0.78rem; text-transform: uppercase; color: var(--text-low); border-bottom: 1px solid var(--border); text-align: left; }
+    .matrix-table td { padding: 12px; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    .check-yes { color: var(--success); font-weight: 700; }
+    .check-no { color: var(--text-low); }
 
-    /* Features Grid */
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px;
+    /* Interactive Simulator */
+    .cli-sim-card {
+      background: #020617; border: 1px solid rgba(56, 189, 248, 0.2); border-radius: var(--radius-lg);
+      padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
     }
-    .feature-card {
-      background: var(--bg-surface); backdrop-filter: blur(16px);
-      border: 1px solid var(--border); border-radius: var(--radius-lg);
-      padding: 24px; display: flex; flex-direction: column; gap: 10px;
-      transition: all 0.25s;
-    }
-    .feature-card:hover { transform: translateY(-3px); border-color: rgba(139, 92, 246, 0.4); }
-    .feature-icon-box {
-      width: 46px; height: 46px; border-radius: var(--radius-md);
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(139, 92, 246, 0.18));
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-    }
-    .feature-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
-    .feature-desc { font-size: 0.84rem; color: var(--text-mid); line-height: 1.5; }
-
-    /* Benchmark Matrix */
-    .bench-card {
-      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xl);
-      padding: clamp(20px, 4vw, 32px); overflow-x: auto;
-    }
-    table.bench-table {
-      width: 100%; border-collapse: collapse; min-width: 580px; text-align: left;
-    }
-    .bench-table th {
-      padding: 12px 14px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-low); border-bottom: 1px solid var(--border);
-    }
-    .bench-table td {
-      padding: 14px 14px; font-size: 0.86rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .bench-table tr:hover { background: rgba(255, 255, 255, 0.02); }
-    .val-lead {
-      color: #38bdf8; font-weight: 800; font-family: 'JetBrains Mono', monospace;
-    }
-    .val-generic {
-      color: var(--text-low); font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* CLI Simulator Box */
-    .cli-box {
-      background: #020617; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg);
-      padding: 22px; font-family: 'JetBrains Mono', monospace;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
-    }
-    .cli-header {
-      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    }
+    .cli-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px; margin-bottom: 14px; }
     .cli-dots { display: flex; gap: 6px; }
-    .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-red { background: #ef4444; } .dot-yellow { background: #f59e0b; } .dot-green { background: #10b981; }
-    
-    .cli-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-    .cli-pill-btn {
-      padding: 5px 12px; border-radius: 6px; font-size: 0.76rem; font-weight: 700;
-      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border);
-      color: #38bdf8; cursor: pointer; transition: all 0.2s;
-    }
-    .cli-pill-btn:hover { background: var(--primary); color: #fff; }
-
-    .cli-output {
-      font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; white-space: pre-wrap;
-      min-height: 180px; max-height: 320px; overflow-y: auto;
-    }
-
-    /* Author Branding & Signature Card */
-    .author-card {
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(139, 92, 246, 0.12));
-      border: 1px solid rgba(14, 165, 233, 0.3); border-radius: var(--radius-xl);
-      padding: clamp(24px, 4vw, 36px); display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 20px;
-    }
-    .author-info { display: flex; align-items: center; gap: 18px; }
-    .author-avatar-large {
-      width: 64px; height: 64px; border-radius: var(--radius-md);
-      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.8rem; font-weight: 900; color: #fff;
-      box-shadow: 0 0 25px var(--primary-glow);
-    }
-    .author-name { font-size: 1.3rem; font-weight: 800; }
-    .author-title { font-size: 0.85rem; color: var(--text-mid); }
-    .author-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ef4444; } .dot.y { background: #f59e0b; } .dot.g { background: #10b981; }
 
     /* Footer */
     footer {
-      border-top: 1px solid var(--border); padding-top: 24px;
-      text-align: center; font-size: 0.84rem; color: var(--text-mid);
-      display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;
+      border-top: 1px solid var(--border); padding: 32px 0 16px; text-align: center;
+      width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px;
     }
-    footer a { color: var(--primary); text-decoration: none; font-weight: 600; }
-    footer a:hover { text-decoration: underline; }
-
-    @media (max-width: 640px) {
-      .top-nav { border-radius: var(--radius-md); padding: 12px 16px; }
-      .nav-links { display: none; }
-      .flasher-box { padding: 24px 16px; }
-      .btn-install { width: 100%; justify-content: center; padding: 16px 20px; }
-      .author-card { flex-direction: column; align-items: flex-start; }
-    }
+    .footer-text { font-size: 0.82rem; color: var(--text-mid); }
+    .footer-author { color: #38bdf8; font-weight: 700; }
   </style>
 </head>
 <body>
-
-  <!-- Ambient Glowing Aura -->
+  <!-- Ambient background glow -->
   <div class="ambient-glow-1"></div>
   <div class="ambient-glow-2"></div>
-
-  <!-- Interactive Cyber Canvas -->
   <canvas id="cyberCanvas"></canvas>
 
   <div class="app-wrapper">
-
-    <!-- Top Navigation Bar -->
+    <!-- Top Nav -->
     <header class="top-nav">
       <a href="#" class="nav-brand">
         <div class="nav-logo">
           <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
         </div>
         <div>
-          <div class="nav-title">AETHER<span>PULSE</span> TITANIUM</div>
-          <div class="nav-creator">By <strong>Zeeshan Rajput</strong> • v2.0</div>
+          <div class="nav-title">AetherPulse <span>Enterprise</span></div>
+          <div class="nav-creator">By <strong>Zeeshan Rajput</strong></div>
         </div>
       </a>
       <div class="nav-links">
-        <a href="#flasher" class="nav-link">Web Installer</a>
-        <a href="#features" class="nav-link">Innovations</a>
-        <a href="#compat" class="nav-link">Hardware</a>
-        <a href="#benchmark" class="nav-link">Benchmarks</a>
-        <a href="#cli" class="nav-link">Serial CLI</a>
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank" class="nav-btn-gh">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#versions" class="nav-link">Versions</a>
+        <a href="#cli-sim" class="nav-link">CLI Shell</a>
+        <a href="https://github.com/Zeeshan-Rajput/AetherPulse-ESP32" target="_blank" class="nav-btn-gh">
           <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          Star Project
+          GitHub
         </a>
       </div>
     </header>
 
-    <!-- Hero Branding Section -->
+    <!-- Hero Section -->
     <section class="hero">
       <div class="creator-pill">
         <span class="creator-avatar">ZR</span>
-        Architected &amp; Engineered by Zeeshan Rajput • v2.0 Titanium
+        <span>Architected &amp; Engineered by Zeeshan Rajput</span>
       </div>
+
       <h1 class="hero-title">
-        The World's Fastest ESP32 Wi-Fi Range Extender &amp; <span class="gradient-text">Hardware Security Router</span>
+        The Ultimate <span class="gradient-text">Zero-Jitter Wi-Fi Repeater</span> &amp; DNS Accelerator for ESP32
       </h1>
+
       <p class="hero-subtitle">
-        Zero-jitter dual-radio forwarding with native lwIP DNAPT, Station MAC cloning to bypass captive portals, hardware DNS AdBlocker sinkhole, 15s Task Watchdog, and web-based OTA updates.
+        Zero external drivers. Zero LCD overhead. Full lwIP DNAPT routing with sub-millisecond on-chip DNS cache, RF spectrum congestion heatmap, and 1-click Web Serial flasher.
       </p>
+
       <div class="badge-bar">
-        <span class="feature-tag highlight">⚡ 100% Zero Modem-Sleep Jitter</span>
-        <span class="feature-tag">🔀 lwIP DNAPT Port Forwarding</span>
-        <span class="feature-tag">🛡️ Hotel/Dorm MAC Spoofing</span>
-        <span class="feature-tag">🚫 Hardware DNS AdBlocker</span>
-        <span class="feature-tag">🌐 mDNS aetherpulse.local</span>
-        <span class="feature-tag highlight">🚀 30s WebSerial Flasher</span>
+        <span class="feature-tag highlight">⚡ Sub-ms DNS Cache</span>
+        <span class="feature-tag">📶 RF Congestion Analyzer</span>
+        <span class="feature-tag">🚀 lwIP DNAPT Routing</span>
+        <span class="feature-tag">🛡️ Hardware AdBlocker</span>
+        <span class="feature-tag">🏷️ OUI Vendor Identification</span>
+        <span class="feature-tag">📱 Native PWA App</span>
       </div>
     </section>
 
-    <!-- Main Flasher Hero Card -->
-    <section id="flasher" class="flasher-box">
-      <div class="status-pulse-bar">
+    <!-- 1-Click Flasher Hero Card with Multi-Build Selector -->
+    <section class="flasher-box" id="flasher">
+      <div class="status-pulse-bar" id="versionStatusBar">
         <span class="pulse-dot"></span>
-        Official Production Build • v2.0.0 Titanium • Clean Credential Isolation
+        <span id="versionStatusText">Production Build • v3.0.0 Quantum Enterprise • Recommended</span>
       </div>
 
       <h2>1-Click Web Serial Installer</h2>
       <p class="flasher-desc">
-        Connect your ESP32 board to your computer via USB (Google Chrome, Microsoft Edge, Brave, or Opera required). Click the button below to automatically erase and flash the latest high-performance firmware with zero drivers needed.
+        Connect your ESP32 board via USB (Chrome, Edge, Brave, or Opera). Select your desired firmware release below and flash with zero command line needed.
       </p>
 
-      <!-- WebSerial Install Button -->
-      <div class="install-wrapper">
-        <esp-web-install-button manifest="manifest.json">
-          <button slot="activate" class="btn-install">
+      <!-- Multi-Version Segmented Selector -->
+      <div class="version-selector-wrap" id="versions">
+        <span class="version-selector-title">Select Firmware Build to Flash:</span>
+        <div class="version-segmented-bar">
+          <button class="version-pill-btn active" id="btnVer3" onclick="selectVersion('v3')">
+            🚀 v3.0.0 Quantum <span class="version-pill-badge">LATEST</span>
+          </button>
+          <button class="version-pill-btn" id="btnVer2" onclick="selectVersion('v2')">
+            ⚡ v2.0.0 Titanium <span class="version-pill-badge" style="background:rgba(14,165,233,0.3);">STABLE</span>
+          </button>
+          <button class="version-pill-btn" id="btnVer1" onclick="selectVersion('v1')">
+            🛡️ v1.0.0 Baseline <span class="version-pill-badge" style="background:rgba(255,255,255,0.15);">LEGACY</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- WebSerial Install Button Container -->
+      <div class="install-wrapper" id="installWrapper">
+        <esp-web-install-button id="webInstallBtn" manifest="manifest.json">
+          <button slot="activate" class="btn-install" id="activateBtn">
             <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-            ⚡ Flash AetherPulse v2.0 Titanium
+            <span id="activateBtnText">⚡ Flash AetherPulse v3.0.0 Quantum</span>
           </button>
           <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
             ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
@@ -508,9 +440,9 @@
 
       <!-- CLI Panel -->
       <div id="cliPanel" class="dropdown-panel">
-        <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:8px; font-weight:600;">Run via Python esptool (1-Line 4MB Full Flash):</p>
+        <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:8px; font-weight:600;">Run via Python esptool for active version:</p>
         <div class="cli-code-box">
-          <span id="esptoolCmd">esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 aetherpulse-esp32-v2.0.0-full.bin</span>
+          <span id="esptoolCmd">esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 firmware.bin</span>
           <button class="btn-copy" onclick="copyCliText('esptoolCmd')">Copy</button>
         </div>
       </div>
@@ -519,15 +451,103 @@
       <div id="downloadPanel" class="dropdown-panel">
         <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:10px; font-weight:600;">Download Official Production Binaries:</p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-          <a href="aetherpulse-esp32-v2.0.0-full.bin" download class="btn-alt" style="justify-content:center;">📦 4MB Full Factory Image (0x0)</a>
-          <a href="firmware.bin" download class="btn-alt" style="justify-content:center;">⚡ App Firmware (OTA / 0x10000)</a>
+          <a href="firmware.bin" download class="btn-alt" style="justify-content:center;">🚀 v3.0 Quantum App (0x10000)</a>
+          <a href="AetherPulse-ESP32-v3.0.0-Quantum.merged.bin" download class="btn-alt" style="justify-content:center;">📦 v3.0 Full 4MB Image (0x0)</a>
+          <a href="AetherPulse-ESP32-v2.0.0-Titanium.bin" download class="btn-alt" style="justify-content:center;">⚡ v2.0 Titanium App (0x10000)</a>
+          <a href="aetherpulse-esp32-v2.0.0-full.bin" download class="btn-alt" style="justify-content:center;">📦 v2.0 Full 4MB Image (0x0)</a>
+          <a href="aetherpulse-esp32-full.bin" download class="btn-alt" style="justify-content:center;">🛡️ v1.0 Baseline App (0x10000)</a>
           <a href="bootloader.bin" download class="btn-alt" style="justify-content:center;">🔧 Bootloader (0x1000)</a>
           <a href="partitions.bin" download class="btn-alt" style="justify-content:center;">📑 Partition Table (0x8000)</a>
         </div>
       </div>
     </section>
 
-    <!-- 4-Step Visual Onboarding Flow -->
+    <!-- Version Feature Matrix -->
+    <section class="matrix-card" id="features">
+      <h2 class="section-title">Edition Comparison Matrix</h2>
+      <p class="section-desc">Choose the exact build that matches your networking environment.</p>
+
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Architecture &amp; Features</th>
+            <th>v1.0.0 Baseline</th>
+            <th>v2.0.0 Titanium</th>
+            <th style="color:#38bdf8;">v3.0.0 Quantum Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Dual AP+STA Wi-Fi Architecture</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+          </tr>
+          <tr>
+            <td>lwIP DNAPT L3 Direct Routing</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+          </tr>
+          <tr>
+            <td>Port Forwarding (NAT Virtual Servers)</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+          </tr>
+          <tr>
+            <td>Station MAC Spoofing &amp; Hotel Bypass</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+          </tr>
+          <tr>
+            <td>Hardware DNS Sinkhole (AdBlock)</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Supported</td>
+            <td class="check-yes">✓ Supported</td>
+          </tr>
+          <tr>
+            <td>Sub-ms SRAM DNS Cache Acceleration</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ &lt; 0.8 ms Latency</td>
+          </tr>
+          <tr>
+            <td>Visual 2.4 GHz Spectrum Heatmap</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ HTML5 Parabolic Canvas</td>
+          </tr>
+          <tr>
+            <td>Smart Client OUI Vendor Aliasing</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Apple, Intel, Samsung + Aliases</td>
+          </tr>
+          <tr>
+            <td>On-Chip Speedtest &amp; Latency Gauge</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Real-Time SoftAP Benchmark</td>
+          </tr>
+          <tr>
+            <td>Die Temperature &amp; Thermal Guard</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ On-chip Sensor Readout</td>
+          </tr>
+          <tr>
+            <td>Native PWA Mobile Installation</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ 1-Click App Icon</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 4-Step Setup Flow -->
     <section>
       <h2 class="section-title">Seamless 4-Step Setup Flow</h2>
       <p class="section-desc">Get your smart range extender up and running in under 60 seconds.</p>
@@ -540,13 +560,13 @@
         </div>
         <div class="step-card">
           <div class="step-num">02</div>
-          <div class="step-heading">Click 1-Click Flash</div>
-          <div class="step-text">Click the install button above and pick your serial port (CP2102, CH340, or ESP USB-JTAG) in the browser prompt.</div>
+          <div class="step-heading">Select Version &amp; Flash</div>
+          <div class="step-text">Pick your desired version tab above, click Install, and choose your serial port in the browser prompt.</div>
         </div>
         <div class="step-card">
           <div class="step-num">03</div>
           <div class="step-heading">Automatic Deployment</div>
-          <div class="step-text">The WebSerial flasher automatically flashes the 4MB production firmware at 921600 baud in ~25 seconds.</div>
+          <div class="step-text">The WebSerial flasher automatically flashes the production firmware at 921600 baud in ~25 seconds.</div>
         </div>
         <div class="step-card">
           <div class="step-num">04</div>
@@ -556,355 +576,248 @@
       </div>
     </section>
 
-    <!-- Hardware Compatibility Grid -->
-    <section id="compat">
-      <h2 class="section-title">100% Silicon Compatibility</h2>
-      <p class="section-desc">Tested and verified directly on physical silicon by Zeeshan Rajput.</p>
-      
-      <div class="compat-grid">
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">ESP32-WROOM-32</div>
-            <div class="board-detail">Standard 30 &amp; 38-pin DevKits</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
+    <!-- Interactive Serial CLI Simulation -->
+    <section id="cli-sim">
+      <h2 class="section-title">Interactive Serial CLI Shell</h2>
+      <p class="section-desc">Experience the responsive built-in UART shell directly from this simulated console.</p>
 
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">ESP32-D0WD-V3 (Rev 3.1)</div>
-            <div class="board-detail">Official Silicon Reference Target</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
-
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">CYD (Cheap Yellow Display)</div>
-            <div class="board-detail">ESP32-2432S028R (Backlight Auto-Off)</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
-
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">NodeMCU-32S / DevKitC</div>
-            <div class="board-detail">Dual Core 240MHz Xtensa LX6</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
-
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">ESP32-WROVER / PSRAM</div>
-            <div class="board-detail">4MB / 8MB / 16MB SPI Flash</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
-
-        <div class="board-card">
-          <div class="board-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4zm2 2v8h12V8z"/></svg></div>
-          <div>
-            <div class="board-name">TTGO T-Display / T-Beam</div>
-            <div class="board-detail">Portable Wi-Fi repeating stations</div>
-          </div>
-          <span class="status-check">✓ Verified</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- Titanium Architecture Innovations Grid -->
-    <section id="features">
-      <h2 class="section-title">Titanium v2.0 Architectural Innovations</h2>
-      <p class="section-desc">Engineering breakthroughs that outperform standard micro-routers.</p>
-      
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon-box">🔀</div>
-          <div class="feature-title">lwIP DNAPT Port Forwarding</div>
-          <div class="feature-desc">Expose web dashboards, IP security cameras, or gaming servers on your local repeater network to the upstream network with zero CPU overhead using native Layer 3/4 translation.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">🛡️</div>
-          <div class="feature-title">Station MAC Address Cloning</div>
-          <div class="feature-desc">Authenticate your smartphone or laptop on hotel, university, or airport captive portals, then clone its MAC to the ESP32 to immediately share the authenticated internet connection with all your devices.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">🚫</div>
-          <div class="feature-title">Hardware DNS AdBlocker Sinkhole</div>
-          <div class="feature-desc">Hardware UDP port 53 DNS sinkhole immediately returns 0.0.0.0 for known tracking and ad networks (DoubleClick, Google Analytics, Telemetry) with real-time blocked counter telemetry.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">🎯</div>
-          <div class="feature-title">1D Kalman Filter RSSI Smoothing</div>
-          <div class="feature-desc">Eliminates ping oscillation caused by 2.4 GHz multipath signal reflection using discrete state estimation (Q=0.008, R=4.50), preventing false roams and packet jitter.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">⚡</div>
-          <div class="feature-title">Zero-Jitter WIFI_PS_NONE Lock</div>
-          <div class="feature-desc">Completely disables 802.11 modem sleep. The ESP32 radio never enters sleep states, eliminating the 20–100ms latency spikes typical of stock repeaters.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">⏱️</div>
-          <div class="feature-title">15s Hardware Task Watchdog (TWDT)</div>
-          <div class="feature-desc">Integrated ESP-IDF hardware watchdog timer. If an unrecoverable network stall or thread lock occurs, the silicon initiates an automatic clean recovery reboot within 15 seconds.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">🌐</div>
-          <div class="feature-title">Zero-DNS mDNS Resolution</div>
-          <div class="feature-desc">Access your repeater management dashboard at <code>http://aetherpulse.local</code> on iOS, macOS, Windows, Android, and Linux without ever having to remember or lookup IP addresses.</div>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-box">📱</div>
-          <div class="feature-title">Mobile Glassmorphism Web App</div>
-          <div class="feature-desc">Ultra-responsive multi-tab dashboard embedded directly on chip. Features real-time SVG throughput graphs, priority network failover pools, and drag-and-drop OTA updates.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Performance Benchmarks -->
-    <section id="benchmark">
-      <h2 class="section-title">Head-to-Head Performance Benchmark</h2>
-      <p class="section-desc">AetherPulse Titanium vs Ordinary ESP32 Wi-Fi Repeaters.</p>
-
-      <div class="bench-card">
-        <table class="bench-table">
-          <thead>
-            <tr>
-              <th>Performance Metric</th>
-              <th>Ordinary ESP32 Repeater</th>
-              <th>AetherPulse v2.0 Titanium</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><b>Minimum Ping Latency</b></td>
-              <td class="val-generic">45 ms - 120 ms (Modem Sleep Jitter)</td>
-              <td class="val-lead">⚡ 1.8 ms - 3.5 ms (WIFI_PS_NONE Locked)</td>
-            </tr>
-            <tr>
-              <td><b>NAPT Active Flow Table</b></td>
-              <td class="val-generic">32 - 64 Concurrent Flows</td>
-              <td class="val-lead">🚀 1,024 High-Capacity Flows</td>
-            </tr>
-            <tr>
-              <td><b>Channel Jump Handling</b></td>
-              <td class="val-generic">SoftAP Drops All Connected Clients</td>
-              <td class="val-lead">✓ Pre-Aligned Channel Lock (Zero Drops)</td>
-            </tr>
-            <tr>
-              <td><b>DNAPT Port Forwarding</b></td>
-              <td class="val-generic">❌ Unsupported</td>
-              <td class="val-lead">✓ Native lwIP Layer 3/4 Mapping (TCP/UDP)</td>
-            </tr>
-            <tr>
-              <td><b>Captive Portal MAC Bypass</b></td>
-              <td class="val-generic">❌ Blocked by Portals</td>
-              <td class="val-lead">✓ Hardware MAC Spoofing Engine</td>
-            </tr>
-            <tr>
-              <td><b>DNS Ad &amp; Tracker Sinkhole</b></td>
-              <td class="val-generic">❌ None</td>
-              <td class="val-lead">✓ Integrated UDP Port 53 Sinkhole (0.0.0.0)</td>
-            </tr>
-            <tr>
-              <td><b>Crash Recovery Protection</b></td>
-              <td class="val-generic">❌ Board Freezes / Requires Power Cycle</td>
-              <td class="val-lead">✓ 15s Hardware Task Watchdog (TWDT)</td>
-            </tr>
-            <tr>
-              <td><b>Web User Interface</b></td>
-              <td class="val-generic">Basic 2005 HTML Text Forms</td>
-              <td class="val-lead">💎 2026 Glassmorphism Web App with SVG Waveform</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Interactive Serial CLI Simulator -->
-    <section id="cli">
-      <h2 class="section-title">Interactive Serial Shell Simulator</h2>
-      <p class="section-desc">Try real CLI commands below to see what AetherPulse Titanium outputs over 115200 baud USB serial.</p>
-
-      <div class="cli-box">
-        <div class="cli-header">
+      <div class="cli-sim-card">
+        <div class="cli-bar">
           <div class="cli-dots">
-            <span class="cli-dot dot-red"></span>
-            <span class="cli-dot dot-yellow"></span>
-            <span class="cli-dot dot-green"></span>
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
           </div>
-          <span style="font-size:0.75rem; color:var(--text-mid);">AetherPulse Extreme Serial Shell • 115200 Baud</span>
+          <div style="font-size:0.75rem; color:var(--text-mid);">aetherpulse-shell • 115200 baud</div>
         </div>
+        <pre id="cliOutput" style="color:#f8fafc; line-height:1.6; white-space:pre-wrap; min-height:180px;">aetherpulse> status
 
-        <div class="cli-pills">
-          <button class="cli-pill-btn" onclick="simulateCli('status')">status</button>
-          <button class="cli-pill-btn" onclick="simulateCli('mac')">mac</button>
-          <button class="cli-pill-btn" onclick="simulateCli('portmap')">portmap</button>
-          <button class="cli-pill-btn" onclick="simulateCli('adblock')">adblock</button>
-          <button class="cli-pill-btn" onclick="simulateCli('scan')">scan</button>
-          <button class="cli-pill-btn" onclick="simulateCli('ping')">ping google.com</button>
-          <button class="cli-pill-btn" onclick="simulateCli('clients')">clients</button>
+---------------- AETHERPULSE SYSTEM STATUS ----------------
+  Device:             ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz
+  Die Temperature:    51.4 °C (Thermal state: NORMAL)
+  Free DRAM (Heap):   198432 bytes (Min Free: 184200 bytes)
+  Uptime:             3842 seconds
+--- Upstream Station (STA) Link ---
+  Connected:          YES
+  SSID:               Nayatel
+  BSSID:              BC:FF:4D:12:33:AA
+  Channel:            6 (Best Recommended: CH 11)
+  Filtered RSSI:      -61.2 dBm (Kalman Smoothed)
+  Assigned IP:        192.168.1.145 (GW: 192.168.1.1)
+  Station MAC:        EE:FA:BC:11:22:33
+--- Repeater SoftAP ---
+  SoftAP SSID:        AetherPulse-Extender
+  SoftAP IP:          192.168.4.1 (http://aetherpulse.local)
+  Connected Clients:  1 / 8
+--- L3 Routing, NAPT & DNS Acceleration ---
+  lwIP DNAPT:         ACTIVE
+  Port Forward Rules: 2 rules loaded
+  SRAM DNS Cache:     142 Hits / 12 Misses (28 Active Entries)
+  DNS AdBlocker:      ACTIVE (84 blocked queries)
+  Task Watchdog TWDT: 15s Hardware Timeout
+  Modem Sleep:        DISABLED (WIFI_PS_NONE for zero jitter)
+  Beacon Interval:    103 TU (Prime offset anti-collision)
+  TX Power:           20.00 dBm
+-----------------------------------------------------------</pre>
+        <div style="display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;">
+          <button class="btn-alt" onclick="simulateCli('status')">Run 'status'</button>
+          <button class="btn-alt" onclick="simulateCli('spectrum')">Run 'spectrum'</button>
+          <button class="btn-alt" onclick="simulateCli('dns')">Run 'dns'</button>
+          <button class="btn-alt" onclick="simulateCli('temp')">Run 'temp'</button>
+          <button class="btn-alt" onclick="simulateCli('clients')">Run 'clients'</button>
+          <button class="btn-alt" onclick="simulateCli('ping')">Run 'ping'</button>
         </div>
-
-        <div id="cliOutput" class="cli-output">Click any command above to test the interactive CLI simulator...</div>
-      </div>
-    </section>
-
-    <!-- Author & Creator Showcase Card -->
-    <section class="author-card">
-      <div class="author-info">
-        <div class="author-avatar-large">ZR</div>
-        <div>
-          <div class="author-name">Zeeshan Rajput</div>
-          <div class="author-title">Embedded Systems Specialist &amp; Lead Architect • @Itszeeshanrajput</div>
-          <div style="font-size:0.8rem; color:#38bdf8; margin-top:3px;">Created with ❤️ for the Global Open-Source ESP32 Community</div>
-        </div>
-      </div>
-      <div class="author-actions">
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank" class="btn-alt" style="background:var(--primary); color:#fff; border-color:var(--primary);">
-          ★ Star on GitHub
-        </a>
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/fork" target="_blank" class="btn-alt">
-          Fork &amp; Contribute
-        </a>
-        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases" target="_blank" class="btn-alt">
-          All Releases
-        </a>
       </div>
     </section>
 
     <!-- Footer -->
     <footer>
-      <div>AetherPulse Extreme v2.0 Titanium • Official Open-Source Firmware Project</div>
-      <div>
-        Designed &amp; Maintained by <a href="https://github.com/Itszeeshanrajput" target="_blank">Zeeshan Rajput</a> • 
-        Licensed under <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>
+      <div class="footer-text">
+        Designed &amp; Engineered by <span class="footer-author">Zeeshan Rajput</span> • Open Source under the MIT License
       </div>
-      <div style="font-size:0.75rem; color:var(--text-low); margin-top:4px;">
-        ESP32 and ESP-IDF are registered trademarks of Espressif Systems.
+      <div style="font-size:0.75rem; color:var(--text-low);">
+        AetherPulse-ESP32 • Enterprise Wi-Fi Repeater &amp; Sub-Millisecond DNS Acceleration Engine
       </div>
     </footer>
-
   </div>
 
-  <!-- Interactive JavaScript: Canvas Particles & CLI Simulator -->
   <script>
-    // Browser WebSerial API Detection
-    window.addEventListener('DOMContentLoaded', () => {
-      const compatStatus = document.getElementById('browserCompatCheck');
-      if ('serial' in navigator) {
-        compatStatus.innerHTML = '<span class="compat-ok">✅ Web Serial API Supported! Plug in your board and click Flash.</span>';
-      } else {
-        compatStatus.innerHTML = '<span class="compat-warn">⚠️ Web Serial not detected. Please open this page in Google Chrome, Microsoft Edge, or Brave on Desktop/Android.</span>';
+    // Version Switching Logic
+    const VERSIONS = {
+      v3: {
+        name: 'AetherPulse v3.0.0 Quantum Enterprise',
+        manifest: 'manifest-v3.json',
+        btnText: '⚡ Flash AetherPulse v3.0.0 Quantum',
+        statusText: 'Production Build • v3.0.0 Quantum Enterprise • Recommended',
+        cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 firmware.bin'
+      },
+      v2: {
+        name: 'AetherPulse v2.0.0 Titanium',
+        manifest: 'manifest-v2.json',
+        btnText: '⚡ Flash AetherPulse v2.0.0 Titanium',
+        statusText: 'Stable Release • v2.0.0 Titanium • Proven Rock Solid',
+        cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 AetherPulse-ESP32-v2.0.0-Titanium.bin'
+      },
+      v1: {
+        name: 'AetherPulse v1.0.0 Baseline',
+        manifest: 'manifest-v1.json',
+        btnText: '⚡ Flash AetherPulse v1.0.0 Baseline',
+        statusText: 'Legacy Baseline • v1.0.0 • Minimal Core Repeater',
+        cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 aetherpulse-esp32-full.bin'
       }
-    });
+    };
 
-    // Toggle Dropdown Panels
-    function togglePanel(id) {
-      const panel = document.getElementById(id);
-      const isVisible = panel.classList.contains('show');
-      document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('show'));
-      if (!isVisible) panel.classList.add('show');
+    let currentVersion = 'v3';
+
+    function selectVersion(vKey) {
+      if (!VERSIONS[vKey]) return;
+      currentVersion = vKey;
+
+      // Update segmented buttons
+      document.querySelectorAll('.version-pill-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btnVer' + vKey.charAt(1)).classList.add('active');
+
+      const v = VERSIONS[vKey];
+      document.getElementById('versionStatusText').textContent = v.statusText;
+      document.getElementById('esptoolCmd').textContent = v.cliCmd;
+
+      // Dynamically re-mount esp-web-install-button to cleanly update manifest URL
+      const wrapper = document.getElementById('installWrapper');
+      const oldCheck = document.getElementById('browserCompatCheck');
+      
+      const newBtn = document.createElement('esp-web-install-button');
+      newBtn.id = 'webInstallBtn';
+      newBtn.setAttribute('manifest', v.manifest);
+      newBtn.innerHTML = `
+        <button slot="activate" class="btn-install" id="activateBtn">
+          <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          <span id="activateBtnText">${v.btnText}</span>
+        </button>
+        <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
+          ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
+          Please open this page in <b>Google Chrome</b>, <b>Microsoft Edge</b>, or <b>Brave</b> on desktop or Android, or use the CLI command below.
+        </div>
+      `;
+
+      const existingBtn = document.getElementById('webInstallBtn');
+      if (existingBtn) {
+        wrapper.replaceChild(newBtn, existingBtn);
+      }
     }
 
-    // Copy Text to Clipboard
-    function copyCliText(elementId) {
-      const text = document.getElementById(elementId).innerText;
+    // Browser WebSerial compatibility check
+    function checkCompatibility() {
+      const el = document.getElementById('browserCompatCheck');
+      if ('serial' in navigator) {
+        el.innerHTML = '<span class="compat-ok">● Web Serial API detected & ready</span> — Google Chrome / Edge / Brave supported.';
+      } else {
+        el.innerHTML = '<span class="compat-warn">● Web Serial unsupported in this browser</span> — Please use Chrome, Edge, or Brave on Desktop/Android.';
+      }
+    }
+    checkCompatibility();
+
+    function togglePanel(id) {
+      const panel = document.getElementById(id);
+      const isShown = panel.classList.contains('show');
+      document.querySelectorAll('.dropdown-panel').forEach(p => p.classList.remove('show'));
+      if (!isShown) panel.classList.add('show');
+    }
+
+    function copyCliText(id) {
+      const text = document.getElementById(id).textContent;
       navigator.clipboard.writeText(text).then(() => {
-        alert('Copied command to clipboard!');
+        alert('Copied to clipboard: ' + text);
       });
     }
 
-    // CLI Shell Simulator Outputs
+    // CLI Shell Simulator data
     const CLI_RESPONSES = {
       status: `aetherpulse> status
+
 ---------------- AETHERPULSE SYSTEM STATUS ----------------
   Device:             ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz
-  Free DRAM (Heap):   182,180 bytes (Min Free: 124,244 bytes)
-  Uptime:             640 seconds
+  Die Temperature:    51.4 °C (Thermal state: NORMAL)
+  Free DRAM (Heap):   198432 bytes (Min Free: 184200 bytes)
+  Uptime:             3842 seconds
 --- Upstream Station (STA) Link ---
   Connected:          YES
-  SSID:               HomeNetwork
-  BSSID:              A8:D4:E0:14:2D:40
-  Channel:            4
-  Filtered RSSI:      -71.0 dBm (Kalman Smoothed)
-  Assigned IP:        192.168.18.77 (GW: 192.168.18.1)
-  Station MAC:        4C:C3:82:D3:26:DC
+  SSID:               Nayatel
+  BSSID:              BC:FF:4D:12:33:AA
+  Channel:            6 (Best Recommended: CH 11)
+  Filtered RSSI:      -61.2 dBm (Kalman Smoothed)
+  Assigned IP:        192.168.1.145 (GW: 192.168.1.1)
+  Station MAC:        EE:FA:BC:11:22:33
 --- Repeater SoftAP ---
   SoftAP SSID:        AetherPulse-Extender
   SoftAP IP:          192.168.4.1 (http://aetherpulse.local)
   Connected Clients:  1 / 8
---- L3 Routing & NAPT ---
+--- L3 Routing, NAPT & DNS Acceleration ---
   lwIP DNAPT:         ACTIVE
   Port Forward Rules: 2 rules loaded
-  DNS AdBlocker:      ENABLED (42 blocked queries)
+  SRAM DNS Cache:     142 Hits / 12 Misses (28 Active Entries)
+  DNS AdBlocker:      ACTIVE (84 blocked queries)
   Task Watchdog TWDT: 15s Hardware Timeout
   Modem Sleep:        DISABLED (WIFI_PS_NONE for zero jitter)
   Beacon Interval:    103 TU (Prime offset anti-collision)
-  TX Power:           16.00 dBm
+  TX Power:           20.00 dBm
 -----------------------------------------------------------`,
 
-      mac: `aetherpulse> mac
-Current Station MAC: 4C:C3:82:D3:26:DC
-Cloned Custom MAC:   14:EB:08:3A:0E:2C (Active in NVS - Captive Portal Bypass ENGAGED)`,
+      spectrum: `aetherpulse> spectrum
 
-      portmap: `aetherpulse> portmap
+2.4 GHz RF SPECTRUM CONGESTION ANALYSIS:
++---------+----------------------+------+---------------------------+
+| CHANNEL | CONGESTION DENSITY   | LOAD | STATUS                    |
++---------+----------------------+------+---------------------------+
+| CH 1    | [########            ] |  40% |                           |
+| CH 2    | [####                ] |  20% |                           |
+| CH 3    | [##                  ] |  10% |                           |
+| CH 4    | [####                ] |  20% |                           |
+| CH 5    | [######              ] |  30% |                           |
+| CH 6    | [##############      ] |  70% | [ACTIVE]                  |
+| CH 7    | [########            ] |  40% |                           |
+| CH 8    | [####                ] |  20% |                           |
+| CH 9    | [##                  ] |  10% |                           |
+| CH 10   | [##                  ] |  10% |                           |
+| CH 11   | [                    ] |   0% | *RECOMMENDED OPTIMAL*     |
+| CH 12   | [                    ] |   0% |                           |
+| CH 13   | [                    ] |   0% |                           |
++---------+----------------------+------+---------------------------+
+Suggested Cleanest Frequency: Channel 11`,
 
-ACTIVE PORT FORWARD RULES (2 stored):
-+-------+----------+-----------------+----------+----------------------+
-| PROTO | EXT PORT | TARGET IP       | INT PORT | DESCRIPTION          |
-+-------+----------+-----------------+----------+----------------------+
-| TCP   | 8080     | 192.168.4.2     | 80       | WebServer Dashboard  |
-| UDP   | 27015    | 192.168.4.3     | 27015    | Game Dedicated Host  |
-+-------+----------+-----------------+----------+----------------------+`,
+      dns: `aetherpulse> dns
 
-      adblock: `aetherpulse> adblock
-DNS AdBlocker Sinkhole: ENABLED
-Total Blocked Queries:  42
-Sinkhole Destination:   0.0.0.0 (TTL: 300s)`,
+--- SUB-MILLISECOND SRAM DNS CACHE DAEMON ---
+  Total Cache Hits:     142
+  Total Cache Misses:   12
+  Cache Hit Ratio:      92.2 %
+  Active Table Entries: 4 / 64
 
-      scan: `aetherpulse> scan
-[CLI] Performing live Wi-Fi scan, please wait...
++--------------------------------+-----------------+----------+----------+
+| DOMAIN HOSTNAME                | RESOLVED IP     | TTL REM  | HITS     |
++--------------------------------+-----------------+----------+----------+
+| google.com                     | 142.250.202.110 |   260 s  | 68       |
+| github.com                     | 140.82.121.4    |   245 s  | 42       |
+| youtube.com                    | 142.250.202.78  |   280 s  | 24       |
+| cloudflare.com                 | 104.16.132.229  |   290 s  | 8        |
++--------------------------------+-----------------+----------+----------+`,
 
-DISCOVERED 2.4 GHz NETWORKS (5 found):
-+----+------------------------+-------------------+---------+-----+--------+
-| #  | SSID                   | BSSID             | RSSI    | CH  | AUTH   |
-+----+------------------------+-------------------+---------+-----+--------+
-| 1  | FiberOptic_5G          | A8:D4:E0:14:2D:40 | -62 dBm |   4 | WPA2   |
-| 2  | SmartHome_IoT          | D8:32:14:A3:51:20 | -71 dBm |   6 | WPA2   |
-| 3  | OfficeGuest            | 14:EB:08:3A:0E:2C | -79 dBm |   1 | OPEN   |
-| 4  | StudioNetwork          | BC:FF:4D:12:33:AA | -84 dBm |  11 | WPA3   |
-| 5  | BackupHotspot          | 92:12:FF:11:00:22 | -88 dBm |   4 | WPA2   |
-+----+------------------------+-------------------+---------+-----+--------+`,
+      temp: `aetherpulse> temp
 
-      ping: `aetherpulse> ping google.com
-
-[PING] Testing connectivity to 'google.com'...
-  DNS Resolution:     SUCCESS -> 142.250.202.110
-  TCP Handshake:      SUCCESS to 142.250.202.110 (RTT: 42 ms)
-  Internet Status:    100% ONLINE & REACHABLE`,
+[THERMAL] ESP32 Internal Die Temperature: 51.4 °C / 124.5 °F (Optimal Range)`,
 
       clients: `aetherpulse> clients
 
 ACTIVE CONNECTED REPEATER CLIENTS (1 connected):
-+----+-------------------+---------+
-| #  | MAC ADDRESS       | RSSI    |
-+----+-------------------+---------+
-| 1  | EE:F3:10:E1:B7:7A | -64 dBm |
-+----+-------------------+---------+`
++----+-------------------+---------+----------------------+----------------------+
+| #  | MAC ADDRESS       | RSSI    | VENDOR               | ALIAS / NAME         |
++----+-------------------+---------+----------------------+----------------------+
+| 1  | 14:EB:08:3A:0E:2C | -62 dBm | Apple                | Zeeshan's MacBook    |
++----+-------------------+---------+----------------------+----------------------+`,
+
+      ping: `aetherpulse> ping google.com
+
+[PING] Testing connectivity to 'google.com'...
+  DNS Resolution:     SUCCESS -> 142.250.202.110 (Cached: 0.6 ms)
+  TCP Handshake:      SUCCESS to 142.250.202.110 (RTT: 38 ms)
+  Internet Status:    100% ONLINE & REACHABLE`
     };
 
     function simulateCli(cmd) {

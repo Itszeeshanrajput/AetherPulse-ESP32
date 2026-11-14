@@ -154,6 +154,43 @@ void RoamingEngine::resetMac() {
     }
 }
 
+std::vector<int> RoamingEngine::getChannelLoads() {
+    std::vector<int> loads(14, 0); // channels 0..13
+    for (const auto& ap : lastScanResults) {
+        if (ap.channel >= 1 && ap.channel <= 13) {
+            int weight = 15;
+            if (ap.rssi > -60) weight = 100;
+            else if (ap.rssi > -70) weight = 60;
+            else if (ap.rssi > -80) weight = 35;
+            loads[ap.channel] += weight;
+        }
+    }
+    return loads;
+}
+
+int RoamingEngine::getBestChannel() {
+    auto loads = getChannelLoads();
+    // Evaluate standard non-overlapping 2.4 GHz channels: 1, 6, 11
+    int candidates[] = {1, 6, 11};
+    int bestCh = 6;
+    int minLoad = 99999;
+    for (int ch : candidates) {
+        // Consider adjacent channel bleed: ch-1, ch, ch+1
+        int total = loads[ch];
+        if (ch > 1) total += loads[ch - 1] / 2;
+        if (ch < 13) total += loads[ch + 1] / 2;
+        if (total < minLoad) {
+            minLoad = total;
+            bestCh = ch;
+        }
+    }
+    return bestCh;
+}
+
+bool RoamingEngine::isSubnetConflict(IPAddress staIp) {
+    return (staIp[0] == 192 && staIp[1] == 168 && staIp[2] == 4);
+}
+
 void RoamingEngine::startScan() {
     if (scanning) return;
     scanning = true;

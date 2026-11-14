@@ -1,16 +1,24 @@
-# AetherPulse Extreme ⚡ (v2.0 Titanium)
+# AetherPulse Enterprise ⚡ (v3.0 Quantum)
 
 ![AetherPulse Banner](assets/banner.svg)
 
 [![Build, WebFlash & Auto-Release](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml)
 [![Web Installer](https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-brightgreen.svg?style=flat&logo=espressif)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)
 [![ESP32 Compatible](https://img.shields.io/badge/ESP32-D0WD--V3%20%7C%20WROOM--32-blue.svg)](https://www.espressif.com/)
-[![Firmware Version](https://img.shields.io/badge/Release-v2.0.0--Titanium-cyan.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases)
+[![Firmware Version](https://img.shields.io/badge/Release-v3.0.0--Quantum-cyan.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**AetherPulse Extreme** is an enterprise-grade, ultra-low latency Wi-Fi range extender, NAPT router, and hardware security appliance engineered specifically for ESP32 silicon.
+**AetherPulse Enterprise** is an ultra-low latency Wi-Fi range extender, NAPT router, and hardware security appliance engineered specifically for ESP32 silicon.
 
-The **v2.0 Titanium Edition** introduces native **lwIP DNAPT Port Forwarding**, **Station MAC Address Spoofing/Cloning** to bypass hotel and captive portals, a **Hardware DNS AdBlocker Sinkhole**, **Web-Based Drag-and-Drop OTA Firmware Updates**, **mDNS Zero-DNS Resolution** (`http://aetherpulse.local`), a **15-Second Task Watchdog (TWDT)**, and a completely re-engineered **Glassmorphism Multi-Tab Web Application**.
+The **v3.0 Quantum Edition** introduces:
+- **Sub-Millisecond On-Chip DNS Cache**: Serves cached DNS lookups directly from SRAM in `< 0.8 ms`, completely bypassing 2.4 GHz uplink round-trip latency.
+- **RF Spectrum Congestion Analyzer**: Real-time channel interference heatmap (Channels 1–13) with automated cleanest frequency recommendation.
+- **On-Chip Speedtest & Latency Meter**: Direct SoftAP throughput benchmark and RTT jitter measurement without third-party dependencies.
+- **Smart Client Device Manager**: Automatic OUI vendor identification (Apple, Samsung, Intel, Google, Xiaomi, Espressif) with custom client alias naming and one-click deauthentication.
+- **Die Temperature & Thermal Protection**: Real-time on-chip sensor monitoring with automatic throttling safeguards.
+- **Multi-Build Web Flasher**: Flash any version (`v3.0 Quantum`, `v2.0 Titanium`, `v1.0 Baseline`) directly from your browser.
+- **Native PWA Support**: Install as a standalone native app on iOS and Android devices.
+- **Subnet Conflict Auto-Migration**: Automatically shifts SoftAP from `192.168.4.1` to `192.168.5.1` if upstream link collides with the local subnet.
 
 ---
 
@@ -21,9 +29,10 @@ Flash your ESP32 board in 30 seconds directly from your browser without installi
 👉 **[Launch AetherPulse Web Installer](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)**
 
 1. Connect your ESP32 board via USB (Google Chrome or Microsoft Edge required).
-2. Click **⚡ Install AetherPulse v2.0 Titanium**.
-3. Select your serial port (`CP2102`, `CH340`, or `USB-JTAG`).
-4. Once flashed, connect to the repeater Wi-Fi:
+2. Choose your build (**v3.0 Quantum**, **v2.0 Titanium**, or **v1.0 Baseline**).
+3. Click **⚡ Flash AetherPulse**.
+4. Select your serial port (`CP2102`, `CH340`, or `USB-JTAG`).
+5. Once flashed, connect to the repeater Wi-Fi:
    - **SSID:** `AetherPulse-Extender`
    - **Passphrase:** `aetherpulse123`
    - **Web Management Portal:** `http://192.168.4.1` or `http://aetherpulse.local`
@@ -119,6 +128,13 @@ Connect your terminal to the USB serial port at `115200` baud:
 | :--- | :--- | :--- |
 | `status` | None | Displays link telemetry, Kalman RSSI, client tally, free DRAM, Watchdog state, and NAPT status. |
 | `scan` | None | Scans 2.4 GHz spectrum and prints an ASCII table with BSSID, RSSI, and channel. |
+| `spectrum` | None | Real-time 2.4 GHz RF spectrum congestion analysis with cleanest channel recommendation. |
+| `temp` | None | Displays internal ESP32 die temperature and thermal status. |
+| `dns` | None | Displays sub-millisecond SRAM DNS cache stats, active hosts, and remaining TTLs. |
+| `clear_dns` | None | Flushes SRAM DNS cache. |
+| `clients` | None | Displays MAC addresses, signal strengths, vendors, and aliases of connected repeater clients. |
+| `rename` | `<mac> <alias>` | Assigns custom friendly name to client device (`rename 14:EB:08:3A:0E:2C "Laptop"`). |
+| `kick` | `<mac>` | Deauthenticates / disconnects client device from repeater SoftAP. |
 | `list` / `saved` | None | Lists all saved failover Wi-Fi profiles and priority ranks. |
 | `add` | `<ssid> <pass> [prio]` | Adds or updates a network profile (use quotes for names with spaces: `add "MyWiFi" pass 8`). |
 | `del` / `remove` | `<ssid>` | Removes a network from the NVS database (`del "MyWiFi"`). |
@@ -132,7 +148,6 @@ Connect your terminal to the USB serial port at `115200` baud:
 | `portmap del` | `<tcp\|udp> <ext>` | Removes a port forward rule (`portmap del tcp 8080`). |
 | `adblock` | `[on\|off]` | Checks status or toggles hardware DNS AdBlocker sinkhole. |
 | `ping` | `<host>` | Tests DNS resolution and TCP handshake latency (`ping google.com`). |
-| `clients` | None | Displays MAC addresses and signal strengths of all connected repeater clients. |
 | `set_tx` | `<dbm>` | Calibrates RF transmit power (+10.0 to +20.5 dBm). |
 | `roam` | None | Forces immediate background multi-AP roam re-evaluation. |
 | `reboot` | None | Performs clean software reboot of the ESP32. |
