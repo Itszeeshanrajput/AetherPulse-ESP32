@@ -1,48 +1,61 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" width="100%" height="100%">
   <defs>
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
-      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.65"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.7"/>
     </filter>
   </defs>
 
-  <!-- Terminal Window Shell -->
-  <rect width="900" height="520" rx="14" fill="#090d16" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
+  <!-- Terminal Window Frame -->
+  <rect width="960" height="620" rx="14" fill="#060913" stroke="#1e293b" stroke-width="1.5" filter="url(#shadow)" />
   
   <!-- Terminal Titlebar -->
-  <rect width="900" height="38" rx="14" fill="#0f172a" />
+  <rect width="960" height="38" rx="14" fill="#0f172a" />
   <circle cx="20" cy="19" r="6" fill="#ef4444" />
   <circle cx="40" cy="19" r="6" fill="#f59e0b" />
   <circle cx="60" cy="19" r="6" fill="#10b981" />
-  <text x="450" y="24" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8" text-anchor="middle">AetherPulse Terminal Shell — 115200 8N1 (/dev/ttyUSB0)</text>
+  <text x="480" y="24" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#94a3b8" text-anchor="middle">AetherPulse v3.0 Quantum Shell — 115200 8N1 (/dev/ttyUSB0)</text>
 
   <!-- Shell Output Text -->
-  <g transform="translate(24, 65)" font-family="'JetBrains Mono', monospace" font-size="12" line-height="1.4">
-    <text x="0" y="0" fill="#3b82f6" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">status</tspan></text>
+  <g transform="translate(24, 60)" font-family="'JetBrains Mono', monospace" font-size="11.5" line-height="1.45">
+    <text x="0" y="0" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">status</tspan></text>
 
-    <text x="0" y="22" fill="#64748b">---------------- AETHERPULSE SYSTEM STATUS ----------------</text>
-    <text x="0" y="42" fill="#94a3b8">  Device:             <tspan fill="#fff">ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz</tspan></text>
-    <text x="0" y="60" fill="#94a3b8">  Free DRAM (Heap):   <tspan fill="#34d399">188,388 bytes</tspan> (Modem Sleep: <tspan fill="#f59e0b">DISABLED</tspan>)</text>
+    <text x="0" y="20" fill="#64748b">---------------- AETHERPULSE SYSTEM STATUS ----------------</text>
+    <text x="0" y="38" fill="#94a3b8">  Device:             <tspan fill="#fff">ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz</tspan></text>
+    <text x="0" y="56" fill="#94a3b8">  Die Temperature:    <tspan fill="#34d399">48.3 °C</tspan> (Thermal state: <tspan fill="#34d399">NORMAL</tspan>)</text>
+    <text x="0" y="74" fill="#94a3b8">  Free DRAM (Heap):   <tspan fill="#34d399">174,556 bytes</tspan> (Min Free: 74,936 bytes)</text>
     
-    <text x="0" y="84" fill="#3b82f6" font-weight="700">--- Upstream Station (STA) Link ---</text>
-    <text x="0" y="102" fill="#94a3b8">  Connected:          <tspan fill="#34d399" font-weight="700">YES</tspan> (SSID: <tspan fill="#fff">Nayatel</tspan>, Channel: <tspan fill="#fff">11</tspan>)</text>
-    <text x="0" y="120" fill="#94a3b8">  Filtered RSSI:      <tspan fill="#34d399" font-weight="700">-66.3 dBm</tspan> (1D Kalman Filtered)</text>
-    <text x="0" y="138" fill="#94a3b8">  Assigned IP:        <tspan fill="#fff">192.168.18.77</tspan> (Gateway: <tspan fill="#fff">192.168.18.1</tspan>)</text>
+    <text x="0" y="96" fill="#06b6d4" font-weight="700">--- Upstream Station (STA) Link ---</text>
+    <text x="0" y="114" fill="#94a3b8">  Connected:          <tspan fill="#34d399" font-weight="700">YES</tspan> (SSID: <tspan fill="#fff">Nayatel</tspan>, Channel: <tspan fill="#fff">3</tspan>, Best: <tspan fill="#34d399">CH 6</tspan>)</text>
+    <text x="0" y="132" fill="#94a3b8">  Filtered RSSI:      <tspan fill="#34d399" font-weight="700">-71.4 dBm</tspan> (1D Kalman Filtered)</text>
+    <text x="0" y="150" fill="#94a3b8">  Assigned IP:        <tspan fill="#fff">192.168.18.77</tspan> (Gateway: <tspan fill="#fff">192.168.18.1</tspan>)</text>
 
-    <text x="0" y="162" fill="#3b82f6" font-weight="700">--- Repeater SoftAP &amp; NAPT Routing ---</text>
-    <text x="0" y="180" fill="#94a3b8">  SoftAP SSID:        <tspan fill="#fff">AetherPulse-Extender</tspan> (IP: <tspan fill="#fff">192.168.4.1</tspan>)</text>
-    <text x="0" y="198" fill="#94a3b8">  Connected Clients:  <tspan fill="#34d399">1 / 8</tspan> (MAC: <tspan fill="#fff">EE:F3:10:E1:B7:7A</tspan> @ <tspan fill="#fff">-36 dBm</tspan>)</text>
-    <text x="0" y="216" fill="#94a3b8">  lwIP NAPT:          <tspan fill="#34d399" font-weight="700">ACTIVE</tspan> | MSS Clamping: <tspan fill="#fff">1412 bytes</tspan></text>
-    <text x="0" y="234" fill="#64748b">-----------------------------------------------------------</text>
+    <text x="0" y="172" fill="#06b6d4" font-weight="700">--- Repeater SoftAP &amp; L3 NAPT Routing ---</text>
+    <text x="0" y="190" fill="#94a3b8">  SoftAP SSID:        <tspan fill="#fff">AetherPulse-Extender</tspan> (IP: <tspan fill="#fff">192.168.4.1</tspan>)</text>
+    <text x="0" y="208" fill="#94a3b8">  Connected Clients:  <tspan fill="#34d399">1 / 8</tspan> (Zeeshan Phone @ -38 dBm)</text>
+    <text x="0" y="226" fill="#94a3b8">  lwIP DNAPT:         <tspan fill="#34d399" font-weight="700">ACTIVE</tspan> | DNS Cache: <tspan fill="#34d399">&lt; 0.2 ms Lookups</tspan></text>
+    <text x="0" y="244" fill="#94a3b8">  DNS AdBlocker:      <tspan fill="#94a3b8">DISABLED</tspan> (Direct Line-Rate Google DNS 8.8.8.8)</text>
+    <text x="0" y="260" fill="#64748b">-----------------------------------------------------------</text>
 
-    <text x="0" y="266" fill="#3b82f6" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">ping google.com</tspan></text>
-    <text x="0" y="288" fill="#94a3b8">[PING] Testing connectivity to 'google.com'...</text>
-    <text x="0" y="306" fill="#94a3b8">  DNS Resolution:     <tspan fill="#34d399">SUCCESS -&gt; 142.250.202.14</tspan></text>
-    <text x="0" y="324" fill="#94a3b8">  TCP Handshake:      <tspan fill="#34d399">SUCCESS to 142.250.202.14 (RTT: 258 ms)</tspan></text>
-    <text x="0" y="342" fill="#34d399" font-weight="700">  Internet Status:    100% ONLINE &amp; REACHABLE</text>
+    <text x="0" y="286" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">spectrum</tspan></text>
+    <text x="0" y="306" fill="#94a3b8">[SPECTRUM] 2.4 GHz RF Channel Congestion Density Matrix:</text>
+    <text x="0" y="324" fill="#ef4444">  CH 01: [████████████████████] 88% Load (5 APs) - SATURATED</text>
+    <text x="0" y="342" fill="#f59e0b">  CH 03: [██████████░░░░░░░░░░] 48% Load (Active Uplink 'Nayatel')</text>
+    <text x="0" y="360" fill="#34d399" font-weight="700">  CH 06: [██░░░░░░░░░░░░░░░░░░] 10% Load (0 APs) - ★ CLEANEST RECOMMENDED</text>
+    <text x="0" y="378" fill="#ef4444">  CH 11: [████████████████░░░░] 74% Load (4 APs) - CONGESTED</text>
+    <text x="0" y="396" fill="#34d399">[SPECTRUM] Recommended cleanest channel: CH 6</text>
 
-    <text x="0" y="374" fill="#3b82f6" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">add "HomeNetwork" "SecretPass123" 8</tspan></text>
-    <text x="0" y="396" fill="#94a3b8">[CLI] Network 'HomeNetwork' successfully saved with priority 8.</text>
+    <text x="0" y="422" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">clients</tspan></text>
+    <text x="0" y="442" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
+    <text x="0" y="458" fill="#fff">| MAC Address       | RSSI    | Vendor (OUI)          | Alias / Friendly Name| Status            |</text>
+    <text x="0" y="474" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
+    <text x="0" y="490" fill="#94a3b8">| EE:F3:10:E1:B7:7A | <tspan fill="#34d399">-38 dBm</tspan> | <tspan fill="#06b6d4">Mobile Device (Apple)</tspan> | <tspan fill="#fff">Zeeshan Phone</tspan>        | <tspan fill="#34d399">CONNECTED (NAPT)</tspan>  |</text>
+    <text x="0" y="506" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
 
-    <text x="0" y="426" fill="#3b82f6" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">_</tspan><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" /></text>
+    <text x="0" y="530" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">ping google.com</tspan></text>
+    <text x="0" y="548" fill="#94a3b8">[PING] Testing connectivity to 'google.com'...</text>
+    <text x="0" y="564" fill="#94a3b8">  DNS Resolution: <tspan fill="#34d399">SUCCESS -&gt; 142.251.37.78</tspan> | TCP Handshake RTT: <tspan fill="#34d399">57 ms</tspan></text>
+    <text x="0" y="580" fill="#34d399" font-weight="700">  Internet Status: 100% ONLINE &amp; LINE-RATE REACHABLE</text>
+
+    <text x="0" y="604" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">_</tspan><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" /></text>
   </g>
 </svg>
