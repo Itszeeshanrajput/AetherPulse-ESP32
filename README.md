@@ -31,9 +31,6 @@ Flash your ESP32 board in 30 seconds directly from your browser without installi
    - **Default Passphrase:** `aetherpulse123`
    - **Web Management Portal:** `http://192.168.4.1` or `http://aetherpulse.local`
 
-> [!NOTE]
-> Whenever any code change is pushed to this repository, **GitHub Actions automatically compiles the firmware, produces 4MB full flash images, and redeploys the web installer**. New users always receive the latest build with zero manual effort.
-
 ---
 
 ## 🖥️ System Preview
