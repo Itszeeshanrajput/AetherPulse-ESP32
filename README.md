@@ -4,6 +4,10 @@
 
 [![Build, WebFlash & Auto-Release](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml)
 [![Web Installer](https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-brightgreen.svg?style=flat&logo=espressif)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)
+[![GitHub Stars](https://img.shields.io/github/stars/Itszeeshanrajput/AetherPulse-ESP32?style=flat&color=ffd700)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Itszeeshanrajput/AetherPulse-ESP32?style=flat&color=blue)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/network/members)
+[![Good First Issues](https://img.shields.io/github/issues/Itszeeshanrajput/AetherPulse-ESP32/good%20first%20issue?color=7057ff&label=Good%20First%20Issues)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+[![Discussions](https://img.shields.io/github/discussions/Itszeeshanrajput/AetherPulse-ESP32?color=purple)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/discussions)
 [![ESP32 Compatible](https://img.shields.io/badge/ESP32-D0WD--V3%20%7C%20WROOM--32-blue.svg)](https://www.espressif.com/)
 [![Firmware Version](https://img.shields.io/badge/Release-v3.0.1-cyan.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -201,6 +205,25 @@ This project enforces strict credential isolation:
 - Public release binaries published to GitHub Releases and WebSerial installer contain generic placeholder credentials only.
 - Passwords entered via Web Portal or Serial CLI are securely persisted into ESP32 NVS flash.
 - Built-in self-DoS protection prevents port-mapping reserved services (HTTP 80 and DNS 53).
+
+---
+
+## 🌟 Star History & Support
+
+If AetherPulse saved you from purchasing a proprietary commercial Wi-Fi extender, gave your ESP32 a new purpose, or helped your homelab setup, please **give this project a star ⭐!** It costs nothing and helps more makers and embedded developers discover the project.
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Itszeeshanrajput/AetherPulse-ESP32&type=Date)](https://star-history.com/#Itszeeshanrajput/AetherPulse-ESP32&Date)
+
+---
+
+## 🤝 Community & Contributing
+
+We warmly welcome developers, makers, and network tinkerers of all experience levels!
+
+- 📖 **[Contribution Guidelines](CONTRIBUTING.md)**: Architecture map, local build guides, and code standards.
+- 🎯 **[Good First Issues](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)**: Beginner-friendly roadmap tasks (Home Assistant MQTT discovery, Web Portal i18n, CYD 2.8" LCD, and power scheduling).
+- 💬 **[GitHub Discussions](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/discussions)**: Share your custom hardware builds, range test benchmarks, and feature ideas.
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our commitment to an inclusive and welcoming environment.
 
 ---
 
