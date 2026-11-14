@@ -20,6 +20,9 @@ jobs:
   build:
     name: Compile Firmware & Generate Binaries
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: Checkout Repository
@@ -60,6 +63,8 @@ jobs:
           cp build_output/AetherPulse-ESP32.ino.partitions.bin bin/partitions.bin
           cp build_output/boot_app0.bin bin/boot_app0.bin
           cp build_output/AetherPulse-ESP32.ino.bin bin/firmware.bin
+          cp build_output/AetherPulse-ESP32.ino.bin bin/AetherPulse-ESP32-v3.0.0-Quantum.bin
+          cp build_output/AetherPulse-ESP32.ino.bin docs/AetherPulse-ESP32-v3.0.0-Quantum.bin
 
           # Merge binaries for 1-click web flash
           esptool.py --chip esp32 merge_bin -o bin/aetherpulse-esp32-full.bin \
@@ -68,6 +73,9 @@ jobs:
             0x8000 bin/partitions.bin \
             0xe000 bin/boot_app0.bin \
             0x10000 bin/firmware.bin
+
+          cp bin/aetherpulse-esp32-full.bin bin/AetherPulse-ESP32-v3.0.0-Quantum.merged.bin
+          cp bin/aetherpulse-esp32-full.bin docs/AetherPulse-ESP32-v3.0.0-Quantum.merged.bin
 
           # Copy latest binaries to docs/ for ESP Web Tools WebSerial flasher
           cp bin/*.bin docs/
@@ -119,6 +127,8 @@ jobs:
             bin/bootloader.bin
             bin/partitions.bin
             bin/boot_app0.bin
+            bin/AetherPulse-ESP32-v3.0.0-Quantum.bin
+            bin/AetherPulse-ESP32-v3.0.0-Quantum.merged.bin
           prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
