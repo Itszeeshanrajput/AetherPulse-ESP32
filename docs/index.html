@@ -7,6 +7,28 @@
   <title>AetherPulse — Official 1-Click ESP32 Web Installer | By Zeeshan Rajput</title>
   <meta name="description" content="Official 1-Click Web Serial Installer for AetherPulse: High-performance ESP32 Wi-Fi repeater, lwIP DNAPT router, live network topology map, dynamic TPC, and sub-ms DNS cache by Zeeshan Rajput.">
   
+  <!-- Open Graph / Facebook / LinkedIn / Discord -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://itszeeshanrajput.github.io/AetherPulse-ESP32/">
+  <meta property="og:title" content="AetherPulse v3.0.1 — High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance">
+  <meta property="og:description" content="High-performance ESP32 Wi-Fi repeater &amp; routing appliance: Zero-Copy lwIP NAPT, Dynamic TPC, Live Canvas Topology, and 1-Click Web Serial Flasher. Architected by Zeeshan Rajput.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.svg">
+  <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.png">
+  <meta property="og:image:type" content="image/svg+xml">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AetherPulse v3.0.1 - High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance">
+  <meta property="og:site_name" content="AetherPulse ESP32">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://itszeeshanrajput.github.io/AetherPulse-ESP32/">
+  <meta name="twitter:title" content="AetherPulse v3.0.1 — High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance">
+  <meta name="twitter:description" content="High-performance ESP32 Wi-Fi repeater &amp; routing appliance: Zero-Copy lwIP NAPT, Dynamic TPC, Live Canvas Topology, and 1-Click Web Serial Flasher. Architected by Zeeshan Rajput.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.svg">
+  <meta name="twitter:image:alt" content="AetherPulse v3.0.1 - High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
@@ -226,6 +248,9 @@
     .install-wrapper {
       margin: 10px 0 20px; display: flex; flex-direction: column; align-items: center; gap: 14px;
     }
+    .install-action-row {
+      display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px;
+    }
     .btn-install {
       background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 40%, #8b5cf6 100%);
       color: white; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px;
@@ -238,6 +263,20 @@
       box-shadow: 0 16px 40px rgba(14, 165, 233, 0.6);
     }
     .btn-install svg { width: 24px; height: 24px; fill: currentColor; }
+
+    .btn-demo {
+      background: linear-gradient(135deg, #059669 0%, #10b981 50%, #06b6d4 100%);
+      color: white; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px;
+      padding: 18px 38px; border-radius: var(--radius-md); border: none; cursor: pointer;
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4); transition: all 0.25s ease;
+      display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+    }
+    .btn-demo:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(16, 185, 129, 0.65);
+      color: white; text-decoration: none;
+    }
+    .btn-demo svg { width: 22px; height: 22px; fill: currentColor; }
 
     .browser-compat-status {
       font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;
@@ -345,6 +384,7 @@
         </div>
       </a>
       <div class="nav-links">
+        <a href="demo.html" class="nav-link" style="color:#38bdf8; font-weight:700;">🎮 Live Simulator</a>
         <a href="#features" class="nav-link">Features</a>
         <a href="#versions" class="nav-link">Versions</a>
         <a href="#cli-sim" class="nav-link">CLI Shell</a>
@@ -371,6 +411,7 @@
       </p>
 
       <div class="badge-bar">
+        <a href="demo.html" class="feature-tag highlight" style="text-decoration:none; cursor:pointer;">🎮 Live Demo Simulator</a>
         <span class="feature-tag highlight">⚡ Dynamic TPC</span>
         <span class="feature-tag">🌐 Live Topology Map</span>
         <span class="feature-tag">🚀 Zero-Copy NAPT</span>
@@ -410,16 +451,23 @@
 
       <!-- WebSerial Install Button Container -->
       <div class="install-wrapper" id="installWrapper">
-        <esp-web-install-button id="webInstallBtn" manifest="manifest.json">
-          <button slot="activate" class="btn-install" id="activateBtn">
-            <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-            <span id="activateBtnText">⚡ Flash AetherPulse v3.0.1</span>
-          </button>
-          <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
-            ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
-            Please open this page in <b>Google Chrome</b>, <b>Microsoft Edge</b>, or <b>Brave</b> on desktop or Android, or use the CLI command below.
-          </div>
-        </esp-web-install-button>
+        <div class="install-action-row">
+          <esp-web-install-button id="webInstallBtn" manifest="manifest.json">
+            <button slot="activate" class="btn-install" id="activateBtn">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+              <span id="activateBtnText">⚡ Flash AetherPulse v3.0.1</span>
+            </button>
+            <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
+              ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
+              Please open this page in <b>Google Chrome</b>, <b>Microsoft Edge</b>, or <b>Brave</b> on desktop or Android, or use the CLI command below.
+            </div>
+          </esp-web-install-button>
+
+          <a href="demo.html" class="btn-demo" id="demoBtn">
+            <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+            <span>🎮 Try Live Web Demo</span>
+          </a>
+        </div>
 
         <div id="browserCompatCheck" class="browser-compat-status">
           <span style="color:var(--text-mid);">Browser Status:</span> Checking Web Serial compatibility...
@@ -728,7 +776,9 @@
       `;
 
       const existingBtn = document.getElementById('webInstallBtn');
-      if (existingBtn) {
+      if (existingBtn && existingBtn.parentNode) {
+        existingBtn.parentNode.replaceChild(newBtn, existingBtn);
+      } else if (existingBtn) {
         wrapper.replaceChild(newBtn, existingBtn);
       }
     }

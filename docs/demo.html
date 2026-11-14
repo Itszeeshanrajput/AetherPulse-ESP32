@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#060913">
+  <title>AetherPulse v3.0.1 [DEMO SIMULATOR] — Interactive Live Web Portal & Router</title>
+  <meta name="description" content="Official interactive in-browser live simulator for AetherPulse v3.0.1: Zero-Jitter NAPT Wi-Fi Repeater, live HTML5 Canvas network topology map, dynamic TPC, sub-ms DNS cache, and interactive terminal by Zeeshan Rajput.">
+
+  <!-- Open Graph / Facebook / LinkedIn / Discord -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html">
+  <meta property="og:title" content="AetherPulse v3.0.1 [Live Simulator] — Interactive Web Portal &amp; Routing Appliance">
+  <meta property="og:description" content="Official interactive in-browser live simulator for AetherPulse v3.0.1: Zero-Copy lwIP NAPT, Dynamic TPC, Live Canvas Topology, sub-ms DNS cache, and interactive terminal by Zeeshan Rajput.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.svg">
+  <meta property="og:image:secure_url" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.png">
+  <meta property="og:image:type" content="image/svg+xml">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="AetherPulse v3.0.1 - Interactive Live Simulator &amp; Web Portal">
+  <meta property="og:site_name" content="AetherPulse ESP32 Simulator">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html">
+  <meta name="twitter:title" content="AetherPulse v3.0.1 [Live Simulator] — Interactive Web Portal &amp; Routing Appliance">
+  <meta name="twitter:description" content="Official interactive in-browser live simulator for AetherPulse v3.0.1: Zero-Copy lwIP NAPT, Dynamic TPC, Live Canvas Topology, sub-ms DNS cache, and interactive terminal by Zeeshan Rajput.">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/Itszeeshanrajput/AetherPulse-ESP32/main/assets/social_preview.svg">
+  <meta name="twitter:image:alt" content="AetherPulse v3.0.1 - Interactive Live Simulator &amp; Web Portal">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #060913;
+      --bg-surface: rgba(15, 23, 42, 0.78);
+      --bg-card: rgba(30, 41, 59, 0.6);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-focus: #38bdf8;
+      --primary: #0ea5e9;
+      --primary-glow: rgba(14, 165, 233, 0.45);
+      --accent: #8b5cf6;
+      --accent-glow: rgba(139, 92, 246, 0.45);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.35);
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text-high: #f8fafc;
+      --text-mid: #94a3b8;
+      --text-low: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #060913;
+      color: var(--text-high);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Ambient Background Lights */
+    .ambient-glow-1 {
+      position: fixed; top: -140px; left: 8%; width: 550px; height: 550px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.16) 0%, transparent 70%);
+      pointer-events: none; z-index: 0; filter: blur(70px);
+    }
+    .ambient-glow-2 {
+      position: fixed; top: 380px; right: -80px; width: 620px; height: 620px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, transparent 70%);
+      pointer-events: none; z-index: 0; filter: blur(80px);
+    }
+    #cyberCanvas {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none; z-index: 0; opacity: 0.5;
+    }
+
+    /* Top Simulator Banner */
+    .sim-banner {
+      width: 100%;
+      background: linear-gradient(90deg, rgba(14, 165, 233, 0.18) 0%, rgba(139, 92, 246, 0.22) 50%, rgba(16, 185, 129, 0.18) 100%);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.35);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      padding: 10px 18px;
+      display: flex; justify-content: center; align-items: center;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .sim-banner-inner {
+      width: 100%; max-width: 1140px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .sim-banner-left {
+      display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 600;
+    }
+    .sim-badge-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+      border-radius: 999px; background: rgba(56, 189, 248, 0.25); border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #38bdf8; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase;
+    }
+    .sim-banner-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 999px; font-size: 0.82rem; font-weight: 700;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: #fff; text-decoration: none; border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 16px var(--primary-glow); transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .sim-banner-cta:hover {
+      transform: translateY(-1px); box-shadow: 0 0 24px rgba(14, 165, 233, 0.7);
+      background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    }
+    .sim-banner-cta svg { width: 14px; height: 14px; fill: currentColor; }
+
+    /* Main Container */
+    .app-shell {
+      width: 100%; max-width: 1140px;
+      padding: clamp(14px, 3vw, 24px);
+      display: flex; flex-direction: column; gap: 18px;
+      position: relative; z-index: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+      gap: 14px; padding: 8px 0 16px; border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-logo {
+      width: 48px; height: 48px; border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #0ea5e9, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 24px var(--primary-glow); flex-shrink: 0;
+    }
+    .brand-logo svg { width: 26px; height: 26px; fill: white; }
+    .brand-text h1 {
+      font-size: clamp(1.2rem, 2.5vw, 1.55rem); font-weight: 800; letter-spacing: -0.5px;
+      display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    }
+    .brand-text h1 span.logo-highlight { color: var(--primary); }
+    .tag-ver {
+      font-size: 0.72rem; font-weight: 700; color: #38bdf8;
+      background: rgba(14, 165, 233, 0.15); border: 1px solid rgba(14, 165, 233, 0.35);
+      padding: 2px 8px; border-radius: 999px; letter-spacing: 0.5px;
+    }
+    .tag-demo {
+      font-size: 0.72rem; font-weight: 800; color: #c084fc;
+      background: rgba(192, 132, 252, 0.15); border: 1px solid rgba(192, 132, 252, 0.35);
+      padding: 2px 8px; border-radius: 999px; letter-spacing: 0.6px;
+    }
+    .brand-text p { font-size: 0.78rem; color: var(--text-mid); }
+    .brand-text p strong { color: #38bdf8; font-weight: 600; }
+
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .badge {
+      padding: 6px 14px; border-radius: 999px; font-size: 0.78rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid var(--success-glow);
+      white-space: nowrap; cursor: pointer; transition: all 0.2s;
+    }
+    .badge.offline {
+      background: rgba(239, 68, 68, 0.12); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);
+    }
+    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1.8s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
+
+    .nav-btn-link {
+      padding: 7px 14px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border);
+      color: var(--text-high); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+      transition: all 0.2s; white-space: nowrap;
+    }
+    .nav-btn-link:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--primary); }
+
+    /* Simulation Control Toolbar */
+    .scenario-toolbar {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+      gap: 10px; padding: 10px 16px; background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border); border-radius: var(--radius-md); backdrop-filter: blur(16px);
+    }
+    .scenario-label {
+      font-size: 0.78rem; font-weight: 700; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.6px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .scenario-presets { display: flex; gap: 6px; flex-wrap: wrap; }
+    .scenario-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 0.76rem; font-weight: 700;
+      border: 1px solid var(--border); background: rgba(255, 255, 255, 0.04); color: var(--text-mid);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .scenario-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: var(--primary); }
+    .scenario-btn.active {
+      background: rgba(14, 165, 233, 0.2); border-color: var(--primary); color: #38bdf8;
+      box-shadow: 0 0 10px rgba(14, 165, 233, 0.25);
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+      padding: 5px; background: rgba(0, 0, 0, 0.35); border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 9px 18px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; border: none; background: transparent; color: var(--text-mid);
+      white-space: nowrap; display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover { color: #fff; background: rgba(255, 255, 255, 0.06); }
+    .tab-btn.active {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 0 16px var(--primary-glow);
+    }
+    .tab-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    /* Tab Content Panes */
+    .tab-content { display: none; flex-direction: column; gap: 18px; }
+    .tab-content.active { display: flex; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Dashboard Grid & Cards */
+    .dashboard-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr)); gap: 16px;
+    }
+    .glass-card {
+      background: var(--bg-surface); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: clamp(16px, 2.5vw, 20px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .glass-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.3), transparent);
+    }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--text-mid); margin-bottom: 10px;
+    }
+    .card-metric {
+      font-size: clamp(1.35rem, 3vw, 1.7rem); font-weight: 800; color: #fff;
+      margin-bottom: 4px; word-break: break-all; font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .card-meta { font-size: 0.78rem; color: var(--text-mid); font-family: 'JetBrains Mono', monospace; }
+
+    .meter-bar {
+      width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px; margin-top: 12px; overflow: hidden;
+    }
+    .meter-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease, background 0.4s ease; }
+
+    /* Content Sections */
+    .content-section {
+      background: var(--bg-surface); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: clamp(16px, 2.5vw, 22px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+    .section-nav {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+    }
+    .section-nav h2 { font-size: 1.05rem; font-weight: 800; letter-spacing: -0.3px; }
+    .section-nav p { font-size: 0.8rem; color: var(--text-mid); }
+
+    /* Buttons */
+    .btn {
+      min-height: 40px; padding: 8px 18px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--primary); color: white; transition: all 0.2s; text-decoration: none;
+    }
+    .btn:hover { background: #0284c7; box-shadow: 0 0 18px var(--primary-glow); }
+    .btn-sm { min-height: 34px; padding: 6px 12px; font-size: 0.78rem; border-radius: var(--radius-sm); }
+    .btn-ghost { background: rgba(255, 255, 255, 0.06); color: var(--text-high); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--primary); }
+    .btn-success { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .btn-success:hover { background: var(--success); color: white; box-shadow: 0 0 16px var(--success-glow); }
+    .btn-danger { background: rgba(239, 68, 68, 0.18); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.35); }
+    .btn-danger:hover { background: var(--danger); color: white; }
+
+    /* Topology Canvas Wrapper */
+    .topo-wrap {
+      position: relative; width: 100%; height: 460px;
+      background: radial-gradient(ellipse at center, rgba(30, 41, 59, 0.75) 0%, rgba(6, 9, 19, 0.98) 100%);
+      border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden;
+    }
+    #topoCanvas { width: 100%; height: 100%; display: block; }
+    .topo-tooltip {
+      position: absolute; display: none; pointer-events: none; z-index: 50;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid var(--primary);
+      border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 0.78rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8), 0 0 15px rgba(14, 165, 233, 0.3);
+      backdrop-filter: blur(8px); min-width: 180px; transform: translate(-50%, -120%);
+    }
+    .topo-tooltip b { color: #38bdf8; }
+
+    /* Tables */
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; min-width: 540px; }
+    th { text-align: left; padding: 10px 12px; font-size: 0.72rem; text-transform: uppercase; color: var(--text-low); border-bottom: 1px solid var(--border); }
+    td { padding: 12px 12px; font-size: 0.84rem; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+    tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    .signal-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+      font-size: 0.74rem; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    }
+    .sig-great { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .sig-good { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+    .sig-fair { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .sig-weak { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+    .vendor-badge {
+      display: inline-block; padding: 3px 8px; border-radius: 6px;
+      background: rgba(139, 92, 246, 0.18); color: #c4b5fd; font-size: 0.72rem; font-weight: 700;
+    }
+
+    /* Telemetry Canvases */
+    .traffic-canvas { width: 100%; height: 95px; border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.35); }
+    .spectrum-canvas { width: 100%; height: 160px; border-radius: var(--radius-md); background: rgba(0, 0, 0, 0.35); }
+
+    /* Speedometer Styles */
+    .speed-gauge-wrap {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px 0;
+    }
+    .speed-dial-box {
+      position: relative; width: 220px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    }
+    .speed-num { font-size: 3.4rem; font-weight: 800; color: #38bdf8; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+    .speed-unit { font-size: 0.95rem; color: var(--text-mid); font-weight: 700; margin-top: 6px; }
+    .speed-stats-bar {
+      display: flex; gap: 32px; justify-content: center; margin-top: 24px; flex-wrap: wrap;
+    }
+    .speed-stat-box { text-align: center; }
+    .speed-stat-label { font-size: 0.74rem; text-transform: uppercase; color: var(--text-low); }
+    .speed-stat-val { font-size: 1.2rem; font-weight: 700; color: #fff; font-family: 'JetBrains Mono', monospace; }
+
+    /* Interactive Terminal */
+    .term-window {
+      background: #020617; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: var(--radius-lg);
+      padding: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7); overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .term-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; background: rgba(15, 23, 42, 0.8); border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .term-dots { display: flex; gap: 6px; }
+    .term-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .term-dot.r { background: #ef4444; } .term-dot.y { background: #f59e0b; } .term-dot.g { background: #10b981; }
+    .term-title { font-size: 0.74rem; color: var(--text-mid); }
+    .term-body {
+      padding: 16px; height: 340px; overflow-y: auto; color: #f8fafc; line-height: 1.6;
+      white-space: pre-wrap; font-family: 'JetBrains Mono', monospace;
+    }
+    .term-prompt-line {
+      display: flex; align-items: center; gap: 8px; padding: 10px 16px;
+      background: rgba(0, 0, 0, 0.45); border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .term-prompt-text { color: #38bdf8; font-weight: 700; white-space: nowrap; }
+    .term-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+    }
+    .term-quick-btns {
+      display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px;
+      background: rgba(15, 23, 42, 0.5); border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .term-btn {
+      padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-mid);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .term-btn:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: var(--primary); }
+
+    /* Forms */
+    .form-row { margin-bottom: 14px; }
+    .form-row label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-mid); margin-bottom: 6px; }
+    .form-row input, .form-row select {
+      width: 100%; min-height: 42px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 10px 14px; color: #fff; font-size: 14px; font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-row input:focus, .form-row select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 14px var(--primary-glow); }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+    }
+    .modal-card {
+      background: #0f172a; border: 1px solid var(--border); border-radius: var(--radius-lg);
+      padding: clamp(20px, 4vw, 28px); max-width: 480px; width: 100%; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+      position: relative; animation: modalPop 0.25s ease;
+    }
+    @keyframes modalPop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      padding: 12px 20px; border-radius: var(--radius-md); background: #0f172a;
+      border: 1px solid var(--primary); color: #fff; font-size: 0.85rem; font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7), 0 0 20px var(--primary-glow);
+      display: none; transform: translateY(20px); transition: all 0.3s ease;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border); padding: 24px 0 12px; text-align: center;
+      width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .footer-text { font-size: 0.82rem; color: var(--text-mid); }
+    .footer-author { color: #38bdf8; font-weight: 700; }
+
+    @media (max-width: 768px) {
+      header { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .header-actions { width: 100%; justify-content: space-between; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .section-nav { flex-direction: column; align-items: flex-start; }
+      .topo-wrap { height: 380px; }
+      .term-body { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Lights & Canvas -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+  <canvas id="cyberCanvas"></canvas>
+
+  <!-- Clear Simulator Banner at Top -->
+  <div class="sim-banner">
+    <div class="sim-banner-inner">
+      <div class="sim-banner-left">
+        <span>🎮 <b>Interactive Simulation Mode</b> — Experience AetherPulse directly in your browser without hardware. Ready to flash?</span>
+      </div>
+      <a href="index.html" class="sim-banner-cta">
+        <span>⚡ Launch 1-Click Web Installer &rarr; index.html</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Top Navigation Bar -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
+        </div>
+        <div class="brand-text">
+          <h1>
+            AETHER<span class="logo-highlight">PULSE</span>
+            <span class="tag-ver">v3.0.1</span>
+            <span class="tag-demo">[DEMO SIMULATOR]</span>
+          </h1>
+          <p>Zero-Jitter NAPT Wi-Fi Repeater &amp; Router • By <strong>Zeeshan Rajput</strong></p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div id="liveBadge" class="badge" onclick="toggleOnlineState()" title="Click to simulate AP offline mode">
+          <span class="pulse-dot"></span>
+          <span id="liveStatus">ONLINE &amp; ROUTING</span>
+        </div>
+        <a href="index.html" class="nav-btn-link" title="Launch WebSerial Flasher">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+          Web Flasher
+        </a>
+        <a href="https://github.com/Itszeeshanrajput/AetherPulse-ESP32" target="_blank" class="nav-btn-link">
+          <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </header>
+
+    <!-- Simulation Scenarios Toolbar -->
+    <div class="scenario-toolbar">
+      <div class="scenario-label">
+        <svg style="width:14px;height:14px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>Simulation Scenario:</span>
+      </div>
+      <div class="scenario-presets">
+        <button class="scenario-btn active" id="scen-home" onclick="setScenario('home')">🏠 Home Fiber Mesh</button>
+        <button class="scenario-btn" id="scen-surge" onclick="setScenario('surge')">🚀 4K Streaming Surge</button>
+        <button class="scenario-btn" id="scen-fringe" onclick="setScenario('fringe')">📡 Weak Fringe Link</button>
+        <button class="scenario-btn" id="scen-hotel" onclick="setScenario('hotel')">🏨 Hotel Captive Bypass</button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('overview')">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        Overview / Topology
+      </button>
+      <button class="tab-btn" onclick="switchTab('wifi')">
+        <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+        Wi-Fi Setup
+      </button>
+      <button class="tab-btn" onclick="switchTab('security')">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        Security &amp; Isolation
+      </button>
+      <button class="tab-btn" onclick="switchTab('terminal')">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z"/></svg>
+        Diagnostics / Terminal
+      </button>
+      <button class="tab-btn" onclick="switchTab('speedtest')">
+        <svg viewBox="0 0 24 24"><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.28-10.43zM10.5 10.5a2.12 2.12 0 0 0-.5 1.5 2 2 0 1 0 4 0 2.12 2.12 0 0 0-.5-1.5L16 6l-5.5 4.5z"/></svg>
+        Speedtest Benchmark
+      </button>
+    </nav>
+
+    <!-- TAB 1: OVERVIEW / TOPOLOGY -->
+    <div id="tab-overview" class="tab-content active">
+      <!-- 4 Dashboard Metric Cards -->
+      <section class="dashboard-grid">
+        <!-- Upstream Uplink Card -->
+        <div class="glass-card">
+          <div>
+            <div class="card-header">
+              <span>Upstream Uplink</span>
+              <span id="uplinkChannel" style="color:var(--primary); font-family:monospace; font-weight:700;">CH 6</span>
+            </div>
+            <div class="card-metric" id="uplinkSsid">Home-Fiber-WiFi</div>
+            <div class="card-meta" id="uplinkIp">IP: 192.168.1.145 (GW: 192.168.1.1)</div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-top:14px;">
+              <span style="color:var(--text-mid);">Kalman Filtered RSSI</span>
+              <span id="uplinkRssi" style="font-weight:700; font-family:monospace;">-68.0 dBm</span>
+            </div>
+            <div class="meter-bar"><div class="meter-fill" id="rssiBar" style="width:65%; background:var(--success);"></div></div>
+          </div>
+        </div>
+
+        <!-- Repeater Broadcast Card -->
+        <div class="glass-card">
+          <div>
+            <div class="card-header">
+              <span>Repeater SoftAP</span>
+              <span id="apIp" style="font-family:monospace; font-weight:700;">192.168.4.1</span>
+            </div>
+            <div class="card-metric" id="apSsid">AetherPulse-Extender</div>
+            <div class="card-meta">DTIM: 1 • Beacon: 103 TU (Zero-Jitter)</div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; font-size:0.82rem;">
+              <span style="color:var(--text-mid);">Connected Stations</span>
+              <span id="clientTally" style="font-weight:800; color:var(--primary); font-size:1.15rem; font-family:monospace;">4 / 8</span>
+            </div>
+            <div class="meter-bar"><div class="meter-fill" id="clientsBar" style="width:50%; background:var(--primary);"></div></div>
+          </div>
+        </div>
+
+        <!-- Sub-ms SRAM DNS Acceleration Card -->
+        <div class="glass-card">
+          <div>
+            <div class="card-header">
+              <span>Sub-ms DNS Cache</span>
+              <span id="dnsHitRate" style="color:var(--success); font-weight:700;">100% Hits</span>
+            </div>
+            <div class="card-metric" id="dnsHitsDisplay">1,482 Hits</div>
+            <div class="card-meta" id="dnsMeta">Active Hosts: 28 / 64 (SRAM Fast-Path)</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; margin-top:14px; color:var(--text-mid);">
+            <span>Misses: <b id="dnsMisses" style="color:#fff;">12</b></span>
+            <button class="btn btn-sm btn-ghost" style="min-height:24px; padding:2px 8px; font-size:0.7rem;" onclick="flushDnsCache()">Flush Cache</button>
+          </div>
+        </div>
+
+        <!-- Silicon & Thermal Health Card -->
+        <div class="glass-card">
+          <div>
+            <div class="card-header">
+              <span>Silicon &amp; Thermals</span>
+              <span id="thermalBadge" style="color:var(--success); font-weight:700;">OPTIMAL</span>
+            </div>
+            <div class="card-metric" id="dieTempDisplay">51.2 °C</div>
+            <div class="card-meta" id="cpuMeta">ESP32-D0WD-V3 @ 240 MHz</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.78rem; margin-top:14px; color:var(--text-mid);">
+            <span>Free DRAM: <b id="dramFree" style="color:#fff;">168 KB</b></span>
+            <span>Uptime: <b id="uptimeClock" style="color:#fff; font-family:monospace;">0d 01h 42m</b></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Interactive HTML5 Canvas Network Topology Map -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Interactive Network Topology Map</h2>
+            <p>Live orbital routing graph: WAN Internet &rarr; Upstream AP &rarr; Central Repeater Hub &rarr; Stations</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-sm btn-ghost" onclick="addClientPrompt()">➕ Add Client</button>
+            <button class="btn btn-sm btn-ghost" onclick="triggerTrafficSurge()">⚡ Traffic Surge</button>
+            <button class="btn btn-sm btn-ghost" onclick="resetTopology()">🔄 Reset Graph</button>
+          </div>
+        </div>
+
+        <div class="topo-wrap" id="topoContainer">
+          <canvas id="topoCanvas"></canvas>
+          <div id="topoTooltip" class="topo-tooltip"></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:12px; font-size:0.78rem; color:var(--text-mid);">
+          <span>💡 <b>Tip:</b> Hover over or click any node to inspect client IP, MAC, live throughput &amp; signal.</span>
+          <span>• Cyan Particles: Outbound Uplink • Emerald Particles: Inbound Packets</span>
+        </div>
+      </section>
+
+      <!-- Smart Client Device Manager -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Smart Client Device Manager</h2>
+            <p>Connected stations with OUI vendor identification, alias naming &amp; layer-2 isolation</p>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="refreshClientsTable()">Refresh Station List</button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Client Device Name</th>
+                <th>IP &amp; MAC Address</th>
+                <th>Hardware Vendor</th>
+                <th>Live Speed (TX/RX)</th>
+                <th>Signal</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="clientsTbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Real-Time Network Telemetry & Throughput Graph -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Real-Time Network Telemetry &amp; Throughput</h2>
+            <p>Live traffic accounting with sub-millisecond zero-overhead telemetry</p>
+          </div>
+          <div style="display:flex; gap:16px; font-size:0.85rem; font-family:'JetBrains Mono', monospace;">
+            <span style="color:var(--primary);">Rx: <b id="rxLive">448.2 KB/s</b></span>
+            <span style="color:var(--accent);">Tx: <b id="txLive">312.6 KB/s</b></span>
+          </div>
+        </div>
+        <canvas id="trafficCanvas" class="traffic-canvas"></canvas>
+      </section>
+    </div>
+
+    <!-- TAB 2: WI-FI SETUP -->
+    <div id="tab-wifi" class="tab-content">
+      <!-- 2.4 GHz RF Spectrum Congestion Analyzer -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>2.4 GHz RF Spectrum Congestion Heatmap</h2>
+            <p>Channel overlap &amp; co-channel interference analyzer with optimal frequency selection</p>
+          </div>
+          <div id="bestChannelBadge" class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">
+            Optimal Clean Frequency: CH 11
+          </div>
+        </div>
+        <canvas id="spectrumCanvas" class="spectrum-canvas"></canvas>
+      </section>
+
+      <!-- Surrounding AP Scanner -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Surrounding 2.4 GHz Access Points</h2>
+            <p>Passive RF spectrum scanner with signal quality analysis</p>
+          </div>
+          <button class="btn btn-sm btn-primary" id="btnScanAp" onclick="simulateScan()">
+            Scan Spectrum
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Network SSID</th>
+                <th>BSSID MAC</th>
+                <th>Signal Quality</th>
+                <th>Channel</th>
+                <th>Security</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="scanTbody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Stored Priority Failover Networks -->
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Stored Priority Failover Networks</h2>
+            <p>Auto-connects to highest priority network in range with zero-packet-drop handoff</p>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="openAddKnownModal()">Add Wi-Fi Network</button>
+        </div>
+        <div id="knownContainer" style="display:flex; flex-direction:column; gap:10px;">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 3: SECURITY & ISOLATION -->
+    <div id="tab-security" class="tab-content">
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap:16px;">
+        <!-- MAC Spoofing -->
+        <section class="content-section">
+          <div class="section-nav">
+            <div>
+              <h2>Station MAC Address Cloning</h2>
+              <p>Bypass hotel, dorm, and captive portals by spoofing client device MAC</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <label>Station Interface MAC (XX:XX:XX:XX:XX:XX)</label>
+            <input type="text" id="customMacInput" value="EE:FA:BC:11:22:33" maxlength="17" font-family="monospace">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
+            <button class="btn btn-sm" onclick="applyCustomMac()">Apply Cloned MAC</button>
+            <button class="btn btn-sm btn-ghost" onclick="resetFactoryMac()">Restore Default MAC</button>
+          </div>
+        </section>
+
+        <!-- Hardware Toggles: TPC, Isolation & AdBlock -->
+        <section class="content-section">
+          <div class="section-nav">
+            <div>
+              <h2>Security &amp; RF Power Controls</h2>
+              <p>Closed-loop power throttling, DNS sinkhole, and multi-tenant isolation</p>
+            </div>
+          </div>
+
+          <!-- Dynamic TPC Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:10px;">
+            <div>
+              <div style="font-weight:700;">Dynamic Transmit Power Control (TPC)</div>
+              <div style="font-size:0.74rem; color:var(--text-mid);">Closed-loop power scaling (+11 ~ +20.5 dBm) prevents die heating</div>
+            </div>
+            <button id="tpcBtn" class="btn btn-sm btn-success" onclick="toggleTpc()">Auto (+18.5 dBm)</button>
+          </div>
+
+          <!-- Layer-2 Client Isolation Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:10px;">
+            <div>
+              <div style="font-weight:700;">Layer-2 Client Isolation</div>
+              <div style="font-size:0.74rem; color:var(--text-mid);">Prevents inter-client communication on SoftAP (Multi-Tenant)</div>
+            </div>
+            <button id="isolationBtn" class="btn btn-sm btn-ghost" onclick="toggleIsolation()">Disabled (Bridge)</button>
+          </div>
+
+          <!-- DNS AdBlock Sinkhole Toggle -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:14px;">
+            <div>
+              <div style="font-weight:700;">Hardware DNS Sinkhole (AdBlock)</div>
+              <div style="font-size:0.74rem; color:var(--text-mid);">Total Blocked Queries: <b id="adBlockCount" style="color:var(--success);">142</b></div>
+            </div>
+            <button id="adBlockBtn" class="btn btn-sm btn-success" onclick="toggleAdBlock()">Active (Enabled)</button>
+          </div>
+
+          <!-- Settings Form -->
+          <form id="settingsForm" onsubmit="saveSettings(event)">
+            <div class="form-row">
+              <label>Repeater SoftAP SSID</label>
+              <input type="text" id="formApSsid" value="AetherPulse-Extender" required>
+            </div>
+            <div class="form-row">
+              <label>SoftAP WPA2 Passphrase (min 8 chars)</label>
+              <input type="text" id="formApPass" value="aetherpulse123" minlength="8" required>
+            </div>
+            <div class="form-row">
+              <label>RF Max Transmit Power (dBm, 10 - 20.5)</label>
+              <input type="number" id="formTxPower" value="19.5" step="0.5" min="10" max="20.5" required>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+              <label style="font-size:0.82rem; color:var(--text-mid); display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="formAutoRoam" checked style="width:auto; min-height:auto;"> 1D Kalman Auto-Roam
+              </label>
+              <label style="font-size:0.82rem; color:var(--text-mid); display:flex; align-items:center; gap:8px; cursor:pointer;">
+                <input type="checkbox" id="formSinkhole" checked style="width:auto; min-height:auto;"> Active Hardware DNS AdBlocker Sinkhole
+              </label>
+            </div>
+            <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+              <button type="submit" class="btn btn-sm">Save Parameters</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <!-- TAB 4: DIAGNOSTICS / TERMINAL -->
+    <div id="tab-terminal" class="tab-content">
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>Interactive Serial CLI Console</h2>
+            <p>Direct VT100 interactive command shell running live in your browser (115200 baud)</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-sm btn-ghost" onclick="clearTerminal()">Clear</button>
+            <button class="btn btn-sm btn-ghost" onclick="copyTerminalOutput()">Copy Output</button>
+          </div>
+        </div>
+
+        <div class="term-window">
+          <div class="term-header">
+            <div class="term-dots">
+              <span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span>
+            </div>
+            <div class="term-title">aetherpulse-shell • 115200 baud • USB-CDC Virtual UART</div>
+            <div style="font-size:0.72rem; color:var(--success);">● LIVE</div>
+          </div>
+          <div class="term-body" id="termBody"></div>
+          <div class="term-prompt-line">
+            <span class="term-prompt-text">aetherpulse&gt;</span>
+            <input type="text" class="term-input" id="termInput" placeholder="Type command (e.g. help, status, top, ping, scan, temp)..." autocomplete="off" spellcheck="false">
+          </div>
+          <div class="term-quick-btns">
+            <span style="font-size:0.72rem; color:var(--text-low); align-self:center;">Quick Commands:</span>
+            <button class="term-btn" onclick="execTermCmd('help')">help</button>
+            <button class="term-btn" onclick="execTermCmd('status')">status</button>
+            <button class="term-btn" onclick="execTermCmd('top')">top</button>
+            <button class="term-btn" onclick="execTermCmd('scan')">scan</button>
+            <button class="term-btn" onclick="execTermCmd('ping 8.8.8.8')">ping</button>
+            <button class="term-btn" onclick="execTermCmd('dns')">dns</button>
+            <button class="term-btn" onclick="execTermCmd('temp')">temp</button>
+            <button class="term-btn" onclick="execTermCmd('clients')">clients</button>
+            <button class="term-btn" onclick="execTermCmd('clear')">clear</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 5: SPEEDTEST BENCHMARK -->
+    <div id="tab-speedtest" class="tab-content">
+      <section class="content-section">
+        <div class="section-nav">
+          <div>
+            <h2>On-Chip Wi-Fi Link Speedtest</h2>
+            <p>Direct SoftAP zero-copy throughput &amp; round-trip latency benchmark</p>
+          </div>
+          <button id="runSpeedtestBtn" class="btn btn-sm btn-success" onclick="runSpeedtestBenchmark()">
+            Run Benchmark
+          </button>
+        </div>
+
+        <div class="speed-gauge-wrap">
+          <div class="speed-dial-box">
+            <div class="speed-num" id="speedNum">0.0</div>
+          </div>
+          <div class="speed-unit">Mbps (Download Throughput)</div>
+
+          <div class="speed-stats-bar">
+            <div class="speed-stat-box">
+              <div class="speed-stat-label">Latency (RTT)</div>
+              <div class="speed-stat-val" id="speedPing">-- ms</div>
+            </div>
+            <div class="speed-stat-box">
+              <div class="speed-stat-label">Jitter</div>
+              <div class="speed-stat-val" id="speedJitter">-- ms</div>
+            </div>
+            <div class="speed-stat-box">
+              <div class="speed-stat-label">Data Transferred</div>
+              <div class="speed-stat-val" id="speedData">-- MB</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-text">
+        AetherPulse v3.0.1 Live Simulator • Architected &amp; Engineered by <span class="footer-author">Zeeshan Rajput</span>
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-low);">
+        Pure In-Browser Simulation (HTML5 + CSS3 + Vanilla JS) • Ready for Hardware? <a href="index.html" style="color:var(--primary); text-decoration:none; font-weight:700;">Flash ESP32 via WebSerial</a>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Connect Wi-Fi Modal -->
+  <div class="modal-backdrop" id="connectModal">
+    <div class="modal-card">
+      <h3 style="margin-bottom:14px; font-size:1.15rem; color:#fff;">Connect to Access Point</h3>
+      <div class="form-row">
+        <label>Target SSID</label>
+        <input type="text" id="modalTargetSsid" readonly style="background:rgba(255,255,255,0.05); color:#38bdf8; font-weight:700;">
+      </div>
+      <div class="form-row">
+        <label>Passphrase (WPA2/WPA3)</label>
+        <input type="password" id="modalTargetPass" placeholder="Enter network password...">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn btn-sm btn-ghost" onclick="closeConnectModal()">Cancel</button>
+        <button class="btn btn-sm" onclick="confirmConnectAp()">Associate Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Known Network Modal -->
+  <div class="modal-backdrop" id="addKnownModal">
+    <div class="modal-card">
+      <h3 style="margin-bottom:14px; font-size:1.15rem; color:#fff;">Add Failover Wi-Fi Network</h3>
+      <div class="form-row">
+        <label>Network SSID</label>
+        <input type="text" id="newNetSsid" placeholder="e.g. Backup-5G-Mesh" required>
+      </div>
+      <div class="form-row">
+        <label>Passphrase</label>
+        <input type="password" id="newNetPass" placeholder="Network password...">
+      </div>
+      <div class="form-row">
+        <label>Priority Rank (1 to 10 - higher connects first)</label>
+        <input type="number" id="newNetPrio" min="1" max="10" value="7">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn btn-sm btn-ghost" onclick="closeAddKnownModal()">Cancel</button>
+        <button class="btn btn-sm" onclick="confirmAddKnown()">Save to Pool</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rename Client Device Modal -->
+  <div class="modal-backdrop" id="renameModal">
+    <div class="modal-card">
+      <h3 style="margin-bottom:14px; font-size:1.15rem; color:#fff;">Rename Client Device</h3>
+      <div class="form-row">
+        <label>Device MAC Address</label>
+        <input type="text" id="renameMac" readonly style="background:rgba(255,255,255,0.05); font-family:monospace;">
+      </div>
+      <div class="form-row">
+        <label>Custom Alias / Name</label>
+        <input type="text" id="renameAlias" placeholder="e.g. Zeeshan's M3 MacBook Pro">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn btn-sm btn-ghost" onclick="closeRenameModal()">Cancel</button>
+        <button class="btn btn-sm" onclick="confirmRenameClient()">Save Alias</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Node Inspector Modal (Detailed Canvas Node Diagnostics) -->
+  <div class="modal-backdrop" id="nodeModal">
+    <div class="modal-card" style="max-width:520px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 id="nodeModalTitle" style="font-size:1.2rem; color:#fff;">Node Diagnostics</h3>
+        <span id="nodeModalBadge" class="badge">ACTIVE</span>
+      </div>
+      <div id="nodeModalContent" style="font-size:0.85rem; line-height:1.7; color:var(--text-mid); margin-bottom:18px;">
+        <!-- Filled dynamically -->
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button class="btn btn-sm btn-ghost" onclick="closeNodeModal()">Close</button>
+        <button class="btn btn-sm" id="nodeModalActionBtn" onclick="nodeModalAction()">Simulate Ping</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast">Notification</div>
+
+  <!-- ========================================================== -->
+  <!-- JAVASCRIPT: Simulation State, Canvas Physics, CLI & Events -->
+  <!-- ========================================================== -->
+  <script>
+    /* Global Simulation State */
+    const SimState = {
+      connected: true,
+      scenario: 'home',
+      uptimeSec: 5412,
+      dieTemp: 51.2,
+      freeHeap: 172032,
+      dnsHits: 1482,
+      dnsMisses: 12,
+      adBlockCount: 142,
+      tpcEnabled: true,
+      tpcPowerDbm: 18.5,
+      isolationEnabled: false,
+      adBlockEnabled: true,
+      autoRoamEnabled: true,
+      clonedMac: 'EE:FA:BC:11:22:33',
+      
+      // Upstream STA link
+      upstream: {
+        ssid: 'Home-Fiber-WiFi',
+        bssid: '3C:84:6A:9B:41:02',
+        ip: '192.168.1.145',
+        gw: '192.168.1.1',
+        channel: 6,
+        rssi: -68.0,
+        quality: 85
+      },
+
+      // Repeater SoftAP
+      softap: {
+        ssid: 'AetherPulse-Extender',
+        pass: 'aetherpulse123',
+        ip: '192.168.4.1',
+        channel: 6,
+        dtim: 1,
+        beaconTu: 103,
+        maxClients: 8
+      },
+
+      // Connected Clients
+      clients: [
+        {
+          id: 'c1',
+          name: 'MacBook-Pro',
+          ip: '192.168.4.2',
+          mac: '3C:06:30:12:34:56',
+          vendor: 'Apple Inc.',
+          rssi: -42,
+          txRate: 310,
+          rxRate: 180,
+          connectedSec: 3600
+        },
+        {
+          id: 'c2',
+          name: 'Pixel-8-Pro',
+          ip: '192.168.4.3',
+          mac: '44:00:10:78:9A:BC',
+          vendor: 'Google LLC',
+          rssi: -55,
+          txRate: 120,
+          rxRate: 95,
+          connectedSec: 2840
+        },
+        {
+          id: 'c3',
+          name: 'Smart-TV-4K',
+          ip: '192.168.4.4',
+          mac: '80:5E:4F:33:22:11',
+          vendor: 'Samsung Electronics',
+          rssi: -64,
+          txRate: 20,
+          rxRate: 410,
+          connectedSec: 4210
+        },
+        {
+          id: 'c4',
+          name: 'IoT-Sensor',
+          ip: '192.168.4.5',
+          mac: '24:6F:28:FE:ED:01',
+          vendor: 'Espressif Systems',
+          rssi: -72,
+          txRate: 4,
+          rxRate: 2,
+          connectedSec: 5120
+        }
+      ],
+
+      // Saved Priority Failover Networks
+      knownNets: [
+        { ssid: 'Home-Fiber-WiFi', priority: 10 },
+        { ssid: 'Office-Backup-Ext', priority: 8 },
+        { ssid: 'Mobile-Hotspot-5G', priority: 5 }
+      ],
+
+      // Scanned Nearby Networks
+      scannedNets: [
+        { ssid: 'Home-Fiber-WiFi', bssid: '3C:84:6A:9B:41:02', rssi: -68, channel: 6, auth: 'WPA2/WPA3' },
+        { ssid: 'CyberNet-Gigabit-Ext', bssid: '00:1A:2B:3C:4D:5E', rssi: -71, channel: 11, auth: 'WPA2-PSK' },
+        { ssid: 'Campus-Guest-5G', bssid: 'F4:F2:6D:88:99:AA', rssi: -77, channel: 1, auth: 'Open (Captive)' },
+        { ssid: 'SkyLink_9921_IoT', bssid: '58:6D:8F:11:22:33', rssi: -82, channel: 6, auth: 'WPA2-PSK' },
+        { ssid: 'Neighbor_Archer_AX', bssid: '94:83:C4:00:11:22', rssi: -86, channel: 3, auth: 'WPA3-SAE' },
+        { ssid: 'SmartCity_FreeWiFi', bssid: 'A0:B1:C2:D3:E4:F5', rssi: -89, channel: 11, auth: 'Open' }
+      ],
+
+      // Live Telemetry Waveform Data
+      trafficHistory: [],
+      maxHistory: 45
+    };
+
+    /* Toast Notification Helper */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      t.style.transform = 'translateY(0)';
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(() => {
+        t.style.transform = 'translateY(20px)';
+        setTimeout(() => t.style.display = 'none', 300);
+      }, 3200);
+    }
+
+    /* Escape HTML */
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    /* Tab Switching */
+    let currentTab = 'overview';
+    function switchTab(name) {
+      currentTab = name;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(name));
+      });
+      document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.toggle('active', c.id === 'tab-' + name);
+      });
+
+      if (name === 'overview') {
+        resizeTopoCanvas();
+      } else if (name === 'wifi') {
+        drawSpectrum();
+        renderScannedNets();
+        renderKnownNets();
+      } else if (name === 'terminal') {
+        document.getElementById('termInput').focus();
+      }
+    }
+
+    /* Scenario Switching */
+    function setScenario(scen) {
+      SimState.scenario = scen;
+      document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('scen-' + scen);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (scen === 'home') {
+        SimState.connected = true;
+        SimState.upstream.ssid = 'Home-Fiber-WiFi';
+        SimState.upstream.channel = 6;
+        SimState.upstream.rssi = -68.0;
+        SimState.tpcEnabled = true;
+        SimState.tpcPowerDbm = 18.5;
+        SimState.dieTemp = 51.2;
+        showToast('Scenario Loaded: Home Fiber Mesh (Optimal link)');
+      } else if (scen === 'surge') {
+        SimState.connected = true;
+        SimState.upstream.rssi = -64.0;
+        // Boost client rates
+        SimState.clients.forEach(c => { c.txRate *= 2.5; c.rxRate *= 3; });
+        SimState.dieTemp = 56.4;
+        showToast('Scenario Loaded: 4K Streaming Surge (High Throughput)');
+      } else if (scen === 'fringe') {
+        SimState.connected = true;
+        SimState.upstream.rssi = -84.0;
+        SimState.tpcEnabled = false;
+        SimState.tpcPowerDbm = 20.5; // Max power
+        SimState.dieTemp = 58.8;
+        showToast('Scenario Loaded: Weak Fringe Link (Max Tx Power)');
+      } else if (scen === 'hotel') {
+        SimState.connected = true;
+        SimState.upstream.ssid = 'GrandHotel_Guest';
+        SimState.upstream.channel = 11;
+        SimState.upstream.rssi = -72.0;
+        SimState.adBlockCount += 85;
+        SimState.isolationEnabled = true;
+        showToast('Scenario Loaded: Hotel Captive Bypass (MAC Spoofed + L2 Isolated)');
+      }
+
+      updateUiMetrics();
+      renderClientsTable();
+      if (currentTab === 'wifi') drawSpectrum();
+    }
+
+    /* Toggle Online / Standalone AP mode */
+    function toggleOnlineState() {
+      SimState.connected = !SimState.connected;
+      showToast(SimState.connected ? 'Uplink connected: Online & Routing' : 'Uplink disconnected: Standalone AP Mode');
+      updateUiMetrics();
+    }
+
+    /* Update All Dashboard UI Metrics */
+    function updateUiMetrics() {
+      const badge = document.getElementById('liveBadge');
+      const statusText = document.getElementById('liveStatus');
+      const upSsid = document.getElementById('uplinkSsid');
+      const upIp = document.getElementById('uplinkIp');
+      const upCh = document.getElementById('uplinkChannel');
+      const upRssi = document.getElementById('uplinkRssi');
+      const rssiBar = document.getElementById('rssiBar');
+
+      if (SimState.connected) {
+        badge.className = 'badge';
+        statusText.textContent = 'ONLINE & ROUTING';
+        upSsid.textContent = SimState.upstream.ssid;
+        upIp.textContent = `IP: ${SimState.upstream.ip} (GW: ${SimState.upstream.gw})`;
+        upCh.textContent = `CH ${SimState.upstream.channel}`;
+        upRssi.textContent = `${SimState.upstream.rssi.toFixed(1)} dBm`;
+
+        const pct = Math.min(100, Math.max(10, Math.round((SimState.upstream.rssi + 100) * 1.66)));
+        rssiBar.style.width = pct + '%';
+        rssiBar.style.background = SimState.upstream.rssi > -65 ? 'var(--success)' : (SimState.upstream.rssi > -78 ? 'var(--primary)' : 'var(--warn)');
+      } else {
+        badge.className = 'badge offline';
+        statusText.textContent = 'STANDALONE AP';
+        upSsid.textContent = 'Not Connected';
+        upIp.textContent = 'Awaiting Upstream Wi-Fi Association';
+        upCh.textContent = 'CH --';
+        upRssi.textContent = '-- dBm';
+        rssiBar.style.width = '0%';
+      }
+
+      // SoftAP
+      document.getElementById('apSsid').textContent = SimState.softap.ssid;
+      document.getElementById('apIp').textContent = SimState.softap.ip;
+      document.getElementById('clientTally').textContent = `${SimState.clients.length} / ${SimState.softap.maxClients}`;
+      document.getElementById('clientsBar').style.width = `${(SimState.clients.length / SimState.softap.maxClients) * 100}%`;
+
+      // DNS
+      document.getElementById('dnsHitsDisplay').textContent = `${SimState.dnsHits.toLocaleString()} Hits`;
+      document.getElementById('dnsMisses').textContent = SimState.dnsMisses;
+      const totalQueries = SimState.dnsHits + SimState.dnsMisses;
+      const hitPct = totalQueries > 0 ? Math.round((SimState.dnsHits * 100) / totalQueries) : 100;
+      document.getElementById('dnsHitRate').textContent = `${hitPct}% Hits`;
+
+      // Silicon & Thermals
+      document.getElementById('dieTempDisplay').textContent = `${SimState.dieTemp.toFixed(1)} °C`;
+      const thermBadge = document.getElementById('thermalBadge');
+      if (SimState.dieTemp >= 65) {
+        thermBadge.textContent = 'WARM'; thermBadge.style.color = 'var(--warn)';
+      } else {
+        thermBadge.textContent = 'OPTIMAL'; thermBadge.style.color = 'var(--success)';
+      }
+      document.getElementById('dramFree').textContent = `${Math.round(SimState.freeHeap / 1024)} KB`;
+
+      // Uptime
+      const d = Math.floor(SimState.uptimeSec / 86400);
+      const h = Math.floor((SimState.uptimeSec % 86400) / 3600);
+      const m = Math.floor((SimState.uptimeSec % 3600) / 60);
+      const s = SimState.uptimeSec % 60;
+      document.getElementById('uptimeClock').textContent = `${d}d ${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
+
+      // TPC & Security Badges
+      const tpcBtn = document.getElementById('tpcBtn');
+      if (tpcBtn) {
+        if (SimState.tpcEnabled) {
+          tpcBtn.className = 'btn btn-sm btn-success';
+          tpcBtn.textContent = `Auto (+${SimState.tpcPowerDbm.toFixed(1)} dBm)`;
+        } else {
+          tpcBtn.className = 'btn btn-sm btn-ghost';
+          tpcBtn.textContent = `Static (+${SimState.tpcPowerDbm.toFixed(1)} dBm)`;
+        }
+      }
+
+      const isoBtn = document.getElementById('isolationBtn');
+      if (isoBtn) {
+        if (SimState.isolationEnabled) {
+          isoBtn.className = 'btn btn-sm btn-success';
+          isoBtn.textContent = 'Active (Isolated)';
+        } else {
+          isoBtn.className = 'btn btn-sm btn-ghost';
+          isoBtn.textContent = 'Disabled (Bridge)';
+        }
+      }
+
+      const adBtn = document.getElementById('adBlockBtn');
+      if (adBtn) {
+        if (SimState.adBlockEnabled) {
+          adBtn.className = 'btn btn-sm btn-success';
+          adBtn.textContent = 'Active (Enabled)';
+        } else {
+          adBtn.className = 'btn btn-sm btn-ghost';
+          adBtn.textContent = 'Disabled';
+        }
+      }
+      document.getElementById('adBlockCount').textContent = SimState.adBlockCount;
+    }
+
+    /* Periodic Simulation Ticker */
+    setInterval(() => {
+      SimState.uptimeSec++;
+
+      // Micro jitter on RSSI with Kalman filter simulation
+      if (SimState.connected) {
+        const jitter = (Math.random() - 0.5) * 0.4;
+        SimState.upstream.rssi += jitter * 0.15; // Smooth Kalman dampening
+      }
+
+      // DNS Hits & AdBlock counter tick
+      if (SimState.adBlockEnabled && Math.random() > 0.6) {
+        SimState.adBlockCount++;
+        SimState.dnsHits++;
+      } else if (Math.random() > 0.4) {
+        SimState.dnsHits += Math.floor(Math.random() * 3) + 1;
+      }
+
+      // Sum client rates for live bandwidth
+      let totalRx = 0, totalTx = 0;
+      SimState.clients.forEach(c => {
+        // Natural fluctuations
+        const deltaRx = (Math.random() - 0.5) * (c.rxRate * 0.1);
+        const deltaTx = (Math.random() - 0.5) * (c.txRate * 0.1);
+        c.rxRate = Math.max(1, c.rxRate + deltaRx);
+        c.txRate = Math.max(1, c.txRate + deltaTx);
+        totalRx += c.rxRate;
+        totalTx += c.txRate;
+      });
+
+      document.getElementById('rxLive').textContent = (totalRx >= 1024 ? (totalRx/1024).toFixed(2) + ' MB/s' : totalRx.toFixed(1) + ' KB/s');
+      document.getElementById('txLive').textContent = (totalTx >= 1024 ? (totalTx/1024).toFixed(2) + ' MB/s' : totalTx.toFixed(1) + ' KB/s');
+
+      // Record for waveform
+      SimState.trafficHistory.push({ rx: totalRx, tx: totalTx });
+      if (SimState.trafficHistory.length > SimState.maxHistory) SimState.trafficHistory.shift();
+
+      if (currentTab === 'overview') {
+        drawTrafficGraph();
+      }
+      updateUiMetrics();
+    }, 1000);
+
+    /* Render Clients Table */
+    function renderClientsTable() {
+      const tbody = document.getElementById('clientsTbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      if (SimState.clients.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-mid);">No client devices connected to SoftAP.</td></tr>';
+        return;
+      }
+
+      SimState.clients.forEach(c => {
+        const tr = document.createElement('tr');
+        let sigCls = c.rssi > -50 ? 'sig-great' : (c.rssi > -65 ? 'sig-good' : (c.rssi > -78 ? 'sig-fair' : 'sig-weak'));
+        tr.innerHTML = `
+          <td>
+            <b style="color:#fff;">${escapeHtml(c.name)}</b>
+            <button class="btn btn-sm btn-ghost" style="min-height:22px; padding:2px 6px; font-size:0.68rem; margin-left:8px;" onclick="openRenameModal('${c.mac}', '${escapeHtml(c.name)}')">Rename</button>
+          </td>
+          <td>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:0.8rem; color:#fff;">${c.ip}</div>
+            <div style="font-family:'JetBrains Mono', monospace; font-size:0.72rem; color:var(--text-low);">${c.mac}</div>
+          </td>
+          <td><span class="vendor-badge">${escapeHtml(c.vendor)}</span></td>
+          <td style="font-family:'JetBrains Mono', monospace; font-size:0.78rem;">
+            <span style="color:var(--primary);">${c.rxRate.toFixed(1)} KB/s ↓</span> • 
+            <span style="color:var(--accent);">${c.txRate.toFixed(1)} KB/s ↑</span>
+          </td>
+          <td><span class="signal-pill ${sigCls}">${c.rssi} dBm</span></td>
+          <td>
+            <button class="btn btn-sm btn-danger" style="min-height:26px; padding:3px 10px; font-size:0.72rem;" onclick="kickClient('${c.mac}')">Disconnect</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function refreshClientsTable() {
+      renderClientsTable();
+      showToast('Client device registry refreshed.');
+    }
+
+    function kickClient(mac) {
+      const idx = SimState.clients.findIndex(c => c.mac === mac);
+      if (idx !== -1) {
+        const removed = SimState.clients.splice(idx, 1)[0];
+        showToast(`Disconnected device: ${removed.name} (${mac})`);
+        renderClientsTable();
+        updateUiMetrics();
+      }
+    }
+
+    function addClientPrompt() {
+      const names = ['iPad-Pro-M2', 'PlayStation-5', 'Echo-Dot-Gen5', 'ESP32-Cam-Node', 'Lenovo-ThinkPad', 'Nintendo-Switch'];
+      const vendors = ['Apple Inc.', 'Sony Interactive', 'Amazon Technologies', 'Espressif Systems', 'Lenovo Group', 'Nintendo Co.'];
+      const pick = Math.floor(Math.random() * names.length);
+      const nextIdNum = SimState.clients.length + 2;
+
+      const newClient = {
+        id: 'c' + Date.now(),
+        name: names[pick],
+        ip: `192.168.4.${nextIdNum}`,
+        mac: `A4:C3:F0:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+        vendor: vendors[pick],
+        rssi: -Math.floor(Math.random() * 30 + 45),
+        txRate: Math.floor(Math.random() * 150 + 20),
+        rxRate: Math.floor(Math.random() * 250 + 30),
+        connectedSec: 10
+      };
+
+      SimState.clients.push(newClient);
+      showToast(`Station Associated: ${newClient.name} (${newClient.ip})`);
+      renderClientsTable();
+      updateUiMetrics();
+    }
+
+    function resetTopology() {
+      SimState.clients = [
+        { id: 'c1', name: 'MacBook-Pro', ip: '192.168.4.2', mac: '3C:06:30:12:34:56', vendor: 'Apple Inc.', rssi: -42, txRate: 310, rxRate: 180, connectedSec: 3600 },
+        { id: 'c2', name: 'Pixel-8-Pro', ip: '192.168.4.3', mac: '44:00:10:78:9A:BC', vendor: 'Google LLC', rssi: -55, txRate: 120, rxRate: 95, connectedSec: 2840 },
+        { id: 'c3', name: 'Smart-TV-4K', ip: '192.168.4.4', mac: '80:5E:4F:33:22:11', vendor: 'Samsung Electronics', rssi: -64, txRate: 20, rxRate: 410, connectedSec: 4210 },
+        { id: 'c4', name: 'IoT-Sensor', ip: '192.168.4.5', mac: '24:6F:28:FE:ED:01', vendor: 'Espressif Systems', rssi: -72, txRate: 4, rxRate: 2, connectedSec: 5120 }
+      ];
+      renderClientsTable();
+      updateUiMetrics();
+      showToast('Topology reset to default reference stations.');
+    }
+
+    function triggerTrafficSurge() {
+      SimState.clients.forEach(c => {
+        c.rxRate += Math.floor(Math.random() * 400 + 200);
+        c.txRate += Math.floor(Math.random() * 200 + 100);
+      });
+      // Spawn burst particles
+      for (let i = 0; i < 30; i++) {
+        spawnTopoParticle(true);
+      }
+      showToast('⚡ Simulated High-Bandwidth UDP/TCP Stream Triggered!');
+    }
+
+    /* Modal Controls */
+    function openRenameModal(mac, currentName) {
+      document.getElementById('renameMac').value = mac;
+      document.getElementById('renameAlias').value = currentName;
+      document.getElementById('renameModal').style.display = 'flex';
+      document.getElementById('renameAlias').focus();
+    }
+    function closeRenameModal() {
+      document.getElementById('renameModal').style.display = 'none';
+    }
+    function confirmRenameClient() {
+      const mac = document.getElementById('renameMac').value;
+      const alias = document.getElementById('renameAlias').value.trim();
+      const client = SimState.clients.find(c => c.mac === mac);
+      if (client && alias) {
+        client.name = alias;
+        showToast(`Alias saved: ${alias}`);
+        renderClientsTable();
+      }
+      closeRenameModal();
+    }
+
+    function openAddKnownModal() {
+      document.getElementById('newNetSsid').value = '';
+      document.getElementById('newNetPass').value = '';
+      document.getElementById('addKnownModal').style.display = 'flex';
+      document.getElementById('newNetSsid').focus();
+    }
+    function closeAddKnownModal() {
+      document.getElementById('addKnownModal').style.display = 'none';
+    }
+    function confirmAddKnown() {
+      const ssid = document.getElementById('newNetSsid').value.trim();
+      const prio = parseInt(document.getElementById('newNetPrio').value) || 5;
+      if (!ssid) return;
+      SimState.knownNets.push({ ssid, priority: prio });
+      SimState.knownNets.sort((a,b) => b.priority - a.priority);
+      renderKnownNets();
+      closeAddKnownModal();
+      showToast(`Added '${ssid}' to failover pool (Priority: ${prio})`);
+    }
+
+    function renderKnownNets() {
+      const c = document.getElementById('knownContainer');
+      if (!c) return;
+      c.innerHTML = '';
+      SimState.knownNets.forEach(net => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:12px 14px; background:rgba(0,0,0,0.28); border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:10px;';
+        item.innerHTML = `
+          <div>
+            <div style="font-weight:700; font-size:0.92rem; color:#fff;">${escapeHtml(net.ssid)}</div>
+            <span style="font-size:0.72rem; font-family:'JetBrains Mono', monospace; color:var(--primary); background:rgba(14,165,233,0.12); padding:2px 8px; border-radius:999px;">Priority: ${net.priority}</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-sm btn-ghost" onclick="quickConnectKnown('${escapeHtml(net.ssid)}')">Connect</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteKnown('${escapeHtml(net.ssid)}')">Remove</button>
+          </div>
+        `;
+        c.appendChild(item);
+      });
+    }
+
+    function quickConnectKnown(ssid) {
+      SimState.upstream.ssid = ssid;
+      SimState.connected = true;
+      updateUiMetrics();
+      showToast(`Associating with '${ssid}'... Connected!`);
+    }
+
+    function deleteKnown(ssid) {
+      SimState.knownNets = SimState.knownNets.filter(n => n.ssid !== ssid);
+      renderKnownNets();
+      showToast(`Removed '${ssid}' from pool.`);
+    }
+
+    /* Scanner Tab Handlers */
+    function simulateScan() {
+      const btn = document.getElementById('btnScanAp');
+      btn.disabled = true;
+      btn.textContent = 'Scanning 2.4 GHz...';
+      const tbody = document.getElementById('scanTbody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--primary);">Scanning radio frequencies & channels 1-13...</td></tr>';
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = 'Scan Spectrum';
+        renderScannedNets();
+        showToast('Wi-Fi spectrum scan completed: 6 access points found.');
+      }, 1200);
+    }
+
+    function renderScannedNets() {
+      const tbody = document.getElementById('scanTbody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      SimState.scannedNets.forEach(net => {
+        const tr = document.createElement('tr');
+        let cls = net.rssi > -65 ? 'sig-great' : (net.rssi > -75 ? 'sig-good' : (net.rssi > -85 ? 'sig-fair' : 'sig-weak'));
+        tr.innerHTML = `
+          <td><b style="color:#fff;">${escapeHtml(net.ssid)}</b></td>
+          <td style="font-family:'JetBrains Mono', monospace; font-size:0.76rem; color:var(--text-low);">${net.bssid}</td>
+          <td><span class="signal-pill ${cls}">${net.rssi} dBm</span></td>
+          <td style="font-family:monospace; font-weight:700;">CH ${net.channel}</td>
+          <td><span style="font-size:0.75rem; color:var(--text-mid);">${net.auth}</span></td>
+          <td><button class="btn btn-sm btn-ghost" onclick="openConnectModal('${escapeHtml(net.ssid)}')">Connect</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function openConnectModal(ssid) {
+      document.getElementById('modalTargetSsid').value = ssid;
+      document.getElementById('modalTargetPass').value = '';
+      document.getElementById('connectModal').style.display = 'flex';
+      document.getElementById('modalTargetPass').focus();
+    }
+    function closeConnectModal() {
+      document.getElementById('connectModal').style.display = 'none';
+    }
+    function confirmConnectAp() {
+      const ssid = document.getElementById('modalTargetSsid').value;
+      closeConnectModal();
+      showToast(`Initiating 4-way handshake with '${ssid}'...`);
+      setTimeout(() => {
+        SimState.upstream.ssid = ssid;
+        SimState.connected = true;
+        updateUiMetrics();
+        showToast(`Associated with '${ssid}'! L3 lwIP DNAPT routing active.`);
+      }, 1400);
+    }
+
+    /* Security Tab Controls */
+    function toggleTpc() {
+      SimState.tpcEnabled = !SimState.tpcEnabled;
+      if (SimState.tpcEnabled) {
+        SimState.tpcPowerDbm = 18.5;
+        SimState.dieTemp = Math.max(48.2, SimState.dieTemp - 3.2);
+        showToast('Dynamic TPC Enabled: Closed-loop power backoff active (+18.5 dBm)');
+      } else {
+        SimState.tpcPowerDbm = 20.5;
+        SimState.dieTemp += 4.5;
+        showToast('Dynamic TPC Disabled: Radio locked at full static transmit (+20.5 dBm)');
+      }
+      updateUiMetrics();
+    }
+
+    function toggleIsolation() {
+      SimState.isolationEnabled = !SimState.isolationEnabled;
+      showToast(SimState.isolationEnabled ? 'Layer-2 Isolation Enabled: Station peer bridging blocked.' : 'Layer-2 Isolation Disabled: Local station LAN bridge active.');
+      updateUiMetrics();
+    }
+
+    function toggleAdBlock() {
+      SimState.adBlockEnabled = !SimState.adBlockEnabled;
+      showToast(SimState.adBlockEnabled ? 'Hardware DNS Sinkhole Enabled: Telemetry & ads blocked.' : 'DNS Sinkhole Disabled.');
+      updateUiMetrics();
+    }
+
+    function applyCustomMac() {
+      const mac = document.getElementById('customMacInput').value.trim();
+      const re = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+      if (!re.test(mac)) {
+        showToast('Invalid MAC Address format! Use XX:XX:XX:XX:XX:XX');
+        return;
+      }
+      SimState.clonedMac = mac;
+      showToast(`Station MAC spoofed: ${mac} (Captive bypass ready)`);
+    }
+
+    function resetFactoryMac() {
+      SimState.clonedMac = '30:AE:A4:99:88:77';
+      document.getElementById('customMacInput').value = SimState.clonedMac;
+      showToast('Restored default Espressif factory MAC.');
+    }
+
+    function saveSettings(e) {
+      e.preventDefault();
+      SimState.softap.ssid = document.getElementById('formApSsid').value;
+      SimState.softap.pass = document.getElementById('formApPass').value;
+      SimState.tpcPowerDbm = parseFloat(document.getElementById('formTxPower').value);
+      SimState.autoRoamEnabled = document.getElementById('formAutoRoam').checked;
+      SimState.adBlockEnabled = document.getElementById('formSinkhole').checked;
+      showToast('Repeater parameters saved to NVS flash storage!');
+      updateUiMetrics();
+    }
+
+    function flushDnsCache() {
+      SimState.dnsHits = 0;
+      SimState.dnsMisses = 0;
+      updateUiMetrics();
+      showToast('SRAM DNS cache flushed. Fast-path tables reset.');
+    }
+
+    /* Node Inspector Modal */
+    let activeInspectorNode = null;
+    function openNodeModal(node) {
+      activeInspectorNode = node;
+      const title = document.getElementById('nodeModalTitle');
+      const badge = document.getElementById('nodeModalBadge');
+      const content = document.getElementById('nodeModalContent');
+      const btn = document.getElementById('nodeModalActionBtn');
+
+      title.textContent = node.name;
+      badge.textContent = node.ok ? 'ONLINE' : 'DISCONNECTED';
+      badge.className = node.ok ? 'badge' : 'badge offline';
+
+      let html = '';
+      if (node.type === 'wan') {
+        html = `
+          <div><b>Network:</b> Global Internet WAN</div>
+          <div><b>Gateway:</b> 8.8.8.8 / 1.1.1.1</div>
+          <div><b>Protocol:</b> lwIP DNAPT (RFC 3022) Zero-Copy Layer 3</div>
+          <div><b>Traffic State:</b> Unrestricted Upstream Routing</div>
+        `;
+        btn.textContent = 'Ping Gateway';
+      } else if (node.type === 'hub') {
+        html = `
+          <div><b>Appliance:</b> AetherPulse ESP32-D0WD-V3 (Quantum Edition)</div>
+          <div><b>Processor:</b> Xtensa Dual-Core 32-bit LX6 @ 240 MHz</div>
+          <div><b>Internal Die Temp:</b> ${SimState.dieTemp.toFixed(1)} °C (On-chip TSENS)</div>
+          <div><b>Free DRAM (Heap):</b> ${Math.round(SimState.freeHeap/1024)} KB</div>
+          <div><b>SoftAP IP:</b> 192.168.4.1 (MAC: 30:AE:A4:99:88:78)</div>
+          <div><b>Transmit Power:</b> +${SimState.tpcPowerDbm.toFixed(1)} dBm (TPC: ${SimState.tpcEnabled ? 'Auto' : 'Static'})</div>
+          <div><b>L2 Client Isolation:</b> ${SimState.isolationEnabled ? 'Active (Multi-Tenant)' : 'Disabled'}</div>
+        `;
+        btn.textContent = 'Simulate Warm Reboot';
+      } else {
+        // Client device
+        html = `
+          <div><b>Device Name:</b> ${escapeHtml(node.name)}</div>
+          <div><b>Hardware Vendor:</b> ${escapeHtml(node.client.vendor)}</div>
+          <div><b>Assigned IP:</b> ${node.client.ip}</div>
+          <div><b>MAC Address:</b> ${node.client.mac}</div>
+          <div><b>Signal Quality:</b> ${node.client.rssi} dBm (Smoothed Kalman RSSI)</div>
+          <div><b>Live Throughput:</b> ↓ ${node.client.rxRate.toFixed(1)} KB/s • ↑ ${node.client.txRate.toFixed(1)} KB/s</div>
+          <div><b>Connection Uptime:</b> ${Math.floor(node.client.connectedSec / 60)} minutes</div>
+        `;
+        btn.textContent = 'Simulate Ping';
+      }
+      content.innerHTML = html;
+      document.getElementById('nodeModal').style.display = 'flex';
+    }
+
+    function closeNodeModal() {
+      document.getElementById('nodeModal').style.display = 'none';
+      activeInspectorNode = null;
+    }
+
+    function nodeModalAction() {
+      if (!activeInspectorNode) return;
+      if (activeInspectorNode.type === 'hub') {
+        closeNodeModal();
+        execTermCmd('reboot');
+        switchTab('terminal');
+      } else if (activeInspectorNode.type === 'wan') {
+        closeNodeModal();
+        execTermCmd('ping 8.8.8.8');
+        switchTab('terminal');
+      } else {
+        closeNodeModal();
+        execTermCmd(`ping ${activeInspectorNode.client.ip}`);
+        switchTab('terminal');
+      }
+    }
+
+    /* ========================================================== */
+    /* INTERACTIVE CANVAS 1: Live Network Topology Map Engine     */
+    /* ========================================================== */
+    const topoCanvas = document.getElementById('topoCanvas');
+    const topoCtx = topoCanvas.getContext('2d');
+    const topoTooltip = document.getElementById('topoTooltip');
+    let topoNodes = [];
+    let topoParticles = [];
+    let hoveredNode = null;
+
+    function resizeTopoCanvas() {
+      const container = document.getElementById('topoContainer');
+      if (!container || !topoCanvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      topoCanvas.width = container.clientWidth * dpr;
+      topoCanvas.height = container.clientHeight * dpr;
+      buildTopoNodes();
+    }
+    window.addEventListener('resize', resizeTopoCanvas);
+
+    function buildTopoNodes() {
+      const w = topoCanvas.width;
+      const h = topoCanvas.height;
+      topoNodes = [];
+
+      // 1. WAN Uplink Node
+      topoNodes.push({
+        id: 'node-wan',
+        type: 'wan',
+        x: w * 0.12,
+        y: h * 0.5,
+        name: 'Internet (WAN)',
+        sub: SimState.connected ? 'DNS 8.8.8.8' : 'Offline',
+        radius: 28 * (window.devicePixelRatio || 1),
+        ok: SimState.connected
+      });
+
+      // 2. Upstream AP Node
+      topoNodes.push({
+        id: 'node-uplink',
+        type: 'uplink',
+        x: w * 0.35,
+        y: h * 0.5,
+        name: SimState.connected ? SimState.upstream.ssid : 'No Uplink AP',
+        sub: SimState.connected ? `${SimState.upstream.rssi.toFixed(0)} dBm • CH ${SimState.upstream.channel}` : 'Disconnected',
+        radius: 26 * (window.devicePixelRatio || 1),
+        ok: SimState.connected
+      });
+
+      // 3. Central Repeater Hub Node
+      topoNodes.push({
+        id: 'node-hub',
+        type: 'hub',
+        x: w * 0.60,
+        y: h * 0.5,
+        name: 'AetherPulse v3.0.1',
+        sub: `ESP32 • ${SimState.dieTemp.toFixed(1)}°C • 168KB Heap`,
+        radius: 36 * (window.devicePixelRatio || 1),
+        ok: true
+      });
+
+      // 4. Dynamic Client Nodes
+      const clients = SimState.clients;
+      if (clients.length === 0) {
+        topoNodes.push({
+          id: 'node-none',
+          type: 'client',
+          x: w * 0.88,
+          y: h * 0.5,
+          name: 'No Stations',
+          sub: 'Awaiting Clients',
+          radius: 22 * (window.devicePixelRatio || 1),
+          ok: false
+        });
+      } else {
+        const step = h / (clients.length + 1);
+        clients.forEach((c, idx) => {
+          topoNodes.push({
+            id: c.id,
+            type: 'client',
+            client: c,
+            x: w * 0.88,
+            y: step * (idx + 1),
+            name: c.name,
+            sub: `${c.ip} • ${c.rssi} dBm`,
+            radius: 22 * (window.devicePixelRatio || 1),
+            ok: true
+          });
+        });
+      }
+    }
+
+    function spawnTopoParticle(burst) {
+      topoParticles.push({
+        segment: Math.floor(Math.random() * 3), // 0: WAN->AP, 1: AP->Hub, 2: Hub->Client
+        clientIdx: Math.floor(Math.random() * Math.max(1, SimState.clients.length)),
+        t: Math.random(),
+        speed: (burst ? 0.008 : 0.003) + Math.random() * (burst ? 0.01 : 0.004),
+        direction: Math.random() > 0.4 ? 1 : -1,
+        color: Math.random() > 0.5 ? '#38bdf8' : '#34d399',
+        size: (burst ? 3.5 : 2.5) + Math.random() * 2
+      });
+      if (topoParticles.length > 80) topoParticles.shift();
+    }
+
+    // Init initial particles
+    for (let i = 0; i < 48; i++) spawnTopoParticle(false);
+
+    function drawTopoCanvas() {
+      if (currentTab !== 'overview' || !topoCanvas) {
+        requestAnimationFrame(drawTopoCanvas);
+        return;
+      }
+
+      const w = topoCanvas.width;
+      const h = topoCanvas.height;
+      const scale = window.devicePixelRatio || 1;
+      topoCtx.clearRect(0, 0, w, h);
+
+      if (topoNodes.length < 3) buildTopoNodes();
+
+      const nWan = topoNodes[0];
+      const nUp = topoNodes[1];
+      const nHub = topoNodes[2];
+      const clientNodes = topoNodes.slice(3);
+
+      // Helper: Draw curved links
+      function drawLink(p1, p2, active, dashed) {
+        topoCtx.beginPath();
+        topoCtx.strokeStyle = active ? 'rgba(56, 189, 248, 0.45)' : 'rgba(255, 255, 255, 0.12)';
+        topoCtx.lineWidth = 2 * scale;
+        if (dashed) topoCtx.setLineDash([6 * scale, 6 * scale]);
+        else topoCtx.setLineDash([]);
+        
+        topoCtx.moveTo(p1.x, p1.y);
+        const cx1 = p1.x + (p2.x - p1.x) * 0.5;
+        const cy1 = p1.y;
+        const cx2 = p1.x + (p2.x - p1.x) * 0.5;
+        const cy2 = p2.y;
+        topoCtx.bezierCurveTo(cx1, cy1, cx2, cy2, p2.x, p2.y);
+        topoCtx.stroke();
+        topoCtx.setLineDash([]);
+      }
+
+      drawLink(nWan, nUp, nWan.ok, !nWan.ok);
+      drawLink(nUp, nHub, nUp.ok, !nUp.ok);
+      clientNodes.forEach(cN => drawLink(nHub, cN, cN.ok, !cN.ok));
+
+      // Draw L2 Isolation Barrier if enabled
+      if (SimState.isolationEnabled && clientNodes.length > 1) {
+        topoCtx.save();
+        topoCtx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+        topoCtx.setLineDash([4 * scale, 4 * scale]);
+        topoCtx.lineWidth = 1.5 * scale;
+        topoCtx.beginPath();
+        const topY = clientNodes[0].y - 20 * scale;
+        const botY = clientNodes[clientNodes.length - 1].y + 20 * scale;
+        const barrierX = nHub.x + (clientNodes[0].x - nHub.x) * 0.65;
+        topoCtx.moveTo(barrierX, topY);
+        topoCtx.lineTo(barrierX, botY);
+        topoCtx.stroke();
+
+        topoCtx.fillStyle = '#f87171';
+        topoCtx.font = `bold ${Math.round(8.5 * scale)}px 'JetBrains Mono', monospace`;
+        topoCtx.textAlign = 'center';
+        topoCtx.fillText('🛡️ L2 CLIENT ISOLATION ACTIVE', barrierX, topY - 8 * scale);
+        topoCtx.restore();
+      }
+
+      // Draw Animated Particles
+      topoParticles.forEach(pt => {
+        pt.t += pt.speed * pt.direction;
+        if (pt.t > 1.0) pt.t = 0.0;
+        if (pt.t < 0.0) pt.t = 1.0;
+
+        let p1 = nWan, p2 = nUp;
+        if (pt.segment === 1) {
+          p1 = nUp; p2 = nHub;
+        } else if (pt.segment === 2) {
+          p1 = nHub;
+          const idx = pt.clientIdx % clientNodes.length;
+          p2 = clientNodes[idx];
+        }
+
+        const t = pt.t;
+        const cx1 = p1.x + (p2.x - p1.x) * 0.5;
+        const cy1 = p1.y;
+        const cx2 = p1.x + (p2.x - p1.x) * 0.5;
+        const cy2 = p2.y;
+
+        const px = Math.pow(1-t, 3)*p1.x + 3*Math.pow(1-t, 2)*t*cx1 + 3*(1-t)*Math.pow(t, 2)*cx2 + Math.pow(t, 3)*p2.x;
+        const py = Math.pow(1-t, 3)*p1.y + 3*Math.pow(1-t, 2)*t*cy1 + 3*(1-t)*Math.pow(t, 2)*cy2 + Math.pow(t, 3)*p2.y;
+
+        topoCtx.beginPath();
+        topoCtx.fillStyle = pt.color;
+        topoCtx.shadowColor = pt.color;
+        topoCtx.shadowBlur = 8 * scale;
+        topoCtx.arc(px, py, pt.size * scale, 0, Math.PI * 2);
+        topoCtx.fill();
+        topoCtx.shadowBlur = 0;
+      });
+
+      // Draw Nodes
+      topoNodes.forEach(node => {
+        const isHovered = hoveredNode === node;
+        const radius = node.radius * (isHovered ? 1.15 : 1.0);
+
+        // Outer pulsing ring
+        topoCtx.beginPath();
+        topoCtx.arc(node.x, node.y, radius + (isHovered ? 12 : 6) * scale, 0, Math.PI * 2);
+        topoCtx.fillStyle = node.type === 'hub' ? 'rgba(14, 165, 233, 0.2)' : (node.ok ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.12)');
+        topoCtx.fill();
+
+        // Node Circle Body
+        topoCtx.beginPath();
+        topoCtx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+        topoCtx.fillStyle = node.type === 'hub' ? 'rgba(15, 23, 42, 0.95)' : (node.ok ? 'rgba(30, 41, 59, 0.92)' : 'rgba(20, 20, 25, 0.9)');
+        topoCtx.fill();
+
+        topoCtx.lineWidth = (isHovered ? 3.5 : 2.5) * scale;
+        topoCtx.strokeStyle = node.type === 'hub' ? '#38bdf8' : (node.ok ? '#10b981' : '#ef4444');
+        if (isHovered) {
+          topoCtx.shadowColor = topoCtx.strokeStyle;
+          topoCtx.shadowBlur = 14 * scale;
+        }
+        topoCtx.stroke();
+        topoCtx.shadowBlur = 0;
+
+        // Node Title
+        topoCtx.fillStyle = '#ffffff';
+        topoCtx.font = `bold ${Math.round(11 * scale)}px 'Plus Jakarta Sans', sans-serif`;
+        topoCtx.textAlign = 'center';
+        topoCtx.fillText(node.name, node.x, node.y + radius + 15 * scale);
+
+        // Node Subtitle
+        topoCtx.fillStyle = '#94a3b8';
+        topoCtx.font = `${Math.round(9 * scale)}px 'JetBrains Mono', monospace`;
+        topoCtx.fillText(node.sub, node.x, node.y + radius + 27 * scale);
+      });
+
+      requestAnimationFrame(drawTopoCanvas);
+    }
+    requestAnimationFrame(drawTopoCanvas);
+
+    // Canvas Mouse & Touch Interactivity
+    topoCanvas.addEventListener('mousemove', (e) => {
+      const rect = topoCanvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const mouseX = (e.clientX - rect.left) * dpr;
+      const mouseY = (e.clientY - rect.top) * dpr;
+
+      hoveredNode = null;
+      for (const node of topoNodes) {
+        const dx = mouseX - node.x;
+        const dy = mouseY - node.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= node.radius * 1.3) {
+          hoveredNode = node;
+          break;
+        }
+      }
+
+      topoCanvas.style.cursor = hoveredNode ? 'pointer' : 'default';
+
+      if (hoveredNode) {
+        topoTooltip.style.display = 'block';
+        topoTooltip.style.left = `${e.clientX - rect.left}px`;
+        topoTooltip.style.top = `${e.clientY - rect.top - 15}px`;
+
+        if (hoveredNode.type === 'hub') {
+          topoTooltip.innerHTML = `<b>AetherPulse Hub</b><br>ESP32-D0WD @ 240MHz<br>Temp: ${SimState.dieTemp.toFixed(1)}°C • TPC: +${SimState.tpcPowerDbm}dBm`;
+        } else if (hoveredNode.type === 'wan') {
+          topoTooltip.innerHTML = `<b>WAN Uplink</b><br>IP: 8.8.8.8 (Internet)<br>Throughput: Real-Time Flow`;
+        } else if (hoveredNode.type === 'uplink') {
+          topoTooltip.innerHTML = `<b>Upstream AP:</b> ${SimState.upstream.ssid}<br>RSSI: ${SimState.upstream.rssi.toFixed(1)} dBm • CH ${SimState.upstream.channel}`;
+        } else if (hoveredNode.client) {
+          const c = hoveredNode.client;
+          topoTooltip.innerHTML = `<b>${escapeHtml(c.name)}</b> (${c.vendor})<br>IP: ${c.ip} • ${c.rssi} dBm<br>↓ ${c.rxRate.toFixed(1)} KB/s • ↑ ${c.txRate.toFixed(1)} KB/s`;
+        }
+      } else {
+        topoTooltip.style.display = 'none';
+      }
+    });
+
+    topoCanvas.addEventListener('mouseleave', () => {
+      hoveredNode = null;
+      topoTooltip.style.display = 'none';
+    });
+
+    topoCanvas.addEventListener('click', () => {
+      if (hoveredNode) {
+        openNodeModal(hoveredNode);
+      }
+    });
+
+    /* ========================================================== */
+    /* INTERACTIVE CANVAS 2: Telemetry Waveform Engine            */
+    /* ========================================================== */
+    function drawTrafficGraph() {
+      const canvas = document.getElementById('trafficCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const hist = SimState.trafficHistory;
+      if (hist.length < 2) return;
+
+      let maxVal = 100;
+      hist.forEach(pt => {
+        if (pt.rx > maxVal) maxVal = pt.rx;
+        if (pt.tx > maxVal) maxVal = pt.tx;
+      });
+
+      const step = w / (SimState.maxHistory - 1);
+
+      // Draw Rx Line (Cyan)
+      ctx.beginPath();
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 2;
+      hist.forEach((pt, i) => {
+        const x = i * step;
+        const y = h - (pt.rx / maxVal) * (h - 14) - 6;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      // Draw Tx Line (Purple)
+      ctx.beginPath();
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.lineWidth = 2;
+      hist.forEach((pt, i) => {
+        const x = i * step;
+        const y = h - (pt.tx / maxVal) * (h - 14) - 6;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    /* ========================================================== */
+    /* INTERACTIVE CANVAS 3: 2.4 GHz Spectrum Analyzer            */
+    /* ========================================================== */
+    function drawSpectrum() {
+      const canvas = document.getElementById('spectrumCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const chCount = 13;
+      const colW = w / chCount;
+      const currentCh = SimState.upstream.channel;
+      const bestCh = 11;
+
+      // Realistic channel congestion loads
+      const channelLoads = [30, 20, 25, 40, 50, 78, 65, 45, 30, 22, 14, 18, 20];
+
+      channelLoads.forEach((load, idx) => {
+        const ch = idx + 1;
+        const x = idx * colW;
+        const barH = (load / 100) * (h - 40);
+
+        // Parabolic Frequency Curve
+        ctx.beginPath();
+        ctx.fillStyle = ch === bestCh ? 'rgba(16, 185, 129, 0.22)' : (ch === currentCh ? 'rgba(14, 165, 233, 0.22)' : 'rgba(255, 255, 255, 0.04)');
+        ctx.arc(x + colW / 2, h - 20, colW * 1.5, Math.PI, 0, false);
+        ctx.fill();
+
+        // Density Bar
+        ctx.fillStyle = load > 65 ? '#ef4444' : (load > 35 ? '#f59e0b' : '#10b981');
+        ctx.fillRect(x + colW * 0.2, h - 20 - barH, colW * 0.6, barH);
+
+        // Channel Number Label
+        ctx.fillStyle = ch === bestCh ? '#34d399' : (ch === currentCh ? '#38bdf8' : '#94a3b8');
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(ch, x + colW / 2, h - 6);
+      });
+    }
+
+    /* ========================================================== */
+    /* INTERACTIVE SERIAL CLI SHELL (VT100 Terminal Engine)       */
+    /* ========================================================== */
+    const termBody = document.getElementById('termBody');
+    const termInput = document.getElementById('termInput');
+    const cmdHistory = [];
+    let historyIdx = -1;
+
+    function printTerm(text, cls = '') {
+      const line = document.createElement('div');
+      if (cls) line.className = cls;
+      line.innerHTML = text;
+      termBody.appendChild(line);
+      termBody.scrollTop = termBody.scrollHeight;
+    }
+
+    function initTerminal() {
+      printTerm('<span style="color:#38bdf8;">============================================================</span>');
+      printTerm('<span style="color:#fff; font-weight:700;">  AETHERPULSE v3.0.1 (Quantum Edition) • ESP32-D0WD-V3</span>');
+      printTerm('<span style="color:#10b981;">  Zero-Jitter NAPT Wi-Fi Repeater • Interactive Serial CLI</span>');
+      printTerm('<span style="color:#94a3b8;">  Type <b>help</b> to list available firmware commands.</span>');
+      printTerm('<span style="color:#38bdf8;">============================================================</span>\n');
+    }
+
+    function clearTerminal() {
+      termBody.innerHTML = '';
+      initTerminal();
+    }
+
+    function copyTerminalOutput() {
+      navigator.clipboard.writeText(termBody.innerText).then(() => {
+        showToast('Terminal output copied to clipboard.');
+      });
+    }
+
+    function execTermCmd(rawCmd) {
+      const cmd = rawCmd.trim();
+      if (!cmd) return;
+      cmdHistory.push(cmd);
+      historyIdx = cmdHistory.length;
+
+      printTerm(`<span style="color:#38bdf8;">aetherpulse&gt;</span> <span style="color:#fff; font-weight:700;">${escapeHtml(cmd)}</span>`);
+
+      const parts = cmd.split(' ');
+      const action = parts[0].toLowerCase();
+
+      switch (action) {
+        case 'help':
+          printTerm(`
+<span style="color:#38bdf8; font-weight:700;">AVAILABLE AETHERPULSE COMMANDS:</span>
+  <b>status</b>       Full silicon, STA link, SoftAP, and routing status
+  <b>top</b>          FreeRTOS task table & CPU core utilization
+  <b>scan</b>         Passive 2.4 GHz RF spectrum survey
+  <b>ping [host]</b>  Zero-jitter lwIP ICMP benchmark (default: 8.8.8.8)
+  <b>dns</b>          Inspect fast-path SRAM DNS cache entries
+  <b>temp</b>         Internal on-chip TSENS thermal readout & throttling
+  <b>clients</b>      List connected stations with MAC, IP, and signal
+  <b>tpc</b>          Dynamic Transmit Power Control status & backoff
+  <b>adblock</b>      DNS sinkhole query stats and blocked filters
+  <b>clear</b>        Clear terminal screen
+  <b>reboot</b>       Soft restart ESP32-D0WD SoC
+`);
+          break;
+
+        case 'status':
+          printTerm(`
+---------------- AETHERPULSE SYSTEM STATUS ----------------
+  Device:             ESP32-D0WD-V3 (Silicon Rev 3.1) @ 240 MHz
+  Die Temperature:    ${SimState.dieTemp.toFixed(1)} °C (Thermal state: OPTIMAL)
+  Free DRAM (Heap):   ${SimState.freeHeap} bytes (Min Free: 164200 bytes)
+  System Uptime:      ${SimState.uptimeSec} seconds
+--- Upstream Station (STA) Link ---
+  Connected:          ${SimState.connected ? 'YES' : 'NO'}
+  SSID:               ${SimState.upstream.ssid}
+  Channel:            ${SimState.upstream.channel} (Optimal recommended: CH 11)
+  Filtered RSSI:      ${SimState.upstream.rssi.toFixed(1)} dBm (Kalman Smoothed)
+  Assigned IP:        ${SimState.upstream.ip} (GW: ${SimState.upstream.gw})
+  Station MAC:        ${SimState.clonedMac}
+--- Repeater SoftAP ---
+  SoftAP SSID:        ${SimState.softap.ssid}
+  SoftAP IP:          ${SimState.softap.ip} (http://aetherpulse.local)
+  Connected Clients:  ${SimState.clients.length} / ${SimState.softap.maxClients}
+--- L3 Routing, NAPT & DNS Acceleration ---
+  lwIP DNAPT:         ACTIVE (RFC 3022 Zero-Copy)
+  SRAM DNS Cache:     ${SimState.dnsHits} Hits / ${SimState.dnsMisses} Misses
+  DNS AdBlocker:      ${SimState.adBlockEnabled ? 'ACTIVE (' + SimState.adBlockCount + ' queries sinkholed)' : 'DISABLED'}
+  L2 Isolation:       ${SimState.isolationEnabled ? 'ACTIVE' : 'DISABLED'}
+  Dynamic TPC:        ${SimState.tpcEnabled ? 'AUTO (+18.5 dBm)' : 'STATIC (+20.5 dBm)'}
+-----------------------------------------------------------`);
+          break;
+
+        case 'top':
+          printTerm(`
+<span style="color:#38bdf8;">Core 0 (Protocol & MAC): 14.2%  |  Core 1 (lwIP DNAPT & User): 22.8%</span>
+-------------------------------------------------------------------
+Task Name         State  Prio  Stack Min  Core  Runtime%
+-------------------------------------------------------------------
+wifi_sta_task     RUN    23    2840 B     0     8.4%
+dnapt_worker      READY  20    3120 B     1     14.2%
+dns_sinkhole      WAIT   18    1980 B     1     3.1%
+http_server       WAIT   16    2450 B     1     4.5%
+twdt_monitor      WAIT   24    1024 B     0     0.2%
+IDLE0             READY  0     768 B      0     77.2%
+IDLE1             READY  0     768 B      1     55.4%
+-------------------------------------------------------------------`);
+          break;
+
+        case 'scan':
+          printTerm(`Scanning 2.4 GHz spectrum channels 1-13...`);
+          setTimeout(() => {
+            let out = '<span style="color:#10b981;">Scan complete: 6 BSSIDs detected:</span>\n';
+            out += 'SSID                   BSSID              CH  RSSI     AUTH\n';
+            out += '-----------------------------------------------------------\n';
+            SimState.scannedNets.forEach(n => {
+              out += `${n.ssid.padEnd(22)} ${n.bssid}  ${String(n.channel).padEnd(3)} ${String(n.rssi).padEnd(8)} ${n.auth}\n`;
+            });
+            printTerm(out);
+          }, 400);
+          break;
+
+        case 'ping':
+          const target = parts[1] || '8.8.8.8';
+          printTerm(`PING ${target} (56 data bytes, Zero-Jitter Mode):`);
+          let seq = 1;
+          const pingInterval = setInterval(() => {
+            const rtt = (0.28 + Math.random() * 0.18).toFixed(2);
+            printTerm(`64 bytes from ${target}: icmp_seq=${seq} ttl=118 time=${rtt} ms`);
+            seq++;
+            if (seq > 4) {
+              clearInterval(pingInterval);
+              printTerm(`--- ${target} ping statistics ---`);
+              printTerm(`4 packets transmitted, 4 received, 0% packet loss, rtt min/avg/max = 0.28/0.36/0.46 ms\n`);
+            }
+          }, 280);
+          break;
+
+        case 'dns':
+          printTerm(`
+--- Sub-ms SRAM DNS Fast-Path Cache Table ---
+Domain Hash   Resolved IPv4    TTL (s)  Hits   State
+-------------------------------------------------------
+google.com    142.250.190.46   284      412    VALID
+cloudflare    1.1.1.1          190      289    VALID
+github.com    140.82.121.4     410      148    VALID
+telemetry.ad  0.0.0.0 (SINK)   0        84     BLOCKED
+metrics.trk   0.0.0.0 (SINK)   0        58     BLOCKED
+-------------------------------------------------------
+Total SRAM fast-path acceleration: ${SimState.dnsHits} queries served in &lt; 0.8 ms`);
+          break;
+
+        case 'temp':
+          printTerm(`On-chip TSENS Sensor: ${SimState.dieTemp.toFixed(2)} °C`);
+          printTerm(`Thermal State:        OPTIMAL (Threshold: 75.0 °C)`);
+          printTerm(`Dynamic TPC Margin:   ${(75.0 - SimState.dieTemp).toFixed(1)} °C headroom remaining`);
+          break;
+
+        case 'clients':
+          printTerm(`Active SoftAP Stations (${SimState.clients.length} connected):`);
+          SimState.clients.forEach((c, idx) => {
+            printTerm(`  [${idx+1}] ${c.name.padEnd(16)} IP: ${c.ip.padEnd(14)} MAC: ${c.mac}  RSSI: ${c.rssi} dBm (${c.vendor})`);
+          });
+          break;
+
+        case 'tpc':
+          printTerm(`Dynamic TPC Mode:     ${SimState.tpcEnabled ? 'ENABLED (Closed-Loop)' : 'DISABLED (Static)'}`);
+          printTerm(`Current RF Power:     +${SimState.tpcPowerDbm.toFixed(1)} dBm`);
+          printTerm(`Beacon Scheduling:    103 TU (180° Anti-Collision Phase)`);
+          break;
+
+        case 'adblock':
+          printTerm(`Hardware DNS Sinkhole: ${SimState.adBlockEnabled ? 'ENABLED' : 'DISABLED'}`);
+          printTerm(`Total Blocked Queries: ${SimState.adBlockCount}`);
+          printTerm(`Filter Rules Active:   1,248 domains in SRAM flash bloom filter`);
+          break;
+
+        case 'clear':
+          clearTerminal();
+          break;
+
+        case 'reboot':
+          printTerm('<span style="color:#ef4444;">Restarting AetherPulse ESP32...</span>');
+          setTimeout(() => {
+            printTerm('ets Jun  8 2016 00:22:57\nrst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)');
+            printTerm('configsip: 0, SPIWP:0xee\nclk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00');
+            printTerm('mode:DIO, clock div:2\nload:0x3fff0030,len:1184\nho 0 tail 12 room 4\nload:0x40078000,len:13264\nload:0x40080400,len:3028');
+            printTerm('entry 0x400805e4');
+            printTerm('[AetherPulse] Silicon initialized. lwIP NAPT routing mounted.');
+            printTerm('<span style="color:#10b981;">[AetherPulse] Ready. SoftAP active on 192.168.4.1</span>\n');
+          }, 600);
+          break;
+
+        default:
+          printTerm(`<span style="color:#ef4444;">Unknown command: '${escapeHtml(action)}'. Type <b>help</b> for command list.</span>`);
+          break;
+      }
+    }
+
+    termInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = termInput.value;
+        termInput.value = '';
+        execTermCmd(val);
+      } else if (e.key === 'ArrowUp') {
+        if (cmdHistory.length > 0 && historyIdx > 0) {
+          historyIdx--;
+          termInput.value = cmdHistory[historyIdx];
+        }
+      } else if (e.key === 'ArrowDown') {
+        if (historyIdx < cmdHistory.length - 1) {
+          historyIdx++;
+          termInput.value = cmdHistory[historyIdx];
+        } else {
+          historyIdx = cmdHistory.length;
+          termInput.value = '';
+        }
+      }
+    });
+
+    /* ========================================================== */
+    /* SPEEDTEST BENCHMARK ENGINE                                 */
+    /* ========================================================== */
+    function runSpeedtestBenchmark() {
+      const btn = document.getElementById('runSpeedtestBtn');
+      const num = document.getElementById('speedNum');
+      const pingVal = document.getElementById('speedPing');
+      const jitterVal = document.getElementById('speedJitter');
+      const dataVal = document.getElementById('speedData');
+
+      btn.disabled = true;
+      btn.textContent = 'Benchmarking...';
+      num.textContent = '...';
+
+      // Phase 1: Latency Test
+      setTimeout(() => {
+        const ping = (1.2 + Math.random() * 0.4).toFixed(1);
+        const jitter = (0.15 + Math.random() * 0.1).toFixed(2);
+        pingVal.textContent = `${ping} ms`;
+        jitterVal.textContent = `${jitter} ms`;
+
+        // Phase 2: Throughput Sweep
+        let currentSpeed = 0;
+        const targetSpeed = 46.8 + Math.random() * 5.2;
+        let elapsed = 0;
+        const duration = 2400; // ms
+        const startTime = Date.now();
+
+        const sweepInterval = setInterval(() => {
+          elapsed = Date.now() - startTime;
+          const progress = Math.min(1.0, elapsed / duration);
+          currentSpeed = (targetSpeed * Math.sin(progress * Math.PI * 0.5) + (Math.random() - 0.5) * 1.5);
+          num.textContent = Math.max(0, currentSpeed).toFixed(1);
+          dataVal.textContent = `${((currentSpeed * elapsed) / (8 * 1024)).toFixed(1)} MB`;
+
+          if (progress >= 1.0) {
+            clearInterval(sweepInterval);
+            num.textContent = targetSpeed.toFixed(1);
+            btn.disabled = false;
+            btn.textContent = 'Run Benchmark';
+            showToast(`Speedtest benchmark finished: ${targetSpeed.toFixed(1)} Mbps down (${ping} ms ping)`);
+          }
+        }, 50);
+      }, 700);
+    }
+
+    /* Ambient Cyber Canvas Particle Grid */
+    function initCyberCanvas() {
+      const canvas = document.getElementById('cyberCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+
+      const stars = [];
+      for (let i = 0; i < 40; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.5 + 0.5,
+          vx: (Math.random() - 0.5) * 0.2,
+          vy: (Math.random() - 0.5) * 0.2,
+          alpha: Math.random() * 0.5 + 0.2
+        });
+      }
+
+      function renderStars() {
+        ctx.clearRect(0, 0, w, h);
+        stars.forEach(s => {
+          s.x += s.vx; s.y += s.vy;
+          if (s.x < 0) s.x = w;
+          if (s.x > w) s.x = 0;
+          if (s.y < 0) s.y = h;
+          if (s.y > h) s.y = 0;
+
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(56, 189, 248, ${s.alpha})`;
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        requestAnimationFrame(renderStars);
+      }
+      requestAnimationFrame(renderStars);
+    }
+
+    /* DOM Ready Initialization */
+    window.addEventListener('DOMContentLoaded', () => {
+      initCyberCanvas();
+      resizeTopoCanvas();
+      updateUiMetrics();
+      renderClientsTable();
+      renderScannedNets();
+      renderKnownNets();
+      initTerminal();
+      drawSpectrum();
+    });
+  </script>
+</body>
+</html>

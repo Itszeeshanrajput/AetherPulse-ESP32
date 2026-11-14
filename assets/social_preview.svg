@@ -1,0 +1,400 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070b16" />
+      <stop offset="45%" stop-color="#0a0f1d" />
+      <stop offset="100%" stop-color="#060913" />
+    </linearGradient>
+
+    <!-- Ambient Glow Orbs -->
+    <radialGradient id="ambientCyan" cx="15%" cy="20%" r="55%">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.16" />
+      <stop offset="55%" stop-color="#00f0ff" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="ambientIndigo" cx="85%" cy="65%" r="60%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.20" />
+      <stop offset="50%" stop-color="#6366f1" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="ambientEmerald" cx="50%" cy="95%" r="45%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.14" />
+      <stop offset="70%" stop-color="#10b981" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Cyber Grid Pattern -->
+    <pattern id="cyberGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0, 240, 255, 0.04)" stroke-width="1" />
+      <circle cx="0" cy="0" r="1.5" fill="rgba(0, 240, 255, 0.15)" />
+    </pattern>
+
+    <!-- Gradients for Accents & Badges -->
+    <linearGradient id="pulseTextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="60%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#121b2f" stop-opacity="0.84" />
+      <stop offset="100%" stop-color="#0c1322" stop-opacity="0.95" />
+    </linearGradient>
+
+    <linearGradient id="pillCyanBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0, 240, 255, 0.13)" />
+      <stop offset="100%" stop-color="rgba(14, 165, 233, 0.05)" />
+    </linearGradient>
+
+    <linearGradient id="pillEmeraldBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(16, 185, 129, 0.13)" />
+      <stop offset="100%" stop-color="rgba(5, 150, 105, 0.05)" />
+    </linearGradient>
+
+    <linearGradient id="pillIndigoBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(99, 102, 241, 0.15)" />
+      <stop offset="100%" stop-color="rgba(79, 70, 229, 0.05)" />
+    </linearGradient>
+
+    <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(0, 240, 255, 0.16)" />
+      <stop offset="50%" stop-color="rgba(99, 102, 241, 0.12)" />
+      <stop offset="100%" stop-color="rgba(16, 185, 129, 0.16)" />
+    </linearGradient>
+
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0ff" stop-opacity="0.5" />
+      <stop offset="50%" stop-color="#6366f1" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.5" />
+    </linearGradient>
+
+    <!-- Glow and Shadow Filters -->
+    <filter id="glowCyan" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="7" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="glowSubtle" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <style>
+    .font-sans {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', 'Fira Code', 'DejaVu Sans Mono', Consolas, monospace;
+    }
+  </style>
+
+  <!-- 1. Background Layers -->
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
+  <rect width="1200" height="630" fill="url(#ambientCyan)" />
+  <rect width="1200" height="630" fill="url(#ambientIndigo)" />
+  <rect width="1200" height="630" fill="url(#ambientEmerald)" />
+  <rect width="1200" height="630" fill="url(#cyberGrid)" />
+
+  <!-- 2. Ambient Cyber Geometry -->
+  <g opacity="0.45">
+    <circle cx="900" cy="315" r="180" fill="none" stroke="#00f0ff" stroke-width="1" stroke-dasharray="3,6" opacity="0.3" />
+    <circle cx="900" cy="315" r="320" fill="none" stroke="#6366f1" stroke-width="1" stroke-dasharray="4,8" opacity="0.2" />
+    <circle cx="900" cy="315" r="460" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="2,6" opacity="0.15" />
+    
+    <path d="M 0 160 Q 300 120, 600 180 T 1200 140" fill="none" stroke="rgba(0, 240, 255, 0.22)" stroke-width="1.5" />
+    <path d="M 0 490 Q 350 530, 700 480 T 1200 520" fill="none" stroke="rgba(99, 102, 241, 0.22)" stroke-width="1.5" />
+  </g>
+
+  <!-- Outer Frame & Corner Reticles -->
+  <rect x="18" y="18" width="1164" height="594" rx="22" fill="none" stroke="url(#borderGrad)" stroke-width="1.5" />
+
+  <g stroke="#00f0ff" stroke-width="2.5" fill="none">
+    <path d="M 18 42 L 18 18 L 42 18" />
+    <path d="M 1158 18 L 1182 18 L 1182 42" />
+    <path d="M 18 588 L 18 612 L 42 612" />
+    <path d="M 1158 612 L 1182 612 L 1182 588" />
+  </g>
+
+
+  <!-- ===================================================================== -->
+  <!-- TOP HEADER ROW                                                        -->
+  <!-- ===================================================================== -->
+
+  <!-- Top Left: Platform Badge -->
+  <g transform="translate(48, 42)">
+    <rect x="0" y="0" width="315" height="34" rx="17" fill="rgba(15, 23, 42, 0.88)" stroke="rgba(0, 240, 255, 0.35)" stroke-width="1.2" />
+    <circle cx="18" cy="17" r="8" fill="#10b981" fill-opacity="0.25" />
+    <circle cx="18" cy="17" r="4" fill="#10b981" />
+    <text x="34" y="22" class="font-mono" font-size="11.5" font-weight="700" fill="#38bdf8" letter-spacing="0.8">ESP32-WROOM-32 / S3 • 240MHz</text>
+  </g>
+
+  <!-- Top Right: Professional Badge (Requirement: "100% Open Source | Hardware Tested") -->
+  <g transform="translate(740, 41)">
+    <rect x="0" y="0" width="412" height="36" rx="18" fill="url(#badgeGrad)" stroke="url(#borderGrad)" stroke-width="1.4" filter="url(#glowSubtle)" />
+    <!-- Shield / Verified Check Icon -->
+    <g transform="translate(18, 9)" fill="none" stroke="#00f0ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 9 1.5 L 16 4.5 V 9.5 C 16 13.8 13 16.8 9 18 C 5 16.8 2 13.8 2 9.5 V 4.5 Z" />
+      <path d="M 6 9.5 L 8 11.5 L 12 7.5" stroke="#10b981" />
+    </g>
+    <!-- Badge Text -->
+    <text x="44" y="23" class="font-mono" font-size="12.5" font-weight="700" letter-spacing="0.6">
+      <tspan fill="#00f0ff">100% OPEN SOURCE</tspan>
+      <tspan fill="#64748b">   |   </tspan>
+      <tspan fill="#10b981">HARDWARE TESTED</tspan>
+    </text>
+  </g>
+
+
+  <!-- ===================================================================== -->
+  <!-- HERO TITLE & BRANDING SECTION                                         -->
+  <!-- ===================================================================== -->
+
+  <!-- Logo Mark Squircle -->
+  <g transform="translate(48, 102)">
+    <rect x="0" y="0" width="76" height="76" rx="20" fill="url(#logoGrad)" filter="url(#glowCyan)" opacity="0.3" />
+    <rect x="0" y="0" width="76" height="76" rx="20" fill="#0d1627" stroke="#00f0ff" stroke-width="1.8" />
+    <!-- Wi-Fi Pulse Waveform Glyph inside -->
+    <g transform="translate(13, 14)" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 2 18 C 12 8, 38 8, 48 18" fill="none" stroke="#00f0ff" stroke-width="3" />
+      <path d="M 9 26 C 16 19, 34 19, 41 26" fill="none" stroke="#38bdf8" stroke-width="3" />
+      <polyline points="0,38 15,38 20,28 25,46 31,34 36,38 50,38" fill="none" stroke="#10b981" stroke-width="2.6" />
+      <circle cx="25" cy="46" r="2.8" fill="#00f0ff" />
+    </g>
+  </g>
+
+  <!-- Title: AETHERPULSE v3.0.1 -->
+  <g transform="translate(140, 136)">
+    <text class="font-sans" font-size="40" font-weight="900" letter-spacing="-1.2">
+      <tspan fill="#ffffff">AETHER</tspan><tspan fill="url(#pulseTextGrad)">PULSE</tspan>
+    </text>
+    <!-- Version Pill (v3.0.1) -->
+    <g transform="translate(315, -30)">
+      <rect x="0" y="0" width="94" height="30" rx="9" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1.3" />
+      <circle cx="14" cy="15" r="3.5" fill="#10b981" />
+      <text x="25" y="21" class="font-mono" font-size="13.5" font-weight="800" fill="#10b981" letter-spacing="0.5">v3.0.1</text>
+    </g>
+  </g>
+
+  <!-- Subtitle (Requirement: "High-Performance ESP32 Wi-Fi Repeater & Routing Appliance") -->
+  <text x="140" y="162" class="font-sans" font-size="13.2" font-weight="700" fill="#f1f5f9" letter-spacing="0.1">
+    High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance
+  </text>
+
+  <!-- Architect & Engineering Attribution Line -->
+  <text x="140" y="184" class="font-sans" font-size="11.5" font-weight="600" fill="#38bdf8" letter-spacing="0.2">
+    Architected &amp; Engineered by Zeeshan Rajput <tspan fill="#64748b">•</tspan> <tspan fill="#10b981">Hardware Verified</tspan>
+  </text>
+
+
+  <!-- ===================================================================== -->
+  <!-- LEFT COLUMN: THE 4 REQUIRED FEATURE PILLS (2x2 Grid)                  -->
+  <!-- ===================================================================== -->
+
+  <!-- Feature Pill 1: Zero-Copy lwIP NAPT (Cyan #00f0ff) -->
+  <g transform="translate(48, 222)">
+    <rect x="0" y="0" width="280" height="122" rx="16" fill="url(#pillCyanBg)" stroke="rgba(0, 240, 255, 0.4)" stroke-width="1.3" />
+    <rect x="16" y="16" width="36" height="36" rx="10" fill="rgba(0, 240, 255, 0.16)" stroke="#00f0ff" stroke-width="1" />
+    <path d="M 35 22 L 27 34 L 32 34 L 29 46 L 41 32 L 35 32 Z" fill="#00f0ff" />
+    <text x="62" y="32" class="font-sans" font-size="15" font-weight="800" fill="#ffffff">Zero-Copy lwIP NAPT</text>
+    <text x="62" y="48" class="font-mono" font-size="11" font-weight="700" fill="#00f0ff">1024 FLOW TABLE</text>
+    <text x="16" y="80" class="font-sans" font-size="11.5" font-weight="500" fill="#cbd5e1">Direct internal SRAM routing buffer</text>
+    <text x="16" y="99" class="font-mono" font-size="10.5" font-weight="600" fill="#38bdf8">MSS 1412 Auto-Clamping • &lt;1ms</text>
+  </g>
+
+  <!-- Feature Pill 2: Dynamic TPC (Emerald #10b981) -->
+  <g transform="translate(344, 222)">
+    <rect x="0" y="0" width="280" height="122" rx="16" fill="url(#pillEmeraldBg)" stroke="rgba(16, 185, 129, 0.4)" stroke-width="1.3" />
+    <rect x="16" y="16" width="36" height="36" rx="10" fill="rgba(16, 185, 129, 0.16)" stroke="#10b981" stroke-width="1" />
+    <path d="M 34 22 A 12 12 0 0 1 34 44 M 31 26 A 7 7 0 0 1 31 40 M 28 33 A 2 2 0 1 1 28 33.1" fill="none" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" />
+    <text x="62" y="32" class="font-sans" font-size="15" font-weight="800" fill="#ffffff">Dynamic TPC</text>
+    <text x="62" y="48" class="font-mono" font-size="11" font-weight="700" fill="#10b981">+11 to +20.5 dBm SCALING</text>
+    <text x="16" y="80" class="font-sans" font-size="11.5" font-weight="500" fill="#cbd5e1">Closed-loop thermal &amp; RSSI backoff</text>
+    <text x="16" y="99" class="font-mono" font-size="10.5" font-weight="600" fill="#34d399">Prevents AP thermal throttling</text>
+  </g>
+
+  <!-- Feature Pill 3: Live Canvas Topology (Indigo #6366f1) -->
+  <g transform="translate(48, 362)">
+    <rect x="0" y="0" width="280" height="122" rx="16" fill="url(#pillIndigoBg)" stroke="rgba(99, 102, 241, 0.4)" stroke-width="1.3" />
+    <rect x="16" y="16" width="36" height="36" rx="10" fill="rgba(99, 102, 241, 0.2)" stroke="#6366f1" stroke-width="1" />
+    <g stroke="#818cf8" stroke-width="1.8" fill="#6366f1">
+      <circle cx="28" cy="27" r="3" />
+      <circle cx="44" cy="25" r="2.5" />
+      <circle cx="36" cy="41" r="3.2" />
+      <line x1="28" y1="27" x2="44" y2="25" />
+      <line x1="28" y1="27" x2="36" y2="41" />
+      <line x1="44" y1="25" x2="36" y2="41" />
+    </g>
+    <text x="62" y="32" class="font-sans" font-size="15" font-weight="800" fill="#ffffff">Live Canvas Topology</text>
+    <text x="62" y="48" class="font-mono" font-size="11" font-weight="700" fill="#818cf8">HTML5 FORCE GRAPH</text>
+    <text x="16" y="80" class="font-sans" font-size="11.5" font-weight="500" fill="#cbd5e1">Real-time particle flow &amp; link RSSI</text>
+    <text x="16" y="99" class="font-mono" font-size="10.5" font-weight="600" fill="#a5b4fc">60 FPS physics client mesh</text>
+  </g>
+
+  <!-- Feature Pill 4: 1-Click Web Serial Flasher (Cyan / Blue) -->
+  <g transform="translate(344, 362)">
+    <rect x="0" y="0" width="280" height="122" rx="16" fill="url(#pillCyanBg)" stroke="rgba(0, 240, 255, 0.4)" stroke-width="1.3" />
+    <rect x="16" y="16" width="36" height="36" rx="10" fill="rgba(0, 240, 255, 0.16)" stroke="#00f0ff" stroke-width="1" />
+    <g stroke="#00f0ff" stroke-width="1.8" fill="none">
+      <rect x="25" y="24" width="18" height="20" rx="3" />
+      <line x1="30" y1="20" x2="30" y2="24" />
+      <line x1="38" y1="20" x2="38" y2="24" />
+      <line x1="34" y1="30" x2="34" y2="38" stroke="#10b981" stroke-width="2" />
+    </g>
+    <text x="62" y="32" class="font-sans" font-size="15" font-weight="800" fill="#ffffff">1-Click Web Serial Flasher</text>
+    <text x="62" y="48" class="font-mono" font-size="11" font-weight="700" fill="#00f0ff">BROWSER NATIVE</text>
+    <text x="16" y="80" class="font-sans" font-size="11.5" font-weight="500" fill="#cbd5e1">Direct flashing via WebSerial API</text>
+    <text x="16" y="99" class="font-mono" font-size="10.5" font-weight="600" fill="#38bdf8">No Python, esptool, or drivers</text>
+  </g>
+
+
+  <!-- ===================================================================== -->
+  <!-- RIGHT SHOWCASE CARD: LIVE ROUTING TOPOLOGY & PERFORMANCE METRICS     -->
+  <!-- ===================================================================== -->
+
+  <g transform="translate(650, 102)">
+    <rect x="0" y="0" width="502" height="382" rx="20" fill="url(#cardBg)" stroke="url(#borderGrad)" stroke-width="1.5" filter="url(#glowSubtle)" />
+
+    <!-- Terminal Window Top Bar -->
+    <rect x="0" y="0" width="502" height="38" rx="20" fill="rgba(15, 23, 42, 0.92)" />
+    <circle cx="22" cy="19" r="5" fill="#ef4444" />
+    <circle cx="38" cy="19" r="5" fill="#f59e0b" />
+    <circle cx="54" cy="19" r="5" fill="#10b981" />
+    <text x="251" y="24" text-anchor="middle" class="font-mono" font-size="11" font-weight="700" fill="#94a3b8" letter-spacing="1">
+      TOPOLOGY ENGINE // ACTIVE ROUTING MESH
+    </text>
+    <rect x="424" y="9" width="62" height="20" rx="10" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1" />
+    <text x="455" y="23" text-anchor="middle" class="font-mono" font-size="9" font-weight="800" fill="#10b981">LIVE</text>
+
+    <!-- Topology Visual Map -->
+    <g transform="translate(0, 38)">
+      <circle cx="251" cy="108" r="65" fill="none" stroke="rgba(0, 240, 255, 0.16)" stroke-width="1" stroke-dasharray="2,4" />
+      <circle cx="251" cy="108" r="115" fill="none" stroke="rgba(99, 102, 241, 0.16)" stroke-width="1" stroke-dasharray="3,6" />
+
+      <!-- Routing Paths with Flowing Packet Dots -->
+      <path d="M 80 108 C 140 108, 180 108, 225 108" fill="none" stroke="#00f0ff" stroke-width="2.2" stroke-dasharray="4,4" />
+      <circle cx="150" cy="108" r="3.5" fill="#00f0ff" filter="url(#glowCyan)" />
+
+      <path d="M 277 98 C 330 78, 370 68, 420 68" fill="none" stroke="#10b981" stroke-width="2" stroke-dasharray="3,3" />
+      <circle cx="350" cy="80" r="3" fill="#10b981" />
+
+      <path d="M 277 118 C 330 138, 370 148, 420 148" fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="3,3" />
+      <circle cx="355" cy="136" r="3" fill="#818cf8" />
+
+      <!-- Node 1: WAN Station Uplink -->
+      <g transform="translate(80, 108)">
+        <circle cx="0" cy="0" r="24" fill="#0b1324" stroke="#00f0ff" stroke-width="1.8" />
+        <path d="M -9 2 L 9 2 M -7 -3 L 7 -3 M -3 -7 L 3 -7" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" />
+        <circle cx="0" cy="8" r="2" fill="#10b981" />
+        <text x="0" y="38" text-anchor="middle" class="font-sans" font-size="11" font-weight="700" fill="#ffffff">WAN Uplink</text>
+        <text x="0" y="50" text-anchor="middle" class="font-mono" font-size="9" font-weight="600" fill="#00f0ff">-54 dBm</text>
+      </g>
+
+      <!-- Node 2: Central AetherPulse Gateway (ESP32) -->
+      <g transform="translate(251, 108)">
+        <circle cx="0" cy="0" r="38" fill="none" stroke="#00f0ff" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.6" />
+        <rect x="-26" y="-26" width="52" height="52" rx="14" fill="#0d1b33" stroke="url(#logoGrad)" stroke-width="2" />
+        <text x="0" y="-6" text-anchor="middle" class="font-mono" font-size="8" font-weight="800" fill="#38bdf8">ESP32</text>
+        <path d="M -12 6 L -6 6 L -2 12 L 4 2 L 8 6 L 12 6" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="4" cy="2" r="2" fill="#00f0ff" />
+        <text x="0" y="40" text-anchor="middle" class="font-sans" font-size="12" font-weight="800" fill="#ffffff">AetherPulse Gateway</text>
+        <text x="0" y="54" text-anchor="middle" class="font-mono" font-size="9.5" font-weight="700" fill="#10b981">192.168.4.1 (NAPT)</text>
+      </g>
+
+      <!-- Node 3: Client Workstation -->
+      <g transform="translate(420, 68)">
+        <circle cx="0" cy="0" r="18" fill="#0b1324" stroke="#10b981" stroke-width="1.5" />
+        <rect x="-8" y="-5" width="16" height="10" rx="1.5" fill="none" stroke="#10b981" stroke-width="1.5" />
+        <line x1="-11" y1="6" x2="11" y2="6" stroke="#10b981" stroke-width="1.8" />
+        <text x="0" y="27" text-anchor="middle" class="font-sans" font-size="10.5" font-weight="700" fill="#ffffff">MacBook Pro</text>
+        <text x="0" y="38" text-anchor="middle" class="font-mono" font-size="8.5" font-weight="600" fill="#34d399">0.2ms • 1412 B</text>
+      </g>
+
+      <!-- Node 4: Mobile Client -->
+      <g transform="translate(420, 148)">
+        <circle cx="0" cy="0" r="18" fill="#0b1324" stroke="#6366f1" stroke-width="1.5" />
+        <rect x="-5" y="-8" width="10" height="16" rx="2" fill="none" stroke="#818cf8" stroke-width="1.5" />
+        <circle cx="0" cy="5" r="1" fill="#818cf8" />
+        <text x="0" y="27" text-anchor="middle" class="font-sans" font-size="10.5" font-weight="700" fill="#ffffff">iPhone 15 Pro</text>
+        <text x="0" y="38" text-anchor="middle" class="font-mono" font-size="8.5" font-weight="600" fill="#818cf8">-48 dBm • Active</text>
+      </g>
+    </g>
+
+    <!-- Lower Performance Telemetry Deck (4 KPI Cards) -->
+    <g transform="translate(18, 248)">
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="108" height="78" rx="12" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(0, 240, 255, 0.28)" stroke-width="1" />
+        <text x="12" y="20" class="font-mono" font-size="9" font-weight="700" fill="#94a3b8">DNS SRAM</text>
+        <text x="12" y="44" class="font-mono" font-size="17" font-weight="900" fill="#00f0ff">&lt; 0.2ms</text>
+        <text x="12" y="64" class="font-sans" font-size="9" font-weight="600" fill="#38bdf8">Port 53 Hook</text>
+      </g>
+
+      <g transform="translate(118, 0)">
+        <rect x="0" y="0" width="112" height="78" rx="12" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(16, 185, 129, 0.28)" stroke-width="1" />
+        <text x="12" y="20" class="font-mono" font-size="9" font-weight="700" fill="#94a3b8">CONNTRACK</text>
+        <text x="12" y="44" class="font-mono" font-size="17" font-weight="900" fill="#10b981">1024</text>
+        <text x="12" y="64" class="font-sans" font-size="9" font-weight="600" fill="#34d399">NAT Flows</text>
+      </g>
+
+      <g transform="translate(240, 0)">
+        <rect x="0" y="0" width="108" height="78" rx="12" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(99, 102, 241, 0.28)" stroke-width="1" />
+        <text x="12" y="20" class="font-mono" font-size="9" font-weight="700" fill="#94a3b8">DYNAMIC TPC</text>
+        <text x="12" y="44" class="font-mono" font-size="17" font-weight="900" fill="#818cf8">+20 dBm</text>
+        <text x="12" y="64" class="font-sans" font-size="9" font-weight="600" fill="#a5b4fc">Thermal Backoff</text>
+      </g>
+
+      <g transform="translate(358, 0)">
+        <rect x="0" y="0" width="108" height="78" rx="12" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(56, 189, 248, 0.28)" stroke-width="1" />
+        <text x="12" y="20" class="font-mono" font-size="9" font-weight="700" fill="#94a3b8">BEACON SYNC</text>
+        <text x="12" y="44" class="font-mono" font-size="17" font-weight="900" fill="#38bdf8">180°</text>
+        <text x="12" y="64" class="font-sans" font-size="9" font-weight="600" fill="#67e8f9">50 TU Offset</text>
+      </g>
+    </g>
+  </g>
+
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER BAR: REPOSITORY URL & TECH SPEC PILLS                          -->
+  <!-- ===================================================================== -->
+
+  <!-- Horizontal divider -->
+  <line x1="48" y1="518" x2="1152" y2="518" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" />
+
+  <!-- Left: Repository & Web Installer Links -->
+  <g transform="translate(48, 548)">
+    <path d="M 12 0 C 5.37 0 0 5.37 0 12 C 0 17.31 3.44 21.8 8.21 23.39 C 8.81 23.5 9.03 23.13 9.03 22.81 C 9.03 22.53 9.02 21.56 9.02 20.55 C 5.68 21.28 4.98 18.94 4.98 18.94 C 4.43 17.55 3.65 17.18 3.65 17.18 C 2.56 16.44 3.73 16.45 3.73 16.45 C 4.94 16.54 5.57 17.7 5.57 17.7 C 6.64 19.53 8.37 19.01 9.06 18.7 C 9.17 17.92 9.48 17.39 9.82 17.09 C 7.16 16.79 4.36 15.76 4.36 11.16 C 4.36 9.85 4.83 8.78 5.6 7.94 C 5.48 7.64 5.06 6.42 5.72 4.77 C 5.72 4.77 6.73 4.45 9.02 6.01 C 9.98 5.74 11 5.61 12.02 5.6 C 13.04 5.61 14.06 5.74 15.02 6.01 C 17.31 4.45 18.32 4.77 18.32 4.77 C 18.98 6.42 18.56 7.64 18.44 7.94 C 19.21 8.78 19.68 9.85 19.68 11.16 C 19.68 15.78 16.88 16.79 14.21 17.08 C 14.64 17.45 15.02 18.19 15.02 19.32 C 15.02 20.94 15.01 22.25 15.01 22.81 C 15.01 23.13 15.22 23.51 15.84 23.39 C 20.61 21.8 24.04 17.31 24.04 12 C 24.04 5.37 18.67 0 12 0 Z" fill="#ffffff" />
+    <text x="34" y="10" class="font-mono" font-size="14" font-weight="700" fill="#ffffff">github.com/Itszeeshanrajput/AetherPulse-ESP32</text>
+    <text x="34" y="28" class="font-sans" font-size="12" font-weight="600" fill="#00f0ff">Web Installer: <tspan fill="#94a3b8">itszeeshanrajput.github.io/AetherPulse-ESP32/</tspan></text>
+  </g>
+
+  <!-- Right: Tech Spec Badges -->
+  <g transform="translate(680, 542)">
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="105" height="28" rx="8" fill="rgba(30, 41, 59, 0.65)" stroke="rgba(255, 255, 255, 0.12)" stroke-width="1" />
+      <text x="52" y="18" text-anchor="middle" class="font-mono" font-size="10" font-weight="700" fill="#e2e8f0">FREE-RTOS</text>
+    </g>
+
+    <g transform="translate(115, 0)">
+      <rect x="0" y="0" width="112" height="28" rx="8" fill="rgba(30, 41, 59, 0.65)" stroke="rgba(0, 240, 255, 0.28)" stroke-width="1" />
+      <text x="56" y="18" text-anchor="middle" class="font-mono" font-size="10" font-weight="700" fill="#00f0ff">WEBSERIAL API</text>
+    </g>
+
+    <g transform="translate(237, 0)">
+      <rect x="0" y="0" width="118" height="28" rx="8" fill="rgba(30, 41, 59, 0.65)" stroke="rgba(16, 185, 129, 0.28)" stroke-width="1" />
+      <text x="59" y="18" text-anchor="middle" class="font-mono" font-size="10" font-weight="700" fill="#10b981">ZERO-COPY NAPT</text>
+    </g>
+
+    <g transform="translate(365, 0)">
+      <rect x="0" y="0" width="105" height="28" rx="8" fill="rgba(30, 41, 59, 0.65)" stroke="rgba(99, 102, 241, 0.28)" stroke-width="1" />
+      <text x="52" y="18" text-anchor="middle" class="font-mono" font-size="10" font-weight="700" fill="#a5b4fc">MIT LICENSE</text>
+    </g>
+  </g>
+</svg>

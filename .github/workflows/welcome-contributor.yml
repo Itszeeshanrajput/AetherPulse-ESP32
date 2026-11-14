@@ -1,0 +1,39 @@
+name: Welcome First-Time Contributor
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    name: Welcome Contributor
+    runs-on: ubuntu-latest
+    steps:
+      - name: Greet First-Time Contributor
+        uses: actions/first-interaction@v3
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: |
+            👋 Welcome to the **AetherPulse** community, @${{ github.actor }}! Thank you for opening your first issue and helping improve the project. ⚡
+
+            Here are a few helpful resources to get started:
+            - 📖 **[Contribution Guidelines](CONTRIBUTING.md)**: Details on our architecture, local build workflows, and PR verification standards.
+            - 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our shared standards for a welcoming, collaborative, and inclusive environment.
+            - 💬 **[Discussions](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/discussions)**: Join community discussions, share custom hardware builds, benchmark tests, or propose new feature ideas.
+
+            Our maintainers actively monitor issues and hardware testing and PR review happen promptly. Thank you for being a part of AetherPulse! 🚀
+          pr_message: |
+            🎉 Welcome to the **AetherPulse** community, @${{ github.actor }}! Thank you for submitting your first pull request. ⚡
+
+            Before our maintainers review your submission, please make sure you've checked:
+            - 📖 **[CONTRIBUTING.md](CONTRIBUTING.md)** for our coding standards and hardware bench verification guidelines.
+            - 📜 **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** to help us keep our community welcoming and collaborative.
+            - 💬 **[Discussions](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/discussions)** if your change introduces new hardware features or architectures.
+
+            Hardware testing and PR review happen promptly across our ESP32 physical test benches. We appreciate your contribution! 🚀

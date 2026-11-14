@@ -4,6 +4,7 @@
 
 [![Build, WebFlash & Auto-Release](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml)
 [![Web Installer](https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-brightgreen.svg?style=flat&logo=espressif)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)
+[![🎮 Live In-Browser Demo](https://img.shields.io/badge/🎮%20Live%20In--Browser%20Demo-Try%20Now-emerald.svg?style=flat)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html)
 [![GitHub Stars](https://img.shields.io/github/stars/Itszeeshanrajput/AetherPulse-ESP32?style=flat&color=ffd700)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/Itszeeshanrajput/AetherPulse-ESP32?style=flat&color=blue)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/network/members)
 [![Good First Issues](https://img.shields.io/github/issues/Itszeeshanrajput/AetherPulse-ESP32/good%20first%20issue?color=7057ff&label=Good%20First%20Issues)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
@@ -20,7 +21,9 @@
 
 Flash your ESP32 board in 30 seconds directly from your browser without installing Python, Arduino IDE, or USB drivers:
 
-👉 **[Launch AetherPulse Web Installer](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)**
+👉 **[Launch AetherPulse Web Installer](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)** &nbsp;|&nbsp; [![🎮 Live In-Browser Demo](https://img.shields.io/badge/🎮%20Live%20In--Browser%20Demo-Try%20Now-emerald.svg?style=flat)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html) &nbsp;👉 **[🎮 Live In-Browser Demo](https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html)**
+
+> 🎮 **No ESP32 hardware yet?** Test-drive the interactive particle topology graph, RF power controls, and serial terminal shell immediately via the **[🎮 Live In-Browser Demo](https://itszeeshanrajput.github.io/AetherPulse-ESP32/demo.html)**.
 
 1. Connect your ESP32 board via USB (Google Chrome, Microsoft Edge, Brave, or Opera).
 2. Choose your firmware release (**v3.0.1 (Latest)**, **v2.0.0 (Stable)**, or **v1.0.0 (Baseline)**).

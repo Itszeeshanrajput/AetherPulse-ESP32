@@ -1,5 +1,5 @@
 # AetherPulse — Community Campaign & Social Launch Kit
-**Project:** AetherPulse v3.0.1 (Quantum Edition)  
+**Project:** AetherPulse v3.0.1  
 **Author:** Zeeshan Rajput (`@Itszeeshanrajput`)  
 **Repository:** [https://github.com/Itszeeshanrajput/AetherPulse-ESP32](https://github.com/Itszeeshanrajput/AetherPulse-ESP32)  
 **1-Click Web Installer:** [https://itszeeshanrajput.github.io/AetherPulse-ESP32/](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)  
@@ -25,7 +25,7 @@ Like many of you, I've experimented with running Wi-Fi repeaters on the ESP32 (s
 2. **Receiver saturation & heat:** Blasting static +20.5 dBm transmit power overloaded the receiver LNA when phones or laptops were sitting within 1–2 meters, causing packet error bursts, while heating the die past 70°C.
 3. **Beacon frame collisions:** When the Station interface missed the upstream AP's beacon because the SoftAP was transmitting its own beacon at the exact same millisecond, the link would drop with a beacon timeout.
 
-I spent the past few months building **AetherPulse** to solve these problems down to the register and lwIP layer, and I just released **v3.0.1 (Quantum Edition)** as 100% open-source under the MIT license.
+I spent the past few months building **AetherPulse** to solve these problems down to the register and lwIP layer, and I just released **v3.0.1** as 100% open-source under the MIT license.
 
 ### Architecture Highlights & RF Hacks:
 - **Zero-Copy lwIP Layer-3 DNAPT:** Rewrites IP/port headers in-place on existing `pbuf` structures inside lwIP core memory. Checksums are recalculated via RFC 1624 incremental math rather than payload loops, handling up to 1024 concurrent stateful flows with sub-microsecond translation overhead.
@@ -186,7 +186,7 @@ I'd be glad to discuss the RF timing registers, lwIP memory tuning, or answer an
 ```text
 Hello Espressif Community!
 
-I would like to share an open-source project engineered specifically for the ESP32-D0WD-V3 silicon family: **AetherPulse (v3.0.1 Quantum Edition)**.
+I would like to share an open-source project engineered specifically for the ESP32-D0WD-V3 silicon family: **AetherPulse (v3.0.1)**.
 
 AetherPulse transforms standard ESP32 development boards (WROOM-32, WROVER, NodeMCU-32S) into an ultra-low latency, zero-jitter Wi-Fi range extender, L3 NAPT router, and network security appliance.
 

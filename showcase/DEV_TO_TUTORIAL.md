@@ -411,7 +411,7 @@ The web installer uses a clean `manifest.json` pointing to pre-compiled, merged 
 
 ```json
 {
-  "name": "AetherPulse v3.0.1 (Quantum Edition)",
+  "name": "AetherPulse v3.0.1",
   "version": "3.0.1",
   "new_install_prompt_erase": false,
   "builds": [

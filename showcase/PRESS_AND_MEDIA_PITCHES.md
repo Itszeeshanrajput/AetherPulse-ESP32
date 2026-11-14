@@ -3,7 +3,7 @@
 **Author:** Zeeshan Rajput (`@Itszeeshanrajput`)  
 **Repository:** [https://github.com/Itszeeshanrajput/AetherPulse-ESP32](https://github.com/Itszeeshanrajput/AetherPulse-ESP32)  
 **1-Click Web Installer:** [https://itszeeshanrajput.github.io/AetherPulse-ESP32/](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)  
-**Release Version:** v3.0.1 (Quantum Edition)  
+**Release Version:** v3.0.1  
 **License:** MIT (100% Free & Open Source)  
 
 ---
@@ -70,7 +70,7 @@ Subject: AetherPulse: Open-source ESP32 Wi-Fi Repeater with lwIP NAPT, Dynamic T
 
 Hi Jean-Luc,
 
-I've been following CNX Software for years and love your coverage of open-source ESP32 firmware and embedded networking developments. I'm writing to share a new open-source project that takes ESP32 network routing to the next level: AetherPulse (v3.0.1 Quantum Edition).
+I've been following CNX Software for years and love your coverage of open-source ESP32 firmware and embedded networking developments. I'm writing to share a new open-source project that takes ESP32 network routing to the next level: AetherPulse (v3.0.1).
 
 While previous projects like martin-ger's esp32_nat_router proved that ESP32 NAT was feasible, AetherPulse addresses the real-world latency, stability, and usability bottlenecks. It features native lwIP zero-copy Layer-3 NAPT (supporting up to 1024 concurrent stateful flows), Dynamic Transmit Power Control (+11 dBm near-field to +20.5 dBm far-field with 1 dBm hysteresis to reduce heat and die stress), 180° anti-phase beacon scheduling to prevent RF collisions, sub-millisecond on-chip SRAM DNS caching (<0.2ms hits), and station MAC cloning for bypassing hotel/captive portal limits.
 
