@@ -180,6 +180,33 @@ void CliShell::handleCommand(const String& raw) {
             Serial.printf("Total Blocked Queries:  %lu\n", (unsigned long)count);
             Serial.println("Use 'adblock on' or 'adblock off' to toggle.\n");
         }
+    } else if (cmd == "isolation") {
+        auto tokens = tokenizeArgs(args);
+        if (tokens.size() > 0) {
+            bool en = (tokens[0] == "on" || tokens[0] == "1" || tokens[0] == "true" || tokens[0] == "enable");
+            StorageManager::instance().setClientIsolation(en);
+            Serial.printf("[CLI] Layer-2 Client Isolation is now %s.\n", en ? "ENABLED" : "DISABLED");
+        } else {
+            auto s = StorageManager::instance().getSettings();
+            Serial.printf("Layer-2 Client Isolation: %s\n", s.clientIsolation ? "ENABLED" : "DISABLED");
+            Serial.println("Use 'isolation on' or 'isolation off' to toggle.\n");
+        }
+    } else if (cmd == "tpc") {
+        auto tokens = tokenizeArgs(args);
+        if (tokens.size() > 0) {
+            bool en = (tokens[0] == "on" || tokens[0] == "1" || tokens[0] == "true" || tokens[0] == "enable");
+            StorageManager::instance().setDynamicTpc(en);
+            if (!en) {
+                auto s = StorageManager::instance().getSettings();
+                RoamingEngine::instance().setTxPowerDbm(s.txPowerDbm);
+            }
+            Serial.printf("[CLI] Dynamic Transmit Power Control (TPC) is now %s.\n", en ? "ENABLED" : "DISABLED");
+        } else {
+            auto s = StorageManager::instance().getSettings();
+            Serial.printf("Dynamic Transmit Power Control: %s (Current: %.2f dBm)\n", 
+                          s.dynamicTpcEnabled ? "ENABLED" : "DISABLED", RoamingEngine::instance().getCurrentTxPowerDbm());
+            Serial.println("Use 'tpc on' or 'tpc off' to toggle.\n");
+        }
     } else if (cmd == "temp" || cmd == "temperature") {
         float tempC = temperatureRead();
         float tempF = (tempC * 1.8f) + 32.0f;
@@ -230,6 +257,8 @@ void CliShell::printHelp() {
     Serial.println("  reset_mac                         - Restore default hardware factory MAC");
     Serial.println("  portmap [add|del] ...             - List, add, or remove lwIP DNAPT port forwarding rules");
     Serial.println("  adblock [on|off]                  - Check or toggle hardware DNS AdBlocker sinkhole");
+    Serial.println("  isolation [on|off]                - Check or toggle Layer-2 client isolation");
+    Serial.println("  tpc [on|off]                      - Check or toggle Dynamic Transmit Power Control (TPC)");
     Serial.println("  ping <host>                       - Verify DNS resolution & TCP internet route (e.g. ping google.com)");
     Serial.println("  reboot                            - Perform clean software reset of the ESP32\n");
 }
@@ -270,8 +299,10 @@ void CliShell::printStatus() {
                   (unsigned long)StorageManager::instance().getAdBlockCount());
     Serial.printf("  Task Watchdog TWDT: 15s Hardware Timeout\n");
     Serial.printf("  Modem Sleep:        DISABLED (WIFI_PS_NONE for zero jitter)\n");
-    Serial.printf("  Beacon Interval:    %d TU (Prime offset anti-collision)\n", SOFTAP_BEACON_INTERVAL_TU);
-    Serial.printf("  TX Power:           %.2f dBm\n", settings.txPowerDbm);
+    Serial.printf("  Beacon Interval:    %d TU (Anti-Phase Scheduled)\n", SOFTAP_BEACON_INTERVAL_TU);
+    Serial.printf("  TCP MSS Clamping:   %d bytes (RFC 1624 anti-blackhole)\n", TCP_MSS_CLAMP_VALUE);
+    Serial.printf("  Layer-2 Isolation:  %s\n", settings.clientIsolation ? "ENABLED" : "DISABLED");
+    Serial.printf("  Dynamic TPC:        %s (RF Power: %.2f dBm)\n", settings.dynamicTpcEnabled ? "ACTIVE" : "DISABLED", roam.getCurrentTxPowerDbm());
     Serial.println("-----------------------------------------------------------");
 }
 

@@ -1,6 +1,6 @@
 {
-  "name": "AetherPulse Enterprise v3.0.0 Quantum",
-  "version": "3.0.0",
+  "name": "AetherPulse v3.0.1",
+  "version": "3.0.1",
   "home_assistant_domain": "esphome",
   "new_install_prompt_erase": false,
   "builds": [

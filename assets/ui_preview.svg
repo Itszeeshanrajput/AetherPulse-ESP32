@@ -1,25 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 720" width="100%" height="100%">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#070a13" />
+      <stop offset="0%" stop-color="#060913" />
       <stop offset="50%" stop-color="#0b1120" />
-      <stop offset="100%" stop-color="#030712" />
+      <stop offset="100%" stop-color="#040711" />
     </linearGradient>
-    <linearGradient id="card" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
       <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9" />
     </linearGradient>
     <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#06b6d4" />
-      <stop offset="100%" stop-color="#3b82f6" />
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#38bdf8" />
     </linearGradient>
-    <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="hubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10b981" />
-      <stop offset="50%" stop-color="#06b6d4" />
-      <stop offset="100%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#059669" />
     </linearGradient>
     <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
       <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
     </filter>
   </defs>
 
@@ -32,243 +39,176 @@
   <circle cx="44" cy="21" r="6" fill="#f59e0b" />
   <circle cx="64" cy="21" r="6" fill="#10b981" />
   <rect x="240" y="8" width="600" height="26" rx="6" fill="#1e293b" />
-  <text x="540" y="25" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#94a3b8" text-anchor="middle">http://192.168.4.1/ — AetherPulse v3.0 Quantum Enterprise Web Portal</text>
+  <text x="540" y="25" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#94a3b8" text-anchor="middle">http://192.168.4.1/ — AetherPulse v3.0.1 Web Portal</text>
 
   <!-- Content Padding -->
-  <g transform="translate(36, 58)">
+  <g transform="translate(36, 56)">
     <!-- Header -->
-    <text x="0" y="28" font-family="-apple-system, sans-serif" font-weight="900" font-size="22" fill="#ffffff">
-      AETHER<tspan fill="#06b6d4">PULSE</tspan> <tspan fill="url(#primaryGrad)">v3.0 QUANTUM</tspan>
+    <text x="0" y="26" font-family="-apple-system, sans-serif" font-weight="900" font-size="22" fill="#ffffff">
+      AETHER<tspan fill="#38bdf8">PULSE</tspan> <tspan font-size="14" fill="#0ea5e9" font-weight="700">v3.0.1</tspan>
     </text>
-    <text x="0" y="46" font-family="-apple-system, sans-serif" font-size="11.5" fill="#94a3b8">
-      Zero-Jitter Wi-Fi Extender • Sub-ms SRAM DNS Acceleration • 2.4 GHz RF Heatmap • By Zeeshan Rajput
+    <text x="0" y="44" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">
+      Zero-Jitter NAPT Wi-Fi Repeater &amp; Router • aetherpulse.local • Architected by Zeeshan Rajput
     </text>
 
-    <!-- Header Badges -->
-    <g transform="translate(680, 8)">
-      <rect x="0" y="0" width="150" height="32" rx="16" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1" />
-      <circle cx="16" cy="16" r="4" fill="#10b981" />
-      <text x="28" y="21" font-family="-apple-system, sans-serif" font-weight="700" font-size="11" fill="#34d399">ONLINE &amp; ROUTING</text>
+    <!-- Header Live Badges -->
+    <g transform="translate(710, 8)">
+      <rect x="0" y="0" width="140" height="30" rx="15" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1" />
+      <circle cx="14" cy="15" r="4" fill="#10b981" filter="url(#glow)" />
+      <text x="26" y="19" font-family="-apple-system, sans-serif" font-weight="700" font-size="11" fill="#10b981">ONLINE (Uplink-AP)</text>
 
-      <rect x="160" y="0" width="160" height="32" rx="16" fill="rgba(6, 182, 212, 0.15)" stroke="#06b6d4" stroke-width="1" />
-      <text x="240" y="21" font-family="monospace" font-weight="700" font-size="11" fill="#06b6d4" text-anchor="middle">DIE TEMP: 48.3 °C</text>
+      <rect x="150" y="0" width="130" height="30" rx="15" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" stroke-width="1" />
+      <circle cx="164" cy="15" r="4" fill="#0ea5e9" />
+      <text x="176" y="19" font-family="-apple-system, sans-serif" font-weight="700" font-size="11" fill="#38bdf8">TPC: 20.5 dBm</text>
     </g>
 
     <!-- Navigation Tabs -->
     <g transform="translate(0, 64)">
-      <rect x="0" y="0" width="1008" height="36" rx="8" fill="rgba(30, 41, 59, 0.5)" />
-      <text x="35" y="23" font-family="-apple-system, sans-serif" font-weight="700" font-size="12" fill="#06b6d4">Overview</text>
-      <text x="135" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">RF Spectrum Heatmap</text>
-      <text x="305" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">On-Chip Speedtest</text>
-      <text x="455" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">Client Devices (OUI)</text>
-      <text x="615" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">Port Forwarding</text>
-      <text x="755" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">Failover Wi-Fi</text>
-      <text x="880" y="23" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8">System OTA</text>
-      <line x1="20" y1="35" x2="90" y2="35" stroke="#06b6d4" stroke-width="2" />
+      <!-- Tab 1: Dashboard -->
+      <rect x="0" y="0" width="90" height="32" rx="8" fill="transparent" />
+      <text x="45" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Dashboard</text>
+
+      <!-- Tab 2: Topology (ACTIVE) -->
+      <rect x="96" y="0" width="105" height="32" rx="8" fill="rgba(14, 165, 233, 0.2)" stroke="#0ea5e9" stroke-width="1" />
+      <text x="148" y="20" font-family="-apple-system, sans-serif" font-weight="700" font-size="12" fill="#38bdf8" text-anchor="middle">🌐 Topology</text>
+
+      <!-- Tab 3: Spectrum -->
+      <rect x="208" y="0" width="85" height="32" rx="8" fill="transparent" />
+      <text x="250" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Spectrum</text>
+
+      <!-- Tab 4: Clients -->
+      <rect x="300" y="0" width="80" height="32" rx="8" fill="transparent" />
+      <text x="340" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Clients (3)</text>
+
+      <!-- Tab 5: Security -->
+      <rect x="388" y="0" width="85" height="32" rx="8" fill="transparent" />
+      <text x="430" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Security</text>
+
+      <!-- Tab 6: Port Forwarding -->
+      <rect x="480" y="0" width="120" height="32" rx="8" fill="transparent" />
+      <text x="540" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Port Forwarding</text>
+
+      <!-- Tab 7: Failover Pool -->
+      <rect x="608" y="0" width="100" height="32" rx="8" fill="transparent" />
+      <text x="658" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Failover Pool</text>
+
+      <!-- Tab 8: Settings -->
+      <rect x="716" y="0" width="85" height="32" rx="8" fill="transparent" />
+      <text x="758" y="20" font-family="-apple-system, sans-serif" font-weight="600" font-size="12" fill="#94a3b8" text-anchor="middle">Settings</text>
     </g>
 
-    <!-- Top 4 Metrics Cards -->
-    <g transform="translate(0, 115)">
-      <!-- Card 1: Uplink -->
-      <g transform="translate(0, 0)">
-        <rect width="240" height="110" rx="12" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        <text x="14" y="24" font-family="-apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8">UPSTREAM UPLINK</text>
-        <text x="226" y="24" font-family="monospace" font-size="10.5" font-weight="700" fill="#06b6d4" text-anchor="end">CH 3</text>
-        <text x="14" y="52" font-family="-apple-system, sans-serif" font-size="18" font-weight="800" fill="#ffffff">Nayatel</text>
-        <text x="14" y="70" font-family="monospace" font-size="10" fill="#94a3b8">IP: 192.168.18.77 (GW: .1)</text>
-        <rect x="14" y="86" width="212" height="5" rx="2.5" fill="#1e293b" />
-        <rect x="14" y="86" width="155" height="5" rx="2.5" fill="#10b981" />
-        <text x="14" y="82" font-family="-apple-system, sans-serif" font-size="9" fill="#94a3b8">Kalman RSSI: <tspan fill="#34d399" font-weight="700">-71.5 dBm</tspan></text>
+    <!-- Main Topology Canvas Card -->
+    <g transform="translate(0, 112)">
+      <!-- Canvas Card Container -->
+      <rect width="1008" height="375" rx="14" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2" />
+
+      <!-- Canvas Title & Info -->
+      <text x="24" y="30" font-family="-apple-system, sans-serif" font-weight="700" font-size="14" fill="#ffffff">
+        Interactive Network Topology Graph
+      </text>
+      <text x="24" y="48" font-family="-apple-system, sans-serif" font-size="11" fill="#64748b">
+        Live orbital packet flow: WAN Gateway &rarr; Repeater Hub &rarr; Connected Devices • Zero MCU load
+      </text>
+
+      <!-- Grid Background lines on canvas -->
+      <g opacity="0.08">
+        <line x1="24" y1="120" x2="984" y2="120" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3,3" />
+        <line x1="24" y1="200" x2="984" y2="200" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3,3" />
+        <line x1="24" y1="280" x2="984" y2="280" stroke="#38bdf8" stroke-width="1" stroke-dasharray="3,3" />
+        <circle cx="504" cy="200" r="160" fill="none" stroke="#38bdf8" stroke-width="1" />
+        <circle cx="504" cy="200" r="280" fill="none" stroke="#38bdf8" stroke-width="1" />
       </g>
 
-      <!-- Card 2: SoftAP -->
-      <g transform="translate(256, 0)">
-        <rect width="240" height="110" rx="12" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        <text x="14" y="24" font-family="-apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8">REPEATER SOFTAP</text>
-        <text x="226" y="24" font-family="monospace" font-size="10.5" fill="#3b82f6" text-anchor="end">192.168.4.1</text>
-        <text x="14" y="52" font-family="-apple-system, sans-serif" font-size="15.5" font-weight="800" fill="#ffffff">AetherPulse-Extender</text>
-        <text x="14" y="70" font-family="monospace" font-size="10" fill="#94a3b8">DTIM: 1 • Beacon: 103 TU</text>
-        <text x="14" y="94" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Active Clients: <tspan font-size="14" font-weight="800" fill="#06b6d4">1 / 8 Devices</tspan></text>
+      <!-- Bezier Curved Packet Flow Links -->
+      <!-- Link 1: Upstream AP to Repeater -->
+      <path d="M 180 200 C 320 160, 380 200, 470 200" fill="none" stroke="rgba(16, 185, 129, 0.45)" stroke-width="2.5" />
+      <!-- Link 2: Repeater to Client 1 (Top) -->
+      <path d="M 538 185 C 620 120, 720 110, 810 110" fill="none" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2.5" />
+      <!-- Link 3: Repeater to Client 2 (Middle) -->
+      <path d="M 540 200 C 630 200, 720 200, 810 200" fill="none" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2.5" />
+      <!-- Link 4: Repeater to Client 3 (Bottom) -->
+      <path d="M 538 215 C 620 280, 720 290, 810 290" fill="none" stroke="rgba(56, 189, 248, 0.45)" stroke-width="2.5" />
+
+      <!-- Glowing Bezier Particles -->
+      <circle cx="320" cy="188" r="3.5" fill="#10b981" filter="url(#glow)" />
+      <circle cx="380" cy="198" r="3.5" fill="#10b981" filter="url(#glow)" />
+      <circle cx="640" cy="145" r="3.5" fill="#38bdf8" filter="url(#glow)" />
+      <circle cx="730" cy="115" r="3.5" fill="#38bdf8" filter="url(#glow)" />
+      <circle cx="670" cy="200" r="3.5" fill="#38bdf8" filter="url(#glow)" />
+      <circle cx="650" cy="255" r="3.5" fill="#38bdf8" filter="url(#glow)" />
+      <circle cx="740" cy="285" r="3.5" fill="#38bdf8" filter="url(#glow)" />
+
+      <!-- Node 1: Upstream AP (Left) -->
+      <g transform="translate(140, 160)">
+        <circle cx="40" cy="40" r="34" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2" />
+        <circle cx="40" cy="40" r="24" fill="url(#emeraldGrad)" />
+        <text x="40" y="44" font-family="-apple-system, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">WAN</text>
+        <text x="40" y="90" font-family="-apple-system, sans-serif" font-weight="700" font-size="12" fill="#ffffff" text-anchor="middle">Uplink Router</text>
+        <text x="40" y="104" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#10b981" text-anchor="middle">-74 dBm • CH 7</text>
       </g>
 
-      <!-- Card 3: DNS Cache -->
-      <g transform="translate(512, 0)">
-        <rect width="240" height="110" rx="12" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        <text x="14" y="24" font-family="-apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8">SRAM DNS CACHE</text>
-        <text x="226" y="24" font-family="monospace" font-size="10" font-weight="700" fill="#10b981" text-anchor="end">&lt; 0.2 ms</text>
-        <text x="14" y="52" font-family="-apple-system, sans-serif" font-size="18" font-weight="800" fill="#34d399">99.2% Hit Rate</text>
-        <text x="14" y="70" font-family="monospace" font-size="10" fill="#94a3b8">Capacity: 64 hosts • LFU</text>
-        <text x="14" y="94" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">DHCP Offer: <tspan font-weight="700" fill="#fff">Google DNS (8.8.8.8)</tspan></text>
+      <!-- Node 2: AetherPulse Repeater Hub (Center) -->
+      <g transform="translate(460, 155)">
+        <circle cx="44" cy="45" r="46" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" stroke-width="2" />
+        <circle cx="44" cy="45" r="32" fill="url(#hubGrad)" filter="url(#glow)" />
+        <text x="44" y="49" font-family="-apple-system, sans-serif" font-weight="900" font-size="14" fill="#ffffff" text-anchor="middle">HUB</text>
+        <text x="44" y="108" font-family="-apple-system, sans-serif" font-weight="800" font-size="12.5" fill="#ffffff" text-anchor="middle">AetherPulse v3.0.1</text>
+        <text x="44" y="122" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#38bdf8" text-anchor="middle">192.168.4.1 • 240 MHz</text>
       </g>
 
-      <!-- Card 4: Silicon & Thermal -->
-      <g transform="translate(768, 0)">
-        <rect width="240" height="110" rx="12" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        <text x="14" y="24" font-family="-apple-system, sans-serif" font-size="10.5" font-weight="700" fill="#94a3b8">SILICON ENGINE</text>
-        <text x="226" y="24" font-family="monospace" font-size="10" font-weight="700" fill="#8b5cf6" text-anchor="end">240 MHz</text>
-        <text x="14" y="52" font-family="-apple-system, sans-serif" font-size="18" font-weight="800" fill="#ffffff">lwIP DNAPT</text>
-        <text x="14" y="70" font-family="monospace" font-size="10" fill="#94a3b8">TWDT: 15s • Zero-Jitter</text>
-        <text x="14" y="94" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Free Heap: <tspan font-weight="700" fill="#fff">175 KB</tspan> • PS: <tspan font-weight="700" fill="#f59e0b">NONE</tspan></text>
+      <!-- Node 3: Client 1 - MacBook Pro (Top Right) -->
+      <g transform="translate(810, 80)">
+        <circle cx="30" cy="30" r="26" fill="rgba(30, 41, 59, 0.8)" stroke="#38bdf8" stroke-width="1.5" />
+        <circle cx="30" cy="30" r="18" fill="#1e293b" />
+        <text x="30" y="34" font-family="-apple-system, sans-serif" font-size="11" fill="#38bdf8" text-anchor="middle">💻</text>
+        <text x="70" y="28" font-family="-apple-system, sans-serif" font-weight="700" font-size="11.5" fill="#ffffff">MacBook Pro</text>
+        <text x="70" y="42" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#94a3b8">Apple • -42 dBm (192.168.4.2)</text>
+      </g>
+
+      <!-- Node 4: Client 2 - iPhone 15 Pro (Middle Right) -->
+      <g transform="translate(810, 170)">
+        <circle cx="30" cy="30" r="26" fill="rgba(30, 41, 59, 0.8)" stroke="#38bdf8" stroke-width="1.5" />
+        <circle cx="30" cy="30" r="18" fill="#1e293b" />
+        <text x="30" y="34" font-family="-apple-system, sans-serif" font-size="11" fill="#38bdf8" text-anchor="middle">📱</text>
+        <text x="70" y="28" font-family="-apple-system, sans-serif" font-weight="700" font-size="11.5" fill="#ffffff">iPhone 15 Pro</text>
+        <text x="70" y="42" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#94a3b8">Apple • -55 dBm (192.168.4.3)</text>
+      </g>
+
+      <!-- Node 5: Client 3 - Smart TV (Bottom Right) -->
+      <g transform="translate(810, 260)">
+        <circle cx="30" cy="30" r="26" fill="rgba(30, 41, 59, 0.8)" stroke="#38bdf8" stroke-width="1.5" />
+        <circle cx="30" cy="30" r="18" fill="#1e293b" />
+        <text x="30" y="34" font-family="-apple-system, sans-serif" font-size="11" fill="#38bdf8" text-anchor="middle">📺</text>
+        <text x="70" y="28" font-family="-apple-system, sans-serif" font-weight="700" font-size="11.5" fill="#ffffff">Samsung Smart TV</text>
+        <text x="70" y="42" font-family="'JetBrains Mono', monospace" font-size="9.5" fill="#94a3b8">Samsung • -61 dBm (192.168.4.4)</text>
       </g>
     </g>
 
-    <!-- Main Dashboard Split: Spectrum Analyzer & Speedtest/Clients -->
-    <g transform="translate(0, 240)">
-      <!-- Left Box: RF Spectrum Density Heatmap -->
-      <g transform="translate(0, 0)">
-        <rect width="490" height="385" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        <text x="20" y="28" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#ffffff">2.4 GHz RF Spectrum Congestion Heatmap</text>
-        <text x="20" y="44" font-family="-apple-system, sans-serif" font-size="10.5" fill="#94a3b8">Real-time channel interference load across all 13 channels</text>
+    <!-- Bottom Telemetry Metric Cards -->
+    <g transform="translate(0, 502)">
+      <!-- Metric 1: Dynamic TPC -->
+      <rect x="0" y="0" width="237" height="100" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2" />
+      <text x="18" y="28" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Dynamic TPC RF Power</text>
+      <text x="18" y="58" font-family="-apple-system, sans-serif" font-weight="800" font-size="20" fill="#38bdf8">20.5 dBm</text>
+      <text x="18" y="80" font-family="-apple-system, sans-serif" font-size="10.5" fill="#10b981">● Closed-Loop Auto Scaled</text>
 
-        <!-- Cleanest Channel Badge -->
-        <g transform="translate(320, 14)">
-          <rect width="150" height="26" rx="13" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1" />
-          <text x="75" y="17" font-family="-apple-system, sans-serif" font-weight="700" font-size="10" fill="#34d399" text-anchor="middle">★ RECOMMENDED: CH 6</text>
-        </g>
+      <!-- Metric 2: Zero-Copy lwIP NAPT -->
+      <rect x="257" y="0" width="237" height="100" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2" />
+      <text x="275" y="28" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Zero-Copy lwIP NAPT</text>
+      <text x="275" y="58" font-family="-apple-system, sans-serif" font-weight="800" font-size="20" fill="#ffffff">1,024 Flows</text>
+      <text x="275" y="80" font-family="-apple-system, sans-serif" font-size="10.5" fill="#38bdf8">● TCP MSS: 1412 B Clamped</text>
 
-        <!-- Spectrum Chart Canvas Representation -->
-        <rect x="20" y="60" width="450" height="190" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1" />
-        
-        <!-- Grid lines -->
-        <line x1="20" y1="110" x2="470" y2="110" stroke="#1e293b" stroke-dasharray="3,3" />
-        <line x1="20" y1="160" x2="470" y2="160" stroke="#1e293b" stroke-dasharray="3,3" />
-        <line x1="20" y1="210" x2="470" y2="210" stroke="#1e293b" stroke-dasharray="3,3" />
+      <!-- Metric 3: Free DRAM Heap -->
+      <rect x="514" y="0" width="237" height="100" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2" />
+      <text x="532" y="28" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Free Internal DRAM Heap</text>
+      <text x="532" y="58" font-family="-apple-system, sans-serif" font-weight="800" font-size="20" fill="#10b981">174.2 KB</text>
+      <text x="532" y="80" font-family="-apple-system, sans-serif" font-size="10.5" fill="#10b981">● 0 Bytes Leaked (Rock Solid)</text>
 
-        <!-- Spectrum Wave Bars (Channels 1 to 13) -->
-        <!-- CH 1: Heavy load (red/amber) -->
-        <rect x="40" y="115" width="22" height="105" rx="4" fill="#ef4444" opacity="0.8" />
-        <text x="51" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">1</text>
-
-        <!-- CH 2 -->
-        <rect x="72" y="160" width="22" height="60" rx="4" fill="#f59e0b" opacity="0.7" />
-        <text x="83" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">2</text>
-
-        <!-- CH 3 (Active Uplink) -->
-        <rect x="104" y="140" width="22" height="80" rx="4" fill="#3b82f6" opacity="0.9" />
-        <text x="115" y="235" font-family="monospace" font-size="9" fill="#38bdf8" font-weight="700" text-anchor="middle">3★</text>
-
-        <!-- CH 4 -->
-        <rect x="136" y="175" width="22" height="45" rx="4" fill="#f59e0b" opacity="0.6" />
-        <text x="147" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">4</text>
-
-        <!-- CH 5 -->
-        <rect x="168" y="195" width="22" height="25" rx="4" fill="#10b981" opacity="0.6" />
-        <text x="179" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">5</text>
-
-        <!-- CH 6: Cleanest Channel (green) -->
-        <rect x="200" y="205" width="22" height="15" rx="4" fill="#10b981" />
-        <text x="211" y="235" font-family="monospace" font-size="9" fill="#10b981" font-weight="700" text-anchor="middle">6✓</text>
-
-        <!-- CH 7 -->
-        <rect x="232" y="190" width="22" height="30" rx="4" fill="#10b981" opacity="0.7" />
-        <text x="243" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">7</text>
-
-        <!-- CH 8 -->
-        <rect x="264" y="170" width="22" height="50" rx="4" fill="#f59e0b" opacity="0.6" />
-        <text x="275" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">8</text>
-
-        <!-- CH 9 -->
-        <rect x="296" y="155" width="22" height="65" rx="4" fill="#f59e0b" opacity="0.7" />
-        <text x="307" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">9</text>
-
-        <!-- CH 10 -->
-        <rect x="328" y="145" width="22" height="75" rx="4" fill="#ef4444" opacity="0.7" />
-        <text x="339" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">10</text>
-
-        <!-- CH 11: Heavy Load -->
-        <rect x="360" y="105" width="22" height="115" rx="4" fill="#ef4444" opacity="0.85" />
-        <text x="371" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">11</text>
-
-        <!-- CH 12 -->
-        <rect x="392" y="170" width="22" height="50" rx="4" fill="#f59e0b" opacity="0.6" />
-        <text x="403" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">12</text>
-
-        <!-- CH 13 -->
-        <rect x="424" y="195" width="22" height="25" rx="4" fill="#10b981" opacity="0.7" />
-        <text x="435" y="235" font-family="monospace" font-size="9" fill="#94a3b8" text-anchor="middle">13</text>
-
-        <!-- Congestion Legend Below -->
-        <g transform="translate(20, 265)">
-          <text x="0" y="16" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#fff">Spectrum Analysis:</text>
-          <text x="0" y="34" font-family="-apple-system, sans-serif" font-size="10.5" fill="#94a3b8">• Detected 9 co-channel APs on 2.4 GHz band.</text>
-          <text x="0" y="52" font-family="-apple-system, sans-serif" font-size="10.5" fill="#94a3b8">• Channels 1 &amp; 11 are heavily saturated by neighboring routers.</text>
-          <text x="0" y="70" font-family="-apple-system, sans-serif" font-size="10.5" fill="#34d399">• Channel 6 provides 82% interference reduction.</text>
-          <rect x="0" y="85" width="140" height="26" rx="6" fill="#0284c7" />
-          <text x="70" y="102" font-family="-apple-system, sans-serif" font-weight="700" font-size="10" fill="#fff" text-anchor="middle">Switch to CH 6</text>
-        </g>
-      </g>
-
-      <!-- Right Box: Speedometer & Smart Client Manager -->
-      <g transform="translate(518, 0)">
-        <rect width="490" height="385" rx="14" fill="url(#card)" stroke="#334155" stroke-width="1" />
-        
-        <!-- Sub-section 1: On-Chip Speedtest -->
-        <g transform="translate(20, 20)">
-          <text x="0" y="8" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#ffffff">On-Chip Speedtest &amp; Latency Benchmark</text>
-          <text x="0" y="24" font-family="-apple-system, sans-serif" font-size="10.5" fill="#94a3b8">Native ESP32 throughput &amp; round-trip time measurement</text>
-          
-          <rect x="0" y="36" width="450" height="74" rx="10" fill="#090d16" stroke="#1e293b" stroke-width="1" />
-          <g transform="translate(18, 54)">
-            <text x="0" y="0" font-family="monospace" font-size="10" fill="#94a3b8">DOWNLOAD</text>
-            <text x="0" y="28" font-family="-apple-system, sans-serif" font-size="22" font-weight="900" fill="#34d399">54.8 <tspan font-size="11" font-weight="600" fill="#94a3b8">Mbps</tspan></text>
-          </g>
-          <g transform="translate(160, 54)">
-            <text x="0" y="0" font-family="monospace" font-size="10" fill="#94a3b8">UPLOAD</text>
-            <text x="0" y="28" font-family="-apple-system, sans-serif" font-size="22" font-weight="900" fill="#38bdf8">38.2 <tspan font-size="11" font-weight="600" fill="#94a3b8">Mbps</tspan></text>
-          </g>
-          <g transform="translate(300, 54)">
-            <text x="0" y="0" font-family="monospace" font-size="10" fill="#94a3b8">PING JITTER</text>
-            <text x="0" y="28" font-family="-apple-system, sans-serif" font-size="22" font-weight="900" fill="#a78bfa">11.4 <tspan font-size="11" font-weight="600" fill="#94a3b8">ms</tspan></text>
-          </g>
-        </g>
-
-        <!-- Sub-section 2: Smart Client Device Manager (OUI detection) -->
-        <g transform="translate(20, 150)">
-          <text x="0" y="8" font-family="-apple-system, sans-serif" font-size="14" font-weight="800" fill="#ffffff">Smart Client Device Manager (OUI Vendor Tracking)</text>
-          <text x="0" y="24" font-family="-apple-system, sans-serif" font-size="10.5" fill="#94a3b8">Persistent custom naming, signal tracking &amp; deauth</text>
-
-          <!-- Client Table -->
-          <rect x="0" y="34" width="450" height="180" rx="8" fill="#090d16" stroke="#1e293b" stroke-width="1" />
-          
-          <!-- Table Header -->
-          <text x="14" y="52" font-family="-apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#64748b">DEVICE &amp; ALIAS</text>
-          <text x="160" y="52" font-family="-apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#64748b">HARDWARE (OUI)</text>
-          <text x="290" y="52" font-family="-apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#64748b">SIGNAL</text>
-          <text x="390" y="52" font-family="-apple-system, sans-serif" font-size="9.5" font-weight="700" fill="#64748b">ACTION</text>
-          <line x1="0" y1="62" x2="450" y2="62" stroke="#1e293b" />
-
-          <!-- Row 1: Zeeshan Phone -->
-          <text x="14" y="85" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Zeeshan Phone</text>
-          <text x="14" y="98" font-family="monospace" font-size="9" fill="#94a3b8">EE:F3:10:E1:B7:7A</text>
-          <rect x="160" y="75" width="105" height="20" rx="10" fill="rgba(6, 182, 212, 0.15)" stroke="#06b6d4" stroke-width="0.5" />
-          <text x="212" y="89" font-family="-apple-system, sans-serif" font-size="9" fill="#06b6d4" text-anchor="middle">Apple / iPhone</text>
-          <text x="290" y="89" font-family="monospace" font-size="10.5" fill="#34d399">-38 dBm</text>
-          <rect x="385" y="75" width="50" height="20" rx="4" fill="#e11d48" />
-          <text x="410" y="89" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">Kick</text>
-
-          <line x1="14" y1="108" x2="436" y2="108" stroke="#1e293b" />
-
-          <!-- Row 2: Laptop -->
-          <text x="14" y="130" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Engineering Workstation</text>
-          <text x="14" y="143" font-family="monospace" font-size="9" fill="#94a3b8">3C:7C:3F:8A:12:04</text>
-          <rect x="160" y="120" width="105" height="20" rx="10" fill="rgba(59, 130, 246, 0.15)" stroke="#3b82f6" stroke-width="0.5" />
-          <text x="212" y="134" font-family="-apple-system, sans-serif" font-size="9" fill="#38bdf8" text-anchor="middle">Intel Wi-Fi 6</text>
-          <text x="290" y="134" font-family="monospace" font-size="10.5" fill="#34d399">-45 dBm</text>
-          <rect x="385" y="120" width="50" height="20" rx="4" fill="#e11d48" />
-          <text x="410" y="134" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">Kick</text>
-
-          <line x1="14" y1="154" x2="436" y2="154" stroke="#1e293b" />
-
-          <!-- Row 3: Smart TV -->
-          <text x="14" y="176" font-family="-apple-system, sans-serif" font-size="11" font-weight="700" fill="#ffffff">Living Room TV</text>
-          <text x="14" y="189" font-family="monospace" font-size="9" fill="#94a3b8">B8:78:2E:9D:C3:51</text>
-          <rect x="160" y="166" width="105" height="20" rx="10" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="0.5" />
-          <text x="212" y="180" font-family="-apple-system, sans-serif" font-size="9" fill="#a78bfa" text-anchor="middle">Samsung Smart</text>
-          <text x="290" y="180" font-family="monospace" font-size="10.5" fill="#f59e0b">-62 dBm</text>
-          <rect x="385" y="166" width="50" height="20" rx="4" fill="#e11d48" />
-          <text x="410" y="180" font-family="-apple-system, sans-serif" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">Kick</text>
-        </g>
-      </g>
+      <!-- Metric 4: Silicon Die Temperature -->
+      <rect x="771" y="0" width="237" height="100" rx="12" fill="url(#cardGrad)" stroke="#1e293b" stroke-width="1.2" />
+      <text x="789" y="28" font-family="-apple-system, sans-serif" font-size="11" fill="#94a3b8">Die Thermals &amp; TWDT</text>
+      <text x="789" y="58" font-family="-apple-system, sans-serif" font-weight="800" font-size="20" fill="#ffffff">51.1 °C</text>
+      <text x="789" y="80" font-family="-apple-system, sans-serif" font-size="10.5" fill="#10b981">● Normal (&gt;22°C Margin)</text>
     </g>
   </g>
 </svg>

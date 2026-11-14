@@ -54,7 +54,7 @@ void WebPortal::init() {
         stopCaptiveDns();
     }
 
-    Serial.println("[WEB] High-Performance Web Portal v3.0 Quantum listening on port 80.");
+    Serial.printf("[WEB] %s %s Web Portal listening on port 80.\n", PROJECT_NAME, PROJECT_VERSION);
 }
 
 void WebPortal::toggleAdBlock(bool enable) {
@@ -267,7 +267,8 @@ void WebPortal::registerRoutes() {
                 server.send(200, "text/plain", "Microsoft NCSI");
             }
         } else {
-            server.sendHeader("Location", "http://192.168.4.1/", true);
+            String redirectUrl = String("http://") + WiFi.softAPIP().toString() + "/";
+            server.sendHeader("Location", redirectUrl, true);
             server.send(302, "text/plain", "");
         }
     };
@@ -303,13 +304,16 @@ void WebPortal::registerRoutes() {
     server.on("/api/mac/reset", HTTP_POST, [this]() { handleApiMacReset(); });
     server.on("/api/adblock/toggle", HTTP_POST, [this]() { handleApiAdBlockToggle(); });
 
-    // v3.0 Quantum Features
+    // v3.0.1 Professional Features
     server.on("/api/spectrum", HTTP_GET, [this]() { handleApiSpectrum(); });
     server.on("/api/dns/stats", HTTP_GET, [this]() { handleApiDnsStats(); });
     server.on("/api/dns/clear", HTTP_POST, [this]() { handleApiDnsClear(); });
     server.on("/api/clients/rename", HTTP_POST, [this]() { handleApiClientsRename(); });
     server.on("/api/clients/kick", HTTP_POST, [this]() { handleApiClientsKick(); });
     server.on("/api/speedtest", HTTP_GET, [this]() { handleApiSpeedtest(); });
+    server.on("/api/topology", HTTP_GET, [this]() { handleApiTopology(); });
+    server.on("/api/isolation/toggle", HTTP_POST, [this]() { handleApiIsolationToggle(); });
+    server.on("/api/tpc/toggle", HTTP_POST, [this]() { handleApiTpcToggle(); });
 
     // Web OTA Firmware Upload
     server.on("/api/firmware/update", HTTP_POST, [this]() {
@@ -346,18 +350,18 @@ void WebPortal::registerRoutes() {
 
 void WebPortal::handleRoot() {
     server.sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    server.send(200, "text/html", PORTAL_HTML);
+    server.send_P(200, "text/html", PORTAL_HTML, sizeof(PORTAL_HTML) - 1);
 }
 
 void WebPortal::handleManifest() {
-    server.sendHeader("Content-Type", "application/manifest+json");
     server.send(200, "application/manifest+json", 
-        "{\"name\":\"AetherPulse Enterprise\",\"short_name\":\"AetherPulse\",\"start_url\":\"/\",\"display\":\"standalone\",\"background_color\":\"#060913\",\"theme_color\":\"#0ea5e9\"}");
+        "{\"name\":\"AetherPulse\",\"short_name\":\"AetherPulse\",\"start_url\":\"/\",\"display\":\"standalone\",\"background_color\":\"#060913\",\"theme_color\":\"#0ea5e9\"}");
 }
 
 void WebPortal::handleNotFound() {
     if (isCaptivePortal()) {
-        server.sendHeader("Location", "http://192.168.4.1/", true);
+        String redirectUrl = String("http://") + WiFi.softAPIP().toString() + "/";
+        server.sendHeader("Location", redirectUrl, true);
         server.send(302, "text/plain", "");
     } else {
         server.send(404, "text/plain", "404 Not Found");
@@ -398,6 +402,13 @@ void WebPortal::handleApiStatus() {
     doc["dns_misses"] = dnsStats.totalMisses;
     doc["dns_active_entries"] = dnsStats.activeEntries;
     doc["best_channel"] = roam.getBestChannel();
+
+    doc["client_isolation"] = settings.clientIsolation;
+    doc["dynamic_tpc"] = settings.dynamicTpcEnabled;
+    doc["tx_power_dbm"] = roam.getCurrentTxPowerDbm();
+    doc["tcp_mss"] = TCP_MSS_CLAMP_VALUE;
+    doc["project_name"] = PROJECT_NAME;
+    doc["version"] = PROJECT_VERSION;
 
     String json;
     serializeJson(doc, json);
@@ -506,11 +517,16 @@ void WebPortal::handleApiAddKnown() {
         return;
     }
 
+    if (!doc["ssid"].is<const char*>() && !doc["ssid"].is<String>()) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"SSID required\"}");
+        return;
+    }
+
     String ssid = doc["ssid"].as<String>();
-    String pass = doc["password"].as<String>();
+    String pass = doc["password"] | "";
     int priority = doc["priority"] | 5;
 
-    if (ssid.length() == 0) {
+    if (ssid.length() == 0 || ssid == "null") {
         server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"SSID required\"}");
         return;
     }
@@ -546,6 +562,8 @@ void WebPortal::handleApiSettings() {
     doc["auto_roam"] = s.autoRoamEnabled;
     doc["cloned_mac"] = s.clonedMac;
     doc["adblock_enabled"] = s.adBlockEnabled;
+    doc["client_isolation"] = s.clientIsolation;
+    doc["dynamic_tpc"] = s.dynamicTpcEnabled;
 
     String json;
     serializeJson(doc, json);
@@ -570,6 +588,8 @@ void WebPortal::handleApiSaveSettings() {
     if (doc.containsKey("ap_pass")) s.apPassword = doc["ap_pass"].as<String>();
     if (doc.containsKey("tx_power")) s.txPowerDbm = doc["tx_power"].as<float>();
     if (doc.containsKey("auto_roam")) s.autoRoamEnabled = doc["auto_roam"].as<bool>();
+    if (doc.containsKey("client_isolation")) s.clientIsolation = doc["client_isolation"].as<bool>();
+    if (doc.containsKey("dynamic_tpc")) s.dynamicTpcEnabled = doc["dynamic_tpc"].as<bool>();
     if (doc.containsKey("adblock_enabled")) {
         bool adEn = doc["adblock_enabled"].as<bool>();
         if (adEn != adBlockActive) {
@@ -647,6 +667,12 @@ void WebPortal::handleApiPortmapAdd() {
     uint16_t intPort = doc["intPort"];
     String desc = doc["desc"].as<String>();
 
+    // Prevent Self-DoS: Disallow forwarding port 80 (Web Portal), 53 (DNS Sinkhole), or port 0
+    if (extPort == 80 || extPort == 53 || extPort == 0) {
+        server.send(400, "application/json", "{\"status\":\"error\",\"message\":\"Port 80/53/0 reserved for internal system services\"}");
+        return;
+    }
+
     bool ok = NaptEngine::instance().addPortForward(proto, extPort, intIp, intPort, desc);
     server.send(200, "application/json", ok ? "{\"status\":\"ok\"}" : "{\"status\":\"error\"}");
 }
@@ -699,7 +725,7 @@ void WebPortal::handleApiAdBlockToggle() {
     server.send(200, "application/json", "{\"status\":\"ok\",\"message\":\"" + msg + "\"}");
 }
 
-// v3.0 Quantum Endpoints
+// v3.0.1 Professional Endpoints
 void WebPortal::handleApiSpectrum() {
     auto loads = RoamingEngine::instance().getChannelLoads();
     int best = RoamingEngine::instance().getBestChannel();
@@ -798,6 +824,93 @@ void WebPortal::handleApiSpeedtest() {
         client.write(chunk, toSend);
         sent += toSend;
     }
+}
+
+void WebPortal::handleApiTopology() {
+    auto& roam = RoamingEngine::instance();
+    auto settings = StorageManager::instance().getSettings();
+
+    JsonDocument doc;
+
+    // Upstream Node
+    JsonObject upstream = doc["upstream"].to<JsonObject>();
+    upstream["connected"] = roam.isConnected();
+    upstream["ssid"] = roam.getCurrentSsid();
+    upstream["bssid"] = roam.getCurrentBssid();
+    upstream["rssi"] = roam.getCurrentRssi();
+    upstream["channel"] = roam.getCurrentChannel();
+    upstream["ip"] = roam.isConnected() ? WiFi.localIP().toString() : "0.0.0.0";
+    upstream["gateway"] = roam.isConnected() ? WiFi.gatewayIP().toString() : "0.0.0.0";
+
+    // Repeater Node
+    JsonObject repeater = doc["repeater"].to<JsonObject>();
+    repeater["name"] = PROJECT_NAME;
+    repeater["version"] = PROJECT_VERSION;
+    repeater["ssid"] = settings.apSSID;
+    repeater["ip"] = WiFi.softAPIP().toString();
+    repeater["channel"] = settings.apChannel;
+    repeater["cpu_mhz"] = ESP.getCpuFreqMHz();
+    repeater["free_heap"] = ESP.getFreeHeap();
+    repeater["temp_c"] = round(temperatureRead() * 10.0f) / 10.0f;
+    repeater["tx_power_dbm"] = roam.getCurrentTxPowerDbm();
+    repeater["client_count"] = WiFi.softAPgetStationNum();
+    repeater["isolation"] = settings.clientIsolation;
+    repeater["tpc"] = settings.dynamicTpcEnabled;
+
+    // Clients Nodes
+    JsonArray clients = doc["clients"].to<JsonArray>();
+    wifi_sta_list_t sta_list;
+    esp_wifi_ap_get_sta_list(&sta_list);
+    for (int i = 0; i < sta_list.num; i++) {
+        JsonObject c = clients.add<JsonObject>();
+        char macStr[18];
+        snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
+                 sta_list.sta[i].mac[0], sta_list.sta[i].mac[1], sta_list.sta[i].mac[2],
+                 sta_list.sta[i].mac[3], sta_list.sta[i].mac[4], sta_list.sta[i].mac[5]);
+        c["mac"] = macStr;
+        c["rssi"] = sta_list.sta[i].rssi;
+        c["alias"] = StorageManager::instance().getClientAlias(macStr);
+        c["vendor"] = StorageManager::instance().getVendorName(macStr);
+        c["ip"] = String("192.168.4.") + String(2 + i);
+    }
+
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+}
+
+void WebPortal::handleApiIsolationToggle() {
+    auto s = StorageManager::instance().getSettings();
+    bool nextState = !s.clientIsolation;
+    StorageManager::instance().setClientIsolation(nextState);
+
+    JsonDocument doc;
+    doc["status"] = "ok";
+    doc["client_isolation"] = nextState;
+    doc["message"] = nextState ? "L2 Client Isolation enabled." : "L2 Client Isolation disabled.";
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+    Serial.printf("[SECURITY] Client Isolation toggled: %s\n", nextState ? "ENABLED" : "DISABLED");
+}
+
+void WebPortal::handleApiTpcToggle() {
+    auto s = StorageManager::instance().getSettings();
+    bool nextState = !s.dynamicTpcEnabled;
+    StorageManager::instance().setDynamicTpc(nextState);
+
+    if (!nextState) {
+        RoamingEngine::instance().setTxPowerDbm(s.txPowerDbm);
+    }
+
+    JsonDocument doc;
+    doc["status"] = "ok";
+    doc["dynamic_tpc"] = nextState;
+    doc["message"] = nextState ? "Dynamic TPC closed-loop control enabled." : "Dynamic TPC disabled. Static RF power restored.";
+    String json;
+    serializeJson(doc, json);
+    server.send(200, "application/json", json);
+    Serial.printf("[RF] Dynamic TPC toggled: %s\n", nextState ? "ENABLED" : "DISABLED");
 }
 
 void WebPortal::handleApiReboot() {

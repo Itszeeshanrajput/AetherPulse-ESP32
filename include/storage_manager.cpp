@@ -52,6 +52,8 @@ void StorageManager::loadDefaults(RepeaterSettings& s) {
     s.clonedMac = "";
     s.adBlocksTotal = 0;
     s.softApIpStr = "192.168.4.1";
+    s.clientIsolation = false;
+    s.dynamicTpcEnabled = true;
 }
 
 std::vector<KnownNetwork> StorageManager::getKnownNetworks() {
@@ -95,7 +97,9 @@ bool StorageManager::addKnownNetwork(const String& ssid, const String& password,
     for (auto& n : list) {
         if (n.ssid == ssid) {
             n.password = password;
-            n.priority = priority;
+            if (priority > 1 || n.priority <= 1) {
+                n.priority = priority;
+            }
             return saveKnownNetworks(list);
         }
     }
@@ -229,6 +233,8 @@ RepeaterSettings StorageManager::getSettings() {
     s.clonedMac = prefs.getString("cloned_mac", "");
     s.adBlocksTotal = prefs.getUInt("ad_blocks_tot", 0);
     s.softApIpStr = prefs.getString("ap_ip", "192.168.4.1");
+    s.clientIsolation = prefs.getBool("cl_iso", false);
+    s.dynamicTpcEnabled = prefs.getBool("dyn_tpc", true);
     return s;
 }
 
@@ -248,6 +254,8 @@ bool StorageManager::saveSettings(const RepeaterSettings& s) {
     prefs.putString("cloned_mac", s.clonedMac);
     prefs.putUInt("ad_blocks_tot", s.adBlocksTotal);
     prefs.putString("ap_ip", s.softApIpStr);
+    prefs.putBool("cl_iso", s.clientIsolation);
+    prefs.putBool("dyn_tpc", s.dynamicTpcEnabled);
     return true;
 }
 
@@ -266,6 +274,18 @@ void StorageManager::setAdBlockEnabled(bool enabled) {
 void StorageManager::setSoftApIp(const String& ipStr) {
     auto s = getSettings();
     s.softApIpStr = ipStr;
+    saveSettings(s);
+}
+
+void StorageManager::setClientIsolation(bool enabled) {
+    auto s = getSettings();
+    s.clientIsolation = enabled;
+    saveSettings(s);
+}
+
+void StorageManager::setDynamicTpc(bool enabled) {
+    auto s = getSettings();
+    s.dynamicTpcEnabled = enabled;
     saveSettings(s);
 }
 

@@ -5,10 +5,10 @@
       <stop offset="50%" stop-color="#0c1222" />
       <stop offset="100%" stop-color="#080d1a" />
     </linearGradient>
-    <linearGradient id="quantumGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#06b6d4" />
-      <stop offset="50%" stop-color="#3b82f6" />
-      <stop offset="100%" stop-color="#8b5cf6" />
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0ea5e9" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#10b981" />
     </linearGradient>
     <linearGradient id="badgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1e293b" stop-opacity="0.9" />
@@ -23,76 +23,71 @@
   <!-- Background -->
   <rect width="1200" height="380" rx="18" fill="url(#bgGrad)" stroke="#1e293b" stroke-width="1.5" />
 
-  <!-- Quantum Grid & Wave Lines -->
+  <!-- Ambient Wave Lines -->
   <g opacity="0.12">
-    <line x1="0" y1="95" x2="1200" y2="95" stroke="#06b6d4" stroke-width="1" stroke-dasharray="4,4" />
-    <line x1="0" y1="190" x2="1200" y2="190" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4,4" />
-    <line x1="0" y1="285" x2="1200" y2="285" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="4,4" />
+    <line x1="0" y1="95" x2="1200" y2="95" stroke="#0ea5e9" stroke-width="1" stroke-dasharray="4,4" />
+    <line x1="0" y1="190" x2="1200" y2="190" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4,4" />
+    <line x1="0" y1="285" x2="1200" y2="285" stroke="#10b981" stroke-width="1" stroke-dasharray="4,4" />
   </g>
-  <path d="M 0 170 Q 300 70, 600 170 T 1200 170" fill="none" stroke="rgba(6, 182, 212, 0.22)" stroke-width="2" />
-  <path d="M 0 210 Q 300 310, 600 210 T 1200 210" fill="none" stroke="rgba(139, 92, 246, 0.22)" stroke-width="2" />
-  <circle cx="600" cy="190" r="240" fill="none" stroke="rgba(59, 130, 246, 0.06)" stroke-width="1.5" />
+  <path d="M 0 170 Q 300 70, 600 170 T 1200 170" fill="none" stroke="rgba(14, 165, 233, 0.25)" stroke-width="2" />
+  <path d="M 0 210 Q 300 310, 600 210 T 1200 210" fill="none" stroke="rgba(16, 185, 129, 0.22)" stroke-width="2" />
+  <circle cx="600" cy="190" r="240" fill="none" stroke="rgba(56, 189, 248, 0.06)" stroke-width="1.5" />
 
   <!-- Central Logo Box -->
   <g transform="translate(80, 55)">
-    <rect x="0" y="0" width="88" height="88" rx="22" fill="url(#quantumGrad)" filter="url(#glow)" opacity="0.4" />
-    <rect x="0" y="0" width="88" height="88" rx="22" fill="url(#quantumGrad)" />
+    <rect x="0" y="0" width="88" height="88" rx="22" fill="url(#brandGrad)" filter="url(#glow)" opacity="0.4" />
+    <rect x="0" y="0" width="88" height="88" rx="22" fill="url(#brandGrad)" />
     <!-- Wi-Fi Pulse Waves Symbol -->
     <path d="M 44 24 C 30 24 18 29 10 39 L 44 76 L 78 39 C 70 29 58 24 44 24 Z" fill="#ffffff" />
-    <circle cx="44" cy="72" r="3.5" fill="#06b6d4" />
+    <circle cx="44" cy="72" r="3.5" fill="#0ea5e9" />
   </g>
 
   <!-- Title & Subtitle -->
   <text x="190" y="98" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-1">
-    AETHER<tspan fill="#06b6d4">PULSE</tspan> <tspan fill="url(#quantumGrad)">v3.0 QUANTUM</tspan>
+    AETHER<tspan fill="#38bdf8">PULSE</tspan> <tspan fill="url(#brandGrad)">v3.0.1</tspan>
   </text>
   <text x="190" y="128" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="15" fill="#38bdf8" letter-spacing="0.5">
-    Architected &amp; Engineered by Zeeshan Rajput • Enterprise Silicon Edition
+    Architected &amp; Engineered by Zeeshan Rajput • High-Performance ESP32 Wi-Fi Appliance
   </text>
   <text x="190" y="152" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="400" font-size="13.5" fill="#94a3b8">
-    Zero-Jitter Wi-Fi Extender • Sub-ms SRAM DNS Cache • 2.4 GHz RF Spectrum Heatmap • Smart Device Manager
+    Zero-Copy lwIP NAPT • Live HTML5 Canvas Topology Map • Dynamic TPC • 180° Anti-Phase Beacon
   </text>
 
-  <!-- Version & License Pills -->
-  <g transform="translate(900, 55)">
-    <rect x="0" y="0" width="220" height="32" rx="16" fill="rgba(6, 182, 212, 0.12)" stroke="#06b6d4" stroke-width="1" />
-    <circle cx="16" cy="16" r="4" fill="#06b6d4" />
-    <text x="28" y="21" font-family="monospace" font-weight="700" font-size="12" fill="#06b6d4">ENTERPRISE v3.0.0</text>
+  <!-- Version & Tested Badges -->
+  <g transform="translate(920, 55)">
+    <rect x="0" y="0" width="200" height="32" rx="16" fill="rgba(14, 165, 233, 0.15)" stroke="#0ea5e9" stroke-width="1" />
+    <circle cx="16" cy="16" r="4" fill="#0ea5e9" />
+    <text x="28" y="21" font-family="monospace" font-weight="700" font-size="12" fill="#38bdf8">RELEASE v3.0.1</text>
     
-    <rect x="0" y="42" width="220" height="32" rx="16" fill="rgba(16, 185, 129, 0.12)" stroke="#10b981" stroke-width="1" />
+    <rect x="0" y="42" width="200" height="32" rx="16" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1" />
     <circle cx="16" cy="58" r="4" fill="#10b981" />
-    <text x="28" y="63" font-family="monospace" font-weight="700" font-size="12" fill="#10b981">HARDWARE TESTED OK</text>
+    <text x="28" y="63" font-family="monospace" font-weight="700" font-size="12" fill="#10b981">HARDWARE VERIFIED</text>
   </g>
 
-  <!-- Feature Badges Row -->
+  <!-- Feature Cards Row -->
   <g transform="translate(80, 205)">
-    <!-- Badge 1: DNS Cache -->
-    <rect x="0" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(6, 182, 212, 0.3)" stroke-width="1" />
-    <text x="20" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#06b6d4">⚡ SUB-MS DNS CACHE</text>
-    <text x="20" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">0.2 ms SRAM Lookups</text>
-    <text x="20" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">LFU Eviction &amp; Telemetry</text>
+    <!-- Card 1: Dynamic TPC -->
+    <rect x="0" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(14, 165, 233, 0.3)" stroke-width="1" />
+    <text x="20" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#38bdf8">⚡ DYNAMIC TPC</text>
+    <text x="20" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">+11 to +20.5 dBm Scaling</text>
+    <text x="20" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Closed-loop thermal backoff</text>
 
-    <!-- Badge 2: Spectrum -->
-    <rect x="265" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(59, 130, 246, 0.3)" stroke-width="1" />
-    <text x="285" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#38bdf8">📊 RF SPECTRUM SCANNER</text>
-    <text x="285" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">CH 1-13 Density Heatmap</text>
-    <text x="285" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Automated Best Channel</text>
+    <!-- Card 2: Topology -->
+    <rect x="265" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(16, 185, 129, 0.3)" stroke-width="1" />
+    <text x="285" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#34d399">🌐 LIVE TOPOLOGY MAP</text>
+    <text x="285" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">HTML5 Bezier Graph</text>
+    <text x="285" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Real-time particle flow</text>
 
-    <!-- Badge 3: Client Manager -->
-    <rect x="530" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(139, 92, 246, 0.3)" stroke-width="1" />
-    <text x="550" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#a78bfa">👥 SMART CLIENT MANAGER</text>
-    <text x="550" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">OUI Hardware Detection</text>
-    <text x="550" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Apple, Samsung, Intel, Xiaomi</text>
+    <!-- Card 3: Zero-Copy NAPT -->
+    <rect x="530" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1" />
+    <text x="550" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#38bdf8">🚀 ZERO-COPY lwIP NAPT</text>
+    <text x="550" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">1024 Flow Table &amp; MSS 1412</text>
+    <text x="550" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Sub-ms SRAM DNS Cache</text>
 
-    <!-- Badge 4: Multi Flasher -->
-    <rect x="795" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(236, 72, 153, 0.3)" stroke-width="1" />
-    <text x="815" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#f43f5e">🚀 1-CLICK WEB INSTALL</text>
-    <text x="815" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">v3.0 / v2.0 / v1.0 Builds</text>
-    <text x="815" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">Web Serial In Browser</text>
+    <!-- Card 4: Security & Isolation -->
+    <rect x="795" y="0" width="245" height="90" rx="14" fill="url(#badgeGrad)" stroke="rgba(244, 63, 94, 0.3)" stroke-width="1" />
+    <text x="815" y="32" font-family="-apple-system, sans-serif" font-weight="800" font-size="13.5" fill="#fb7185">🛡️ HARDWARE L2 ISOLATION</text>
+    <text x="815" y="54" font-family="monospace" font-size="11.5" fill="#e2e8f0">Port 53 DNS Sinkhole</text>
+    <text x="815" y="72" font-family="sans-serif" font-size="10.5" fill="#94a3b8">180° Anti-Phase Beacon (50 TU)</text>
   </g>
-
-  <!-- Author Signature Footer -->
-  <text x="1120" y="358" text-anchor="end" font-family="-apple-system, sans-serif" font-weight="600" font-size="11.5" fill="#64748b">
-    github.com/Itszeeshanrajput/AetherPulse-ESP32 • Built with ❤️ by Zeeshan Rajput
-  </text>
 </svg>

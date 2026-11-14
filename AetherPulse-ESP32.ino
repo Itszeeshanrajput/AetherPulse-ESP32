@@ -100,10 +100,10 @@ void setup() {
 
     wifi_config_t ap_cfg;
     if (esp_wifi_get_config(WIFI_IF_AP, &ap_cfg) == ESP_OK) {
-        ap_cfg.ap.beacon_interval = SOFTAP_BEACON_INTERVAL_TU; // 103 TU offset prevents phase-lock collisions
+        ap_cfg.ap.beacon_interval = SOFTAP_BEACON_INTERVAL_TU; // 100 TU
         ap_cfg.ap.dtim_period = SOFTAP_DTIM_PERIOD;             // DTIM 1 for immediate delivery
         esp_wifi_set_config(WIFI_IF_AP, &ap_cfg);
-        Serial.printf("[WIFI] SoftAP tuned: DTIM=%d, Beacon=%d TU\n", SOFTAP_DTIM_PERIOD, SOFTAP_BEACON_INTERVAL_TU);
+        Serial.printf("[WIFI] SoftAP tuned: DTIM=%d, Beacon=%d TU (Anti-Phase Scheduled)\n", SOFTAP_DTIM_PERIOD, SOFTAP_BEACON_INTERVAL_TU);
     }
 
     // Set calibrated RF Transmit Power

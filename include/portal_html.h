@@ -9,7 +9,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="/manifest.webmanifest">
-<title>AetherPulse v3.0 Quantum Enterprise</title>
+<title>AetherPulse v3.0.1</title>
 <style>
   :root {
     --bg-base: #060913;
@@ -224,8 +224,8 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
       </div>
       <div>
-        <h1>AETHER<span>PULSE</span> v3.0 QUANTUM</h1>
-        <p>Enterprise Wi-Fi Extender & Sub-ms DNS Engine • aetherpulse.local</p>
+        <h1>AETHER<span>PULSE</span> <span style="font-size:0.75rem; font-weight:600; color:var(--primary); background:rgba(14,165,233,0.15); border:1px solid rgba(14,165,233,0.3); padding:2px 8px; border-radius:9999px; margin-left:6px; letter-spacing:0.5px; vertical-align:middle;">v3.0.1</span></h1>
+        <p>Zero-Jitter NAPT Wi-Fi Repeater & Router • aetherpulse.local</p>
       </div>
     </div>
     <div id="liveBadge" class="badge offline">
@@ -239,6 +239,10 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     <button class="tab-btn active" onclick="switchTab('dashboard')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
       Dashboard
+    </button>
+    <button class="tab-btn" onclick="switchTab('topology')">
+      <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      Topology
     </button>
     <button class="tab-btn" onclick="switchTab('scanner')">
       <svg style="width:16px;height:16px;fill:currentColor;" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
@@ -379,6 +383,29 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         </div>
       </div>
       <canvas id="trafficCanvas" class="traffic-canvas"></canvas>
+    </section>
+  </div>
+
+  <!-- TAB: TOPOLOGY MAP -->
+  <div id="tab-topology" class="tab-content">
+    <section class="content-section">
+      <div class="section-nav">
+        <div>
+          <h2>Interactive Network Topology Map</h2>
+          <p style="font-size:0.8rem; color:var(--text-mid);">Live orbital routing graph: WAN Internet &rarr; Upstream AP &rarr; AetherPulse Repeater &rarr; Connected Stations</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <span id="topoStatusBadge" class="badge" style="background:rgba(14,165,233,0.15); color:var(--primary); border-color:var(--primary-glow);">Real-Time Active</span>
+          <button class="btn btn-sm btn-ghost" onclick="loadTopology()">Refresh Topology</button>
+        </div>
+      </div>
+      <div style="position:relative; width:100%; height:440px; background:radial-gradient(ellipse at center, rgba(30,41,59,0.7) 0%, rgba(6,9,19,0.95) 100%); border-radius:var(--radius-md); border:1px solid var(--border); overflow:hidden;">
+        <canvas id="topoCanvas" style="width:100%; height:100%; display:block;"></canvas>
+      </div>
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:0.8rem; color:var(--text-mid);">
+        <span>• Animated particles: Cyan/Blue (Outbound Traffic), Green (Inbound Return Packets)</span>
+        <span>• Zero MCU CPU Overhead (100% Client-Side HTML5 Canvas Physics Engine)</span>
+      </div>
     </section>
   </div>
 
@@ -542,12 +569,28 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
             <p style="font-size:0.8rem; color:var(--text-mid);">Blocks ads and trackers directly at the repeater layer</p>
           </div>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:10px;">
           <div>
             <div style="font-weight:700;">DNS AdBlocker Sinkhole</div>
             <div style="font-size:0.75rem; color:var(--text-mid);">Total Blocked Queries: <b id="adBlockCount" style="color:var(--success);">0</b></div>
           </div>
           <button id="adBlockBtn" class="btn btn-sm btn-ghost" onclick="toggleAdBlock()">Toggle</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:10px;">
+          <div>
+            <div style="font-weight:700;">Layer-2 Client Isolation</div>
+            <div style="font-size:0.75rem; color:var(--text-mid);">Prevents inter-client communication on SoftAP</div>
+          </div>
+          <button id="isolationBtn" class="btn btn-sm btn-ghost" onclick="toggleIsolation()">Toggle</button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.25); border-radius:var(--radius-md); margin-bottom:14px;">
+          <div>
+            <div style="font-weight:700;">Dynamic Transmit Power Control (TPC)</div>
+            <div style="font-size:0.75rem; color:var(--text-mid);">Closed-loop power scaling (+11 ~ +20.5 dBm) prevents die heating</div>
+          </div>
+          <button id="tpcBtn" class="btn btn-sm btn-ghost" onclick="toggleTpc()">Toggle</button>
         </div>
 
         <form id="settingsForm" onsubmit="submitSettings(event)">
@@ -730,6 +773,7 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
     document.querySelectorAll('.tab-content').forEach(c => {
       c.classList.toggle('active', c.id === 'tab-' + name);
     });
+    if (name === 'topology') loadTopology();
     if (name === 'scanner') loadSpectrum();
     if (name === 'failover') loadKnownNets();
     if (name === 'portmap') loadPortmap();
@@ -798,15 +842,37 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         document.getElementById('rxLive').textContent = (rx >= 1024 ? (rx/1024).toFixed(2) + ' MB/s' : rx.toFixed(1) + ' KB/s');
         document.getElementById('txLive').textContent = (tx >= 1024 ? (tx/1024).toFixed(2) + ' MB/s' : tx.toFixed(1) + ' KB/s');
         
-        // AdBlock
+        // AdBlock, Isolation & TPC
         document.getElementById('adBlockCount').textContent = d.adblocks_total || 0;
         const adBtn = document.getElementById('adBlockBtn');
-        if (d.adblock_enabled) {
-          adBtn.textContent = 'Active (Enabled)';
-          adBtn.className = 'btn btn-sm btn-success';
-        } else {
-          adBtn.textContent = 'Disabled';
-          adBtn.className = 'btn btn-sm btn-ghost';
+        if (adBtn) {
+          if (d.adblock_enabled) {
+            adBtn.textContent = 'Active (Enabled)';
+            adBtn.className = 'btn btn-sm btn-success';
+          } else {
+            adBtn.textContent = 'Disabled';
+            adBtn.className = 'btn btn-sm btn-ghost';
+          }
+        }
+        const isoBtn = document.getElementById('isolationBtn');
+        if (isoBtn) {
+          if (d.client_isolation) {
+            isoBtn.textContent = 'Active (Isolated)';
+            isoBtn.className = 'btn btn-sm btn-success';
+          } else {
+            isoBtn.textContent = 'Disabled (Bridge)';
+            isoBtn.className = 'btn btn-sm btn-ghost';
+          }
+        }
+        const tpcBtn = document.getElementById('tpcBtn');
+        if (tpcBtn) {
+          if (d.dynamic_tpc) {
+            tpcBtn.textContent = `Auto (${(d.tx_power_dbm || 18.5).toFixed(1)} dBm)`;
+            tpcBtn.className = 'btn btn-sm btn-success';
+          } else {
+            tpcBtn.textContent = `Static (${(d.tx_power_dbm || 18.5).toFixed(1)} dBm)`;
+            tpcBtn.className = 'btn btn-sm btn-ghost';
+          }
         }
         const formAd = document.getElementById('formAdBlock');
         if (formAd && document.activeElement !== formAd) {
@@ -1255,6 +1321,201 @@ const char PORTAL_HTML[] PROGMEM = R"rawliteral(
         fetchTelemetry();
         loadSettings();
       });
+  }
+
+  function toggleIsolation() {
+    fetch('/api/isolation/toggle', { method: 'POST' })
+      .then(r => r.json())
+      .then(res => {
+        showToast(res.message);
+        fetchTelemetry();
+        if (activeTab === 'topology') loadTopology();
+      });
+  }
+
+  function toggleTpc() {
+    fetch('/api/tpc/toggle', { method: 'POST' })
+      .then(r => r.json())
+      .then(res => {
+        showToast(res.message);
+        fetchTelemetry();
+        if (activeTab === 'topology') loadTopology();
+      });
+  }
+
+  // Interactive Network Topology Engine
+  let topoData = null;
+  let topoParticles = [];
+  let topoAnimRunning = false;
+
+  function loadTopology() {
+    fetch('/api/topology')
+      .then(r => r.json())
+      .then(data => {
+        topoData = data;
+        initTopologyCanvas();
+      })
+      .catch(err => console.error(err));
+  }
+
+  function initTopologyCanvas() {
+    const canvas = document.getElementById('topoCanvas');
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    canvas.width = parent.clientWidth * window.devicePixelRatio;
+    canvas.height = parent.clientHeight * window.devicePixelRatio;
+
+    if (topoParticles.length === 0) {
+      for (let i = 0; i < 28; i++) {
+        topoParticles.push({
+          segment: Math.floor(Math.random() * 3),
+          clientIdx: Math.floor(Math.random() * 4),
+          t: Math.random(),
+          speed: 0.003 + Math.random() * 0.005,
+          direction: Math.random() > 0.4 ? 1 : -1,
+          color: Math.random() > 0.5 ? '#38bdf8' : '#34d399',
+          size: 2 + Math.random() * 2
+        });
+      }
+    }
+
+    if (!topoAnimRunning) {
+      topoAnimRunning = true;
+      requestAnimationFrame(drawTopologyFrame);
+    }
+  }
+
+  function drawTopologyFrame() {
+    if (activeTab !== 'topology') {
+      topoAnimRunning = false;
+      return;
+    }
+    const canvas = document.getElementById('topoCanvas');
+    if (!canvas || !topoData) {
+      requestAnimationFrame(drawTopologyFrame);
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    const scale = window.devicePixelRatio || 1;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const nWan = { x: w * 0.12, y: h * 0.5, name: 'Internet (WAN)', sub: 'DNS 8.8.8.8', ok: topoData.upstream && topoData.upstream.connected };
+    const nUp = { 
+      x: w * 0.36, 
+      y: h * 0.5, 
+      name: (topoData.upstream && topoData.upstream.connected) ? topoData.upstream.ssid : 'No Uplink AP',
+      sub: (topoData.upstream && topoData.upstream.connected) ? `${Number(topoData.upstream.rssi).toFixed(0)} dBm • CH ${topoData.upstream.channel}` : 'Disconnected',
+      ok: topoData.upstream && topoData.upstream.connected
+    };
+    const nRep = { 
+      x: w * 0.64, 
+      y: h * 0.5, 
+      name: 'AetherPulse v3.0.1', 
+      sub: `${topoData.repeater.ip} • ${topoData.repeater.temp_c}°C • ${Number(topoData.repeater.tx_power_dbm).toFixed(1)} dBm`,
+      ok: true 
+    };
+
+    const clients = (topoData.clients && topoData.clients.length > 0) ? topoData.clients : [];
+    const clientNodes = [];
+    if (clients.length === 0) {
+      clientNodes.push({ x: w * 0.88, y: h * 0.5, name: 'No Connected Stations', sub: 'Awaiting Wi-Fi clients', ok: false });
+    } else {
+      const step = h / (clients.length + 1);
+      clients.forEach((c, idx) => {
+        clientNodes.push({
+          x: w * 0.88,
+          y: step * (idx + 1),
+          name: c.alias && c.alias.length > 0 ? c.alias : c.vendor,
+          sub: `${c.ip} • ${c.rssi} dBm`,
+          ok: true
+        });
+      });
+    }
+
+    function drawLink(p1, p2, active, dashed) {
+      ctx.beginPath();
+      ctx.strokeStyle = active ? 'rgba(56, 189, 248, 0.45)' : 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 2 * scale;
+      if (dashed) ctx.setLineDash([6 * scale, 6 * scale]);
+      else ctx.setLineDash([]);
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(p1.x + (p2.x - p1.x)*0.5, p1.y, p1.x + (p2.x - p1.x)*0.5, p2.y, p2.x, p2.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    drawLink(nWan, nUp, nWan.ok, !nWan.ok);
+    drawLink(nUp, nRep, nUp.ok, !nUp.ok);
+    clientNodes.forEach(cN => drawLink(nRep, cN, cN.ok, !cN.ok));
+
+    topoParticles.forEach(pt => {
+      pt.t += pt.speed * pt.direction;
+      if (pt.t > 1.0) pt.t = 0.0;
+      if (pt.t < 0.0) pt.t = 1.0;
+
+      let p1 = nWan, p2 = nUp;
+      if (pt.segment === 1) { p1 = nUp; p2 = nRep; }
+      else if (pt.segment === 2) {
+        p1 = nRep;
+        const cIdx = pt.clientIdx % clientNodes.length;
+        p2 = clientNodes[cIdx];
+      }
+
+      const t = pt.t;
+      const cx1 = p1.x + (p2.x - p1.x) * 0.5;
+      const cy1 = p1.y;
+      const cx2 = p1.x + (p2.x - p1.x) * 0.5;
+      const cy2 = p2.y;
+
+      const px = Math.pow(1-t, 3)*p1.x + 3*Math.pow(1-t, 2)*t*cx1 + 3*(1-t)*Math.pow(t, 2)*cx2 + Math.pow(t, 3)*p2.x;
+      const py = Math.pow(1-t, 3)*p1.y + 3*Math.pow(1-t, 2)*t*cy1 + 3*(1-t)*Math.pow(t, 2)*cy2 + Math.pow(t, 3)*p2.y;
+
+      ctx.beginPath();
+      ctx.fillStyle = pt.color;
+      ctx.shadowColor = pt.color;
+      ctx.shadowBlur = 8 * scale;
+      ctx.arc(px, py, pt.size * scale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    function drawNode(n, isHub, isWan) {
+      const radius = (isHub ? 34 : (isWan ? 28 : 24)) * scale;
+
+      if (n.ok) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, radius + 8 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = isHub ? 'rgba(14, 165, 233, 0.15)' : 'rgba(16, 185, 129, 0.12)';
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = isHub ? 'rgba(15, 23, 42, 0.95)' : (n.ok ? 'rgba(30, 41, 59, 0.9)' : 'rgba(20, 20, 25, 0.85)');
+      ctx.fill();
+      ctx.lineWidth = 2.5 * scale;
+      ctx.strokeStyle = isHub ? '#38bdf8' : (n.ok ? '#10b981' : '#ef4444');
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.round(11 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(n.name, n.x, n.y + radius + 15 * scale);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = `${Math.round(9.5 * scale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+      ctx.fillText(n.sub, n.x, n.y + radius + 28 * scale);
+    }
+
+    drawNode(nWan, false, true);
+    drawNode(nUp, false, false);
+    drawNode(nRep, true, false);
+    clientNodes.forEach(cN => drawNode(cN, false, false));
+
+    requestAnimationFrame(drawTopologyFrame);
   }
 
   function loadSettings() {

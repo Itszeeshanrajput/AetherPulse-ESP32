@@ -1,6 +1,7 @@
 #include "roaming_engine.h"
 #include "napt_engine.h"
 #include <esp_mac.h>
+#include <algorithm>
 
 RoamingEngine& RoamingEngine::instance() {
     static RoamingEngine r;
@@ -10,7 +11,7 @@ RoamingEngine& RoamingEngine::instance() {
 RoamingEngine::RoamingEngine() 
     : state(ROAM_STATE_IDLE), scanning(false), lastScanTime(0), lastRoamTime(0),
       candidateFirstSeenTime(0), currentChannel(0), currentRssiFiltered(-95.0f),
-      candidateRssi(-100.0f) {}
+      candidateRssi(-100.0f), currentTxPowerDbm(DEFAULT_TX_POWER_DBM), lastTpcTime(0) {}
 
 void RoamingEngine::init() {
     pinMode(PIN_RGB_RED, OUTPUT);
@@ -60,6 +61,15 @@ bool RoamingEngine::connectToNetwork(const String& ssid, const String& password)
 
     // Enforce WIFI_PS_NONE for zero modem-sleep jitter
     esp_wifi_set_ps(WIFI_PS_NONE);
+
+    // 802.11k/v Hardware Fast Roaming & BSS Transition Management
+    wifi_config_t sta_cfg;
+    if (esp_wifi_get_config(WIFI_IF_STA, &sta_cfg) == ESP_OK) {
+        sta_cfg.sta.rm_enabled = 1;
+        sta_cfg.sta.btm_enabled = 1;
+        esp_wifi_set_config(WIFI_IF_STA, &sta_cfg);
+        Serial.println("[WIFI] 802.11k (Radio Measurement) & 802.11v (BTM) enabled on Station interface.");
+    }
 
     // Single-Radio Channel Alignment & Fast Scan
     int targetChannel = 0;
@@ -248,6 +258,9 @@ void RoamingEngine::triggerRoamEvaluation() {
     if (!isConnected()) {
         // Try auto-connecting to any known network in range, ordered by priority
         auto known = StorageManager::instance().getKnownNetworks();
+        std::sort(known.begin(), known.end(), [](const KnownNetwork& a, const KnownNetwork& b) {
+            return a.priority > b.priority;
+        });
         for (const auto& k : known) {
             for (const auto& ap : lastScanResults) {
                 if (ap.ssid == k.ssid && ap.rssi > -88) {
@@ -264,6 +277,9 @@ void RoamingEngine::triggerRoamEvaluation() {
     // If connected, check signal degradation
     if (currentRssiFiltered < settings.roamThresholdDbm) {
         auto known = StorageManager::instance().getKnownNetworks();
+        std::sort(known.begin(), known.end(), [](const KnownNetwork& a, const KnownNetwork& b) {
+            return a.priority > b.priority;
+        });
         ScannedApInfo bestCand;
         bestCand.rssi = -100;
         String candPass = "";
@@ -320,6 +336,64 @@ void RoamingEngine::executeHandover() {
     Serial.println("[ROAM] Handover complete. Entered 30s cooldown hold-down.");
 }
 
+void RoamingEngine::setTxPowerDbm(float dbm) {
+    if (dbm < 10.0f) dbm = 10.0f;
+    if (dbm > 20.5f) dbm = 20.5f;
+    int raw = (int)(dbm * 4.0f);
+    esp_wifi_set_max_tx_power(raw);
+    currentTxPowerDbm = dbm;
+    Serial.printf("[RF] Manual TX Power set to %.2f dBm (raw: %d)\n", dbm, raw);
+}
+
+void RoamingEngine::updateDynamicTpc() {
+    auto settings = StorageManager::instance().getSettings();
+    if (!settings.dynamicTpcEnabled) return;
+    if (millis() - lastTpcTime < 3000) return; // Evaluate every 3 seconds
+    lastTpcTime = millis();
+
+    wifi_sta_list_t sta_list;
+    int targetRaw = DEFAULT_TX_POWER_RAW; // Default 74 = 18.5 dBm
+
+    if (esp_wifi_ap_get_sta_list(&sta_list) == ESP_OK && sta_list.num > 0) {
+        int8_t maxClientRssi = -128;
+        int8_t minClientRssi = 0;
+        for (int i = 0; i < sta_list.num; i++) {
+            if (sta_list.sta[i].rssi > maxClientRssi) maxClientRssi = sta_list.sta[i].rssi;
+            if (sta_list.sta[i].rssi < minClientRssi) minClientRssi = sta_list.sta[i].rssi;
+        }
+
+        // If client is right next to the AP (> -48 dBm), throttle back to eliminate receiver saturation & heat
+        if (maxClientRssi > TPC_CLOSE_RSSI_THRESHOLD) {
+            targetRaw = MIN_TX_POWER_RAW; // 44 raw = +11.0 dBm
+        } else if (minClientRssi < TPC_FAR_RSSI_THRESHOLD) {
+            targetRaw = MAX_TX_POWER_RAW; // 82 raw = +20.5 dBm
+        } else {
+            // Linear interpolation between MIN (44) and MAX (82)
+            float ratio = (float)(TPC_CLOSE_RSSI_THRESHOLD - minClientRssi) / (TPC_CLOSE_RSSI_THRESHOLD - TPC_FAR_RSSI_THRESHOLD);
+            if (ratio < 0.0f) ratio = 0.0f;
+            if (ratio > 1.0f) ratio = 1.0f;
+            targetRaw = MIN_TX_POWER_RAW + (int)(ratio * (MAX_TX_POWER_RAW - MIN_TX_POWER_RAW));
+        }
+    } else if (isConnected()) {
+        // No SoftAP clients connected; scale based on upstream link RSSI
+        if (currentRssiFiltered > TPC_CLOSE_RSSI_THRESHOLD) {
+            targetRaw = MIN_TX_POWER_RAW;
+        } else if (currentRssiFiltered < TPC_FAR_RSSI_THRESHOLD) {
+            targetRaw = MAX_TX_POWER_RAW;
+        } else {
+            targetRaw = DEFAULT_TX_POWER_RAW;
+        }
+    }
+
+    int8_t currentRaw = 0;
+    esp_wifi_get_max_tx_power(&currentRaw);
+    if (abs(targetRaw - currentRaw) >= 4) { // Hysteresis of 1 dBm
+        esp_wifi_set_max_tx_power(targetRaw);
+        currentTxPowerDbm = targetRaw * 0.25f;
+        Serial.printf("[TPC] Dynamic RF Power scaled: %.2f dBm (raw: %d)\n", currentTxPowerDbm, targetRaw);
+    }
+}
+
 void RoamingEngine::update() {
     // Process async scan if completed
     if (scanning && WiFi.scanComplete() >= 0) {
@@ -331,6 +405,9 @@ void RoamingEngine::update() {
         float raw = (float)WiFi.RSSI();
         currentRssiFiltered = rssiFilter.update(raw);
     }
+
+    // Dynamic Transmit Power Control (TPC)
+    updateDynamicTpc();
 
     // Periodic background scan every 25 seconds if idle
     if (!scanning && millis() - lastScanTime > 25000) {

@@ -10,8 +10,8 @@
 // Architect: Zeeshan Rajput (@Itszeeshanrajput)
 // ==============================================================================
 
-#define PROJECT_NAME              "AetherPulse Extreme"
-#define PROJECT_VERSION           "v3.0.0-Quantum"
+#define PROJECT_NAME              "AetherPulse"
+#define PROJECT_VERSION           "v3.0.1"
 #define PROJECT_AUTHOR            "Zeeshan Rajput"
 
 // Hardware Pin Configuration
@@ -24,11 +24,17 @@
 #define DEFAULT_TX_POWER_DBM      18.5f // Calibrated high-gain RF output
 #define DEFAULT_TX_POWER_RAW      74    // 74 * 0.25 = 18.50 dBm
 #define MAX_TX_POWER_RAW          82    // +20.5 dBm max
-#define MIN_TX_POWER_RAW          40    // +10.0 dBm min
+#define MIN_TX_POWER_RAW          44    // +11.0 dBm min for dynamic TPC backoff
+
+// Dynamic Transmit Power Control (TPC) Closed-Loop Backoff
+#define TPC_ENABLED_DEFAULT       true
+#define TPC_CLOSE_RSSI_THRESHOLD  -48.0f // When client RSSI > -48 dBm, back off power to prevent saturation
+#define TPC_FAR_RSSI_THRESHOLD    -74.0f // When client RSSI < -74 dBm, boost power to max
 
 // Anti-Jitter Timing Parameters
-#define SOFTAP_BEACON_INTERVAL_TU 103   // 103 TU (105.47ms) - Prime offset prevents phase collisions
-#define SOFTAP_DTIM_PERIOD        1     // Instant transmission of buffered multicast/unicast frames
+#define SOFTAP_BEACON_INTERVAL_TU 100   // 100 TU (102.4ms) standard beacon interval
+#define SOFTAP_BEACON_OFFSET_TU   50    // 180-degree anti-phase offset (51.2ms) prevents RF beacon collision
+#define SOFTAP_DTIM_PERIOD        1     // Instant delivery of buffered multicast/unicast frames
 #define TCP_MSS_CLAMP_VALUE       1412  // Clamps TCP MSS to eliminate PMTU black-hole packet drops
 
 // lwIP Hardware NAPT Configuration & Timers

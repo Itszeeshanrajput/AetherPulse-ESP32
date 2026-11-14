@@ -63,13 +63,16 @@ private:
     void handleApiMacReset();
     void handleApiAdBlockToggle();
 
-    // v3.0 Quantum Endpoints
+    // v3.0.1 Professional Endpoints
     void handleApiSpectrum();
     void handleApiDnsStats();
     void handleApiDnsClear();
     void handleApiClientsRename();
     void handleApiClientsKick();
     void handleApiSpeedtest();
+    void handleApiTopology();
+    void handleApiIsolationToggle();
+    void handleApiTpcToggle();
 
     // High-performance Port 53 DNS AdBlock Sinkhole
     void processAdBlockDns();

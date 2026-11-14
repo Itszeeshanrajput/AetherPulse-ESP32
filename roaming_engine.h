@@ -75,6 +75,8 @@ public:
     int getBestChannel();
     std::vector<int> getChannelLoads();
     bool isSubnetConflict(IPAddress staIp);
+    void updateDynamicTpc();
+    void setTxPowerDbm(float dbm);
 
     // Queries
     bool isConnected() const;
@@ -82,6 +84,7 @@ public:
     String getCurrentBssid() const { return currentBssid; }
     float getCurrentRssi() const { return currentRssiFiltered; }
     int getCurrentChannel() const { return currentChannel; }
+    float getCurrentTxPowerDbm() const { return currentTxPowerDbm; }
     RoamState getState() const { return state; }
     std::vector<ScannedApInfo> getLastScanResults() const { return lastScanResults; }
     bool isScanning() const { return scanning; }
@@ -107,6 +110,8 @@ private:
 
     KalmanFilter1D rssiFilter;
     std::vector<ScannedApInfo> lastScanResults;
+    float currentTxPowerDbm;
+    unsigned long lastTpcTime;
 
     void processScanResults();
     void executeHandover();

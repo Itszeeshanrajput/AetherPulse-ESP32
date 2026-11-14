@@ -1,24 +1,14 @@
-# AetherPulse Enterprise ⚡ (v3.0 Quantum)
+# AetherPulse
 
 ![AetherPulse Banner](assets/banner.svg)
 
 [![Build, WebFlash & Auto-Release](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml/badge.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/actions/workflows/build-and-release.yml)
 [![Web Installer](https://img.shields.io/badge/Web%20Flasher-1--Click%20Install-brightgreen.svg?style=flat&logo=espressif)](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)
 [![ESP32 Compatible](https://img.shields.io/badge/ESP32-D0WD--V3%20%7C%20WROOM--32-blue.svg)](https://www.espressif.com/)
-[![Firmware Version](https://img.shields.io/badge/Release-v3.0.0--Quantum-cyan.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases)
+[![Firmware Version](https://img.shields.io/badge/Release-v3.0.1-cyan.svg)](https://github.com/Itszeeshanrajput/AetherPulse-ESP32/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**AetherPulse Enterprise** is an ultra-low latency Wi-Fi range extender, NAPT router, and hardware security appliance engineered specifically for ESP32 silicon.
-
-The **v3.0 Quantum Edition** introduces:
-- **Sub-Millisecond On-Chip DNS Cache**: Serves cached DNS lookups directly from SRAM in `< 0.8 ms`, completely bypassing 2.4 GHz uplink round-trip latency.
-- **RF Spectrum Congestion Analyzer**: Real-time channel interference heatmap (Channels 1–13) with automated cleanest frequency recommendation.
-- **On-Chip Speedtest & Latency Meter**: Direct SoftAP throughput benchmark and RTT jitter measurement without third-party dependencies.
-- **Smart Client Device Manager**: Automatic OUI vendor identification (Apple, Samsung, Intel, Google, Xiaomi, Espressif) with custom client alias naming and one-click deauthentication.
-- **Die Temperature & Thermal Protection**: Real-time on-chip sensor monitoring with automatic throttling safeguards.
-- **Multi-Build Web Flasher**: Flash any version (`v3.0 Quantum`, `v2.0 Titanium`, `v1.0 Baseline`) directly from your browser.
-- **Native PWA Support**: Install as a standalone native app on iOS and Android devices.
-- **Subnet Conflict Auto-Migration**: Automatically shifts SoftAP from `192.168.4.1` to `192.168.5.1` if upstream link collides with the local subnet.
+**AetherPulse** is an ultra-low latency Wi-Fi range extender, NAPT router, and hardware security appliance engineered specifically for ESP32 silicon. It turns an inexpensive dual-core ESP32 board into a resilient, zero-jitter network repeater with live interactive topology visualization, dynamic RF power management, and hardware-accelerated DNS caching.
 
 ---
 
@@ -28,13 +18,13 @@ Flash your ESP32 board in 30 seconds directly from your browser without installi
 
 👉 **[Launch AetherPulse Web Installer](https://itszeeshanrajput.github.io/AetherPulse-ESP32/)**
 
-1. Connect your ESP32 board via USB (Google Chrome or Microsoft Edge required).
-2. Choose your build (**v3.0 Quantum**, **v2.0 Titanium**, or **v1.0 Baseline**).
-3. Click **⚡ Flash AetherPulse**.
+1. Connect your ESP32 board via USB (Google Chrome, Microsoft Edge, Brave, or Opera).
+2. Choose your firmware release (**v3.0.1 (Latest)**, **v2.0.0 (Stable)**, or **v1.0.0 (Baseline)**).
+3. Click **Install AetherPulse**.
 4. Select your serial port (`CP2102`, `CH340`, or `USB-JTAG`).
 5. Once flashed, connect to the repeater Wi-Fi:
-   - **SSID:** `AetherPulse-Extender`
-   - **Passphrase:** `aetherpulse123`
+   - **Default SSID:** `AetherPulse-Extender`
+   - **Default Passphrase:** `aetherpulse123`
    - **Web Management Portal:** `http://192.168.4.1` or `http://aetherpulse.local`
 
 > [!NOTE]
@@ -52,31 +42,32 @@ Flash your ESP32 board in 30 seconds directly from your browser without installi
 
 ---
 
-## 🚀 What's New in v3.0 Quantum Enterprise
+## 📦 Release Matrix & Architectural Evolution
 
-| Feature | Technical Architecture | Benefit |
-| :--- | :--- | :--- |
-| **Sub-ms SRAM DNS Acceleration** | High-speed in-memory LFU cache table (`dns_cache.cpp`) with TTL validation and 350ms upstream resolver. | Serves repeat DNS queries in `< 0.2 ms`, completely bypassing Wi-Fi uplink airtime and round-trip delay. |
-| **RF Spectrum Congestion Analyzer** | Multi-AP channel density load matrix (Channels 1–13) with cleanest frequency recommendation (`roaming_engine.cpp`). | Eliminates 2.4 GHz co-channel interference and packet collisions by picking the cleanest spectrum slice. |
-| **Smart Client Device Manager** | High-performance OUI MAC hardware identification (`storage_manager.cpp`) with persistent alias mapping in NVS. | Automatically identifies Apple, Samsung, Intel, Google, Xiaomi, and Espressif devices with custom naming and kick capability. |
-| **On-Chip Speedometer & Benchmark** | Direct SoftAP client-to-repeater throughput & RTT latency benchmark (`/api/speedtest`). | Measures real-time connection bandwidth and jitter without needing third-party speedtest servers. |
-| **Die Thermal & Hardware TWDT** | Real-time on-chip silicon die temperature monitoring (`temperatureRead()`) with 15s Task Watchdog auto-recovery. | Guarantees hardware reliability and prevents thermal degradation under heavy continuous NAPT routing loads. |
-| **1-Click Multi-Version Web Flasher** | Next-generation WebSerial installer with multi-version selector (`v3.0 Quantum`, `v2.0 Titanium`, `v1.0 Baseline`). | Flash any generation directly in Chrome/Edge in 30 seconds with automated build synchronization. |
-| **Dynamic Subnet Conflict Migration** | Upstream subnet collision detection shifting SoftAP to `192.168.5.1` if the upstream link is `192.168.4.x`. | Guarantees plug-and-play operation behind any upstream router without manual IP reconfiguration. |
+| Release | Status | Architecture Highlights | Recommended Use |
+| :--- | :---: | :--- | :--- |
+| **`v3.0.1`** | **Latest / Recommended** | Dynamic Transmit Power Control (TPC), Interactive HTML5 Canvas Topology Graph, Zero-Copy lwIP NAPT, 180° Anti-Phase Beacon Scheduling, Hardware L2 Client Isolation, 802.11k/v Fast Roaming flags, TCP MSS Clamping (1412 B), Sub-ms SRAM DNS Cache, RF Spectrum Heatmap. | Production deployments, high-density environments, gaming/streaming, smart home repeaters. |
+| **`v2.0.0`** | **Legacy Stable** | Dual SoftAP + Station lwIP DNAPT, Port Forwarding (Virtual Servers), Hardware DNS AdBlocker, Station MAC Cloning, Web Drag-and-Drop OTA, mDNS Responder, 15s Task Watchdog. | Standard repeater setups requiring port forwarding and hotel captive portal bypass. |
+| **`v1.0.0`** | **Legacy Baseline** | Core dual-interface repeater with fundamental lwIP NAPT routing. | Minimal footprint deployments on resource-constrained flash modules. |
 
 ---
 
-## ⚡ What's New in v2.0 Titanium
+## 🚀 Key Features in v3.0.1
 
-| Feature | Description | Benefit |
+| Feature | Technical Architecture | Engineering Benefit |
 | :--- | :--- | :--- |
-| **lwIP DNAPT Port Forwarding** | Map external ports on the upstream network directly to internal client IPs (`proto`, `extPort` $\to$ `intIp:intPort`). | Expose local web servers, IP cameras, or game hosts across the repeater boundary. |
-| **Station MAC Address Cloning** | Spoof any arbitrary MAC address on the Station interface (`esp_wifi_set_mac`). | Authenticate your phone or laptop on a hotel/university captive portal, clone its MAC to the ESP32, and share the link with all devices. |
+| **Interactive HTML5 Canvas Topology Graph** | GPU-accelerated client-side orbital graph with cubic Bezier particle flow streams (`/api/topology`). | Real-time visual network observability mapping WAN uplink, repeater hub, and connected clients with 0% MCU overhead. |
+| **Dynamic Transmit Power Control (TPC)** | Closed-loop RF output scaling between +11.0 dBm (near-field) and +20.5 dBm (far-field) with 1 dBm hysteresis. | Reduces thermal dissipation, prevents receiver saturation for nearby phones, and boosts SNR for distant routers. |
+| **180° Anti-Phase Beacon Scheduling** | SoftAP beacon timed at 100 TU with an exact 50 TU offset and DTIM 1 (`config.h`). | Prevents radio frame collision and packet queuing between the STA receiver and SoftAP transmitter on single-radio silicon. |
+| **Hardware Layer-2 Client Isolation** | NVS-persistent client isolation toggle preventing peer-to-peer traffic across SoftAP stations. | Enterprise-grade isolation for guest networks, preventing lateral movement between connected devices. |
+| **TCP MSS Clamping (1412 Bytes)** | IP/TCP packet inspection clamping maximum segment size with RFC 1624 checksum updating. | Eliminates MTU black-hole packet drops over encapsulated PPPoE and double-NAT uplinks. |
+| **802.11k/v Fast Roaming Flags** | Station interface initialized with Radio Measurement (`rm_enabled = 1`) and BSS Transition Management (`btm_enabled = 1`). | Enables seamless handoffs when operating within enterprise multi-AP mesh networks (UniFi, Omada, Cisco). |
+| **Sub-ms SRAM DNS Cache Acceleration** | High-speed in-memory LFU cache table (`dns_cache.cpp`) with TTL validation and 350ms upstream resolver. | Serves repeat DNS queries in `< 0.2 ms`, completely bypassing Wi-Fi uplink airtime and round-trip delay. |
+| **2.4 GHz RF Spectrum Congestion Heatmap** | Multi-AP channel density load matrix (Channels 1–13) with cleanest frequency recommendation (`roaming_engine.cpp`). | Eliminates 2.4 GHz co-channel interference and packet collisions by identifying the cleanest spectrum slice. |
+| **Smart Client Device Manager** | High-performance OUI MAC hardware identification (`storage_manager.cpp`) with persistent alias mapping in NVS. | Automatically identifies Apple, Samsung, Intel, Google, Xiaomi, and Espressif devices with custom naming and kick capability. |
 | **Hardware DNS AdBlocker** | Port 53 UDP sinkhole interceptor responding with `0.0.0.0` for advertising and telemetry domains. | Network-wide ad and tracker blocking directly on the ESP32 with zero client software required. |
-| **Web Browser Drag-and-Drop OTA** | Upload compiled `.bin` firmware files directly through the browser with a live 0–100% progress bar. | Update the device wirelessly over Wi-Fi without touching a USB cable. |
-| **mDNS Zero-DNS Access** | Native multicast DNS responder for `aetherpulse.local`. | Open the configuration portal anytime on iOS, macOS, Windows, Android, and Linux without memorizing IP addresses. |
-| **15s Task Watchdog (TWDT)** | Hardware Task Watchdog Timer configured via ESP-IDF `esp_task_wdt_config_t`. | Instant silicon-level recovery from any network deadlocks or kernel hangs. |
-| **Sub-200ms Fast Roaming** | Radio channel pre-alignment matching the target AP's channel before association. | Eliminates client disconnections caused by SoftAP channel drift during uplink connection. |
+| **Station MAC Address Cloning** | Spoof any arbitrary MAC address on the Station interface (`esp_wifi_set_mac`). | Authenticate your phone or laptop on a hotel/university captive portal, clone its MAC to the ESP32, and share the link. |
+| **Dynamic Subnet Conflict Migration** | Upstream subnet collision detection shifting SoftAP to `192.168.5.1` if the upstream link is `192.168.4.x`. | Guarantees plug-and-play operation behind any upstream router without manual IP reconfiguration. |
 
 ---
 
@@ -85,33 +76,37 @@ Flash your ESP32 board in 30 seconds directly from your browser without installi
 ```mermaid
 flowchart TD
     subgraph Uplink ["Upstream Wi-Fi Network"]
-        AP1["Primary AP (e.g. Home Fiber)"]
+        AP1["Primary AP (e.g. Home Fiber Router)"]
         AP2["Failover AP (e.g. Mobile Hotspot)"]
     end
 
     subgraph ESP32 ["ESP32-D0WD-V3 Silicon (Dual Core @ 240 MHz)"]
         subgraph RF ["2.4 GHz RF Physical Layer"]
             PHY["PHY Mode: WIFI_PS_NONE (Modem Sleep OFF)"]
-            TX["TX Calibrated: 16.0 - 20.5 dBm"]
+            TPC["Dynamic TPC: +11.0 to +20.5 dBm"]
             MAC["Station MAC Spoofing Engine"]
         end
 
         subgraph STA ["Station Client Interface"]
             KF["1D Kalman Filter (Q=0.008, R=4.50)"]
             ROAM["Dual-Threshold Priority Roaming Engine"]
+            FAST["802.11k/v Fast Roaming Flags"]
         end
 
         subgraph L3 ["lwIP Dual-Netif Subsystem"]
-            NAPT["Native DNAPT Core (1024 Flows)"]
+            NAPT["Zero-Copy lwIP DNAPT Core (1024 Flows)"]
+            MSS["TCP MSS Clamping (1412 Bytes)"]
             PORTMAP["DNAPT Port Forwarding (TCP/UDP)"]
             ADBLK["DNS AdBlocker UDP Sinkhole (Port 53)"]
+            DNSC["Sub-ms SRAM DNS Cache (64 Hosts)"]
             WDT["Task Watchdog Timer (15s TWDT)"]
             OTA["Over-The-Air Update Engine (<Update.h>)"]
             MDNS["mDNS: aetherpulse.local"]
         end
 
         subgraph SoftAP ["SoftAP Broadcast"]
-            CFG["Beacon: 103 TU | DTIM: 1 (Anti-Collision)"]
+            CFG["Beacon: 100 TU | Offset: 50 TU | DTIM: 1"]
+            ISO["Hardware L2 Client Isolation"]
             DHCP["DHCPS (Dynamic DNS Offer)"]
         end
     end
@@ -126,8 +121,10 @@ flowchart TD
     AP2 -.->|Priority Failover| PHY
     PHY --> STA
     STA --> NAPT
+    NAPT --> MSS
     NAPT --> PORTMAP
     NAPT --> ADBLK
+    NAPT --> DNSC
     NAPT --> SoftAP
     SoftAP --> Clients
 ```
@@ -136,7 +133,7 @@ flowchart TD
 
 ## 📟 Interactive Serial CLI Commands
 
-Connect your terminal to the USB serial port at `115200` baud:
+Connect your serial terminal to the USB port at `115200` baud:
 
 | Command | Arguments | Description |
 | :--- | :--- | :--- |
@@ -149,10 +146,12 @@ Connect your terminal to the USB serial port at `115200` baud:
 | `clients` | None | Displays MAC addresses, signal strengths, vendors, and aliases of connected repeater clients. |
 | `rename` | `<mac> <alias>` | Assigns custom friendly name to client device (`rename 14:EB:08:3A:0E:2C "Laptop"`). |
 | `kick` | `<mac>` | Deauthenticates / disconnects client device from repeater SoftAP. |
+| `isolation` | `[on\|off]` | Enables or disables Layer-2 client isolation between connected SoftAP stations. |
+| `tpc` | `[on\|off]` | Enables or disables closed-loop Dynamic Transmit Power Control (TPC). |
 | `list` / `saved` | None | Lists all saved failover Wi-Fi profiles and priority ranks. |
 | `add` | `<ssid> <pass> [prio]` | Adds or updates a network profile (use quotes for names with spaces: `add "MyWiFi" pass 8`). |
 | `del` / `remove` | `<ssid>` | Removes a network from the NVS database (`del "MyWiFi"`). |
-| `connect` | `<ssid> [pass]` | Manually switches uplink connection to the specified AP. |
+| `connect` | `<ssid> [pass] [prio]` | Manually switches uplink connection to the specified AP. |
 | `disconnect`| None | Drops upstream link and reverts to standalone AP mode. |
 | `mac` | None | Displays current Station MAC address and cloned status. |
 | `set_mac` | `<mac>` | Spoofs Station MAC address (`set_mac 14:EB:08:3A:0E:2C`). |
@@ -162,7 +161,7 @@ Connect your terminal to the USB serial port at `115200` baud:
 | `portmap del` | `<tcp\|udp> <ext>` | Removes a port forward rule (`portmap del tcp 8080`). |
 | `adblock` | `[on\|off]` | Checks status or toggles hardware DNS AdBlocker sinkhole. |
 | `ping` | `<host>` | Tests DNS resolution and TCP handshake latency (`ping google.com`). |
-| `set_tx` | `<dbm>` | Calibrates RF transmit power (+10.0 to +20.5 dBm). |
+| `set_tx` | `<dbm>` | Calibrates manual RF transmit power (+10.0 to +20.5 dBm). |
 | `roam` | None | Forces immediate background multi-AP roam re-evaluation. |
 | `reboot` | None | Performs clean software reboot of the ESP32. |
 
@@ -201,9 +200,10 @@ This project enforces strict credential isolation:
 - `credentials.h` is excluded in `.gitignore` to prevent committing private network passwords.
 - Public release binaries published to GitHub Releases and WebSerial installer contain generic placeholder credentials only.
 - Passwords entered via Web Portal or Serial CLI are securely persisted into ESP32 NVS flash.
+- Built-in self-DoS protection prevents port-mapping reserved services (HTTP 80 and DNS 53).
 
 ---
 
 ## 📄 License
 
-Distributed under the [MIT License](LICENSE). Built for the worldwide ESP32 developer community.
+Distributed under the [MIT License](LICENSE). Architected & Engineered by **Zeeshan Rajput**.

@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#060913">
-  <title>AetherPulse v3.0 Quantum — 1-Click Multi-Build ESP32 Web Installer | By Zeeshan Rajput</title>
-  <meta name="description" content="Official 1-Click Multi-Version Web Serial Installer for AetherPulse ESP32 Wi-Fi repeater, lwIP DNAPT router, sub-ms DNS cache & RF congestion analyzer by Zeeshan Rajput.">
+  <title>AetherPulse — Official 1-Click ESP32 Web Installer | By Zeeshan Rajput</title>
+  <meta name="description" content="Official 1-Click Web Serial Installer for AetherPulse: High-performance ESP32 Wi-Fi repeater, lwIP DNAPT router, live network topology map, dynamic TPC, and sub-ms DNS cache by Zeeshan Rajput.">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -340,7 +340,7 @@
           <svg viewBox="0 0 24 24"><path d="M12 3C6.95 3 3.15 4.85 0 7.23L12 22 24 7.25C20.85 4.87 17.05 3 12 3zm0 3c3.78 0 6.63 1.25 9.07 2.88L12 19.92 2.93 8.88C5.37 7.25 8.22 6 12 6z"/></svg>
         </div>
         <div>
-          <div class="nav-title">AetherPulse <span>Enterprise</span></div>
+          <div class="nav-title">AetherPulse</div>
           <div class="nav-creator">By <strong>Zeeshan Rajput</strong></div>
         </div>
       </a>
@@ -363,19 +363,19 @@
       </div>
 
       <h1 class="hero-title">
-        The Ultimate <span class="gradient-text">Zero-Jitter Wi-Fi Repeater</span> &amp; DNS Accelerator for ESP32
+        High-Performance <span class="gradient-text">Zero-Jitter Wi-Fi Repeater</span> &amp; Routing Appliance for ESP32
       </h1>
 
       <p class="hero-subtitle">
-        Zero external drivers. Zero LCD overhead. Full lwIP DNAPT routing with sub-millisecond on-chip DNS cache, RF spectrum congestion heatmap, and 1-click Web Serial flasher.
+        Zero external drivers. Zero LCD overhead. Native lwIP DNAPT routing with Dynamic Transmit Power Control (TPC), interactive HTML5 Canvas topology graph, sub-ms DNS cache, and 1-click Web Serial installer.
       </p>
 
       <div class="badge-bar">
-        <span class="feature-tag highlight">⚡ Sub-ms DNS Cache</span>
-        <span class="feature-tag">📶 RF Congestion Analyzer</span>
-        <span class="feature-tag">🚀 lwIP DNAPT Routing</span>
+        <span class="feature-tag highlight">⚡ Dynamic TPC</span>
+        <span class="feature-tag">🌐 Live Topology Map</span>
+        <span class="feature-tag">🚀 Zero-Copy NAPT</span>
         <span class="feature-tag">🛡️ Hardware AdBlocker</span>
-        <span class="feature-tag">🏷️ OUI Vendor Identification</span>
+        <span class="feature-tag">📶 RF Congestion Analyzer</span>
         <span class="feature-tag">📱 Native PWA App</span>
       </div>
     </section>
@@ -384,7 +384,7 @@
     <section class="flasher-box" id="flasher">
       <div class="status-pulse-bar" id="versionStatusBar">
         <span class="pulse-dot"></span>
-        <span id="versionStatusText">Production Build • v3.0.0 Quantum Enterprise • Recommended</span>
+        <span id="versionStatusText">Current Release • v3.0.1 • Dynamic TPC, Live Canvas Topology, Zero-Copy NAPT • Recommended</span>
       </div>
 
       <h2>1-Click Web Serial Installer</h2>
@@ -394,16 +394,16 @@
 
       <!-- Multi-Version Segmented Selector -->
       <div class="version-selector-wrap" id="versions">
-        <span class="version-selector-title">Select Firmware Build to Flash:</span>
+        <span class="version-selector-title">Select Firmware Release:</span>
         <div class="version-segmented-bar">
           <button class="version-pill-btn active" id="btnVer3" onclick="selectVersion('v3')">
-            🚀 v3.0.0 Quantum <span class="version-pill-badge">LATEST</span>
+            v3.0.1 <span class="version-pill-badge" style="background:#10b981;">LATEST</span>
           </button>
           <button class="version-pill-btn" id="btnVer2" onclick="selectVersion('v2')">
-            ⚡ v2.0.0 Titanium <span class="version-pill-badge" style="background:rgba(14,165,233,0.3);">STABLE</span>
+            v2.0.0 <span class="version-pill-badge" style="background:rgba(14,165,233,0.3);">STABLE</span>
           </button>
           <button class="version-pill-btn" id="btnVer1" onclick="selectVersion('v1')">
-            🛡️ v1.0.0 Baseline <span class="version-pill-badge" style="background:rgba(255,255,255,0.15);">LEGACY</span>
+            v1.0.0 <span class="version-pill-badge" style="background:rgba(255,255,255,0.15);">BASELINE</span>
           </button>
         </div>
       </div>
@@ -413,7 +413,7 @@
         <esp-web-install-button id="webInstallBtn" manifest="manifest.json">
           <button slot="activate" class="btn-install" id="activateBtn">
             <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
-            <span id="activateBtnText">⚡ Flash AetherPulse v3.0.0 Quantum</span>
+            <span id="activateBtnText">⚡ Flash AetherPulse Pro v3.0.1</span>
           </button>
           <div slot="unsupported" style="padding:16px; border-radius:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#fca5a5; font-size:0.88rem; max-width:540px;">
             ⚠️ <b>Web Serial is not enabled in this browser.</b><br>
@@ -451,29 +451,29 @@
       <div id="downloadPanel" class="dropdown-panel">
         <p style="font-size:0.8rem; color:var(--text-mid); margin-bottom:10px; font-weight:600;">Download Official Production Binaries:</p>
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px;">
-          <a href="firmware.bin" download class="btn-alt" style="justify-content:center;">🚀 v3.0 Quantum App (0x10000)</a>
-          <a href="AetherPulse-ESP32-v3.0.0-Quantum.merged.bin" download class="btn-alt" style="justify-content:center;">📦 v3.0 Full 4MB Image (0x0)</a>
-          <a href="AetherPulse-ESP32-v2.0.0-Titanium.bin" download class="btn-alt" style="justify-content:center;">⚡ v2.0 Titanium App (0x10000)</a>
-          <a href="aetherpulse-esp32-v2.0.0-full.bin" download class="btn-alt" style="justify-content:center;">📦 v2.0 Full 4MB Image (0x0)</a>
-          <a href="aetherpulse-esp32-full.bin" download class="btn-alt" style="justify-content:center;">🛡️ v1.0 Baseline App (0x10000)</a>
-          <a href="bootloader.bin" download class="btn-alt" style="justify-content:center;">🔧 Bootloader (0x1000)</a>
-          <a href="partitions.bin" download class="btn-alt" style="justify-content:center;">📑 Partition Table (0x8000)</a>
+          <a href="AetherPulse-v3.0.1.bin" download class="btn-alt" style="justify-content:center;">v3.0.1 App Partition (0x10000)</a>
+          <a href="AetherPulse-v3.0.1.merged.bin" download class="btn-alt" style="justify-content:center;">v3.0.1 Complete 4MB Image (0x0)</a>
+          <a href="AetherPulse-ESP32-v2.0.0-Titanium.bin" download class="btn-alt" style="justify-content:center;">v2.0.0 App Partition (0x10000)</a>
+          <a href="aetherpulse-esp32-v2.0.0-full.bin" download class="btn-alt" style="justify-content:center;">v2.0.0 Complete 4MB Image (0x0)</a>
+          <a href="aetherpulse-esp32-full.bin" download class="btn-alt" style="justify-content:center;">v1.0.0 App Partition (0x10000)</a>
+          <a href="bootloader.bin" download class="btn-alt" style="justify-content:center;">Bootloader (0x1000)</a>
+          <a href="partitions.bin" download class="btn-alt" style="justify-content:center;">Partition Table (0x8000)</a>
         </div>
       </div>
     </section>
 
     <!-- Version Feature Matrix -->
     <section class="matrix-card" id="features">
-      <h2 class="section-title">Edition Comparison Matrix</h2>
-      <p class="section-desc">Choose the exact build that matches your networking environment.</p>
+      <h2 class="section-title">Version Comparison Matrix</h2>
+      <p class="section-desc">Select the release that best matches your hardware and deployment needs.</p>
 
       <table class="matrix-table">
         <thead>
           <tr>
             <th>Architecture &amp; Features</th>
-            <th>v1.0.0 Baseline</th>
-            <th>v2.0.0 Titanium</th>
-            <th style="color:#38bdf8;">v3.0.0 Quantum Enterprise</th>
+            <th>v1.0.0</th>
+            <th>v2.0.0</th>
+            <th style="color:#38bdf8;">v3.0.1 (Latest)</th>
           </tr>
         </thead>
         <tbody>
@@ -542,6 +542,36 @@
             <td class="check-no">—</td>
             <td class="check-no">—</td>
             <td class="check-yes">✓ 1-Click App Icon</td>
+          </tr>
+          <tr>
+            <td>Interactive HTML5 Topology Map</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Live Bezier Routing Graph</td>
+          </tr>
+          <tr>
+            <td>Dynamic Transmit Power Control (TPC)</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Closed-Loop (+11 to +20.5 dBm)</td>
+          </tr>
+          <tr>
+            <td>180° Anti-Phase Beacon Scheduling</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Zero-Collision 50 TU Offset</td>
+          </tr>
+          <tr>
+            <td>Hardware L2 Client Isolation</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Multi-Tenant Security</td>
+          </tr>
+          <tr>
+            <td>802.11k/v Fast Roaming Protocol</td>
+            <td class="check-no">—</td>
+            <td class="check-no">—</td>
+            <td class="check-yes">✓ Hardware BTM &amp; Radio Measurement</td>
           </tr>
         </tbody>
       </table>
@@ -634,7 +664,7 @@
         Designed &amp; Engineered by <span class="footer-author">Zeeshan Rajput</span> • Open Source under the MIT License
       </div>
       <div style="font-size:0.75rem; color:var(--text-low);">
-        AetherPulse-ESP32 • Enterprise Wi-Fi Repeater &amp; Sub-Millisecond DNS Acceleration Engine
+        AetherPulse • High-Performance ESP32 Wi-Fi Repeater &amp; Routing Appliance
       </div>
     </footer>
   </div>
@@ -643,24 +673,24 @@
     // Version Switching Logic
     const VERSIONS = {
       v3: {
-        name: 'AetherPulse v3.0.0 Quantum Enterprise',
+        name: 'AetherPulse v3.0.1 (Latest)',
         manifest: 'manifest-v3.json',
-        btnText: '⚡ Flash AetherPulse v3.0.0 Quantum',
-        statusText: 'Production Build • v3.0.0 Quantum Enterprise • Recommended',
-        cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 firmware.bin'
+        btnText: 'Install AetherPulse v3.0.1',
+        statusText: 'Current Release • v3.0.1 • Dynamic TPC, Live Canvas Topology, Zero-Copy NAPT • Recommended',
+        cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x0 AetherPulse-v3.0.1.merged.bin'
       },
       v2: {
-        name: 'AetherPulse v2.0.0 Titanium',
+        name: 'AetherPulse v2.0.0 (Legacy Stable)',
         manifest: 'manifest-v2.json',
-        btnText: '⚡ Flash AetherPulse v2.0.0 Titanium',
-        statusText: 'Stable Release • v2.0.0 Titanium • Proven Rock Solid',
+        btnText: 'Install AetherPulse v2.0.0',
+        statusText: 'Previous Stable • v2.0.0 • Dual SoftAP + Station NAPT, Port Forwarding, DNS AdBlock',
         cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 AetherPulse-ESP32-v2.0.0-Titanium.bin'
       },
       v1: {
-        name: 'AetherPulse v1.0.0 Baseline',
+        name: 'AetherPulse v1.0.0 (Legacy Baseline)',
         manifest: 'manifest-v1.json',
-        btnText: '⚡ Flash AetherPulse v1.0.0 Baseline',
-        statusText: 'Legacy Baseline • v1.0.0 • Minimal Core Repeater',
+        btnText: 'Install AetherPulse v1.0.0',
+        statusText: 'Minimal Baseline • v1.0.0 • Lightweight Basic Repeater',
         cliCmd: 'esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 921600 write_flash 0x10000 aetherpulse-esp32-full.bin'
       }
     };

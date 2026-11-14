@@ -39,6 +39,8 @@ struct RepeaterSettings {
     String clonedMac;        // Station MAC address spoofing
     uint32_t adBlocksTotal;  // Lifetime sinkholed ad/tracker queries
     String softApIpStr;      // Current SoftAP Subnet IP (192.168.4.1 or 192.168.5.1)
+    bool clientIsolation;    // L2 client isolation on SoftAP
+    bool dynamicTpcEnabled;  // Dynamic Transmit Power Control
 };
 
 class StorageManager {
@@ -66,6 +68,8 @@ public:
     void setClonedMac(const String& mac);
     void setAdBlockEnabled(bool enabled);
     void setSoftApIp(const String& ipStr);
+    void setClientIsolation(bool enabled);
+    void setDynamicTpc(bool enabled);
 
     // Client Device Aliases & OUI Vendor Detection
     String getClientAlias(const String& mac);

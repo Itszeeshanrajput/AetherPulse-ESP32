@@ -13,49 +13,48 @@
   <circle cx="20" cy="19" r="6" fill="#ef4444" />
   <circle cx="40" cy="19" r="6" fill="#f59e0b" />
   <circle cx="60" cy="19" r="6" fill="#10b981" />
-  <text x="480" y="24" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#94a3b8" text-anchor="middle">AetherPulse v3.0 Quantum Shell — 115200 8N1 (/dev/ttyUSB0)</text>
+  <text x="480" y="24" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#94a3b8" text-anchor="middle">AetherPulse v3.0.1 Serial Shell — 115200 8N1 (/dev/ttyUSB0)</text>
 
   <!-- Shell Output Text -->
   <g transform="translate(24, 60)" font-family="'JetBrains Mono', monospace" font-size="11.5" line-height="1.45">
-    <text x="0" y="0" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">status</tspan></text>
+    <text x="0" y="0" fill="#38bdf8" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">status</tspan></text>
 
-    <text x="0" y="20" fill="#64748b">---------------- AETHERPULSE SYSTEM STATUS ----------------</text>
-    <text x="0" y="38" fill="#94a3b8">  Device:             <tspan fill="#fff">ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz</tspan></text>
-    <text x="0" y="56" fill="#94a3b8">  Die Temperature:    <tspan fill="#34d399">48.3 °C</tspan> (Thermal state: <tspan fill="#34d399">NORMAL</tspan>)</text>
-    <text x="0" y="74" fill="#94a3b8">  Free DRAM (Heap):   <tspan fill="#34d399">174,556 bytes</tspan> (Min Free: 74,936 bytes)</text>
+    <text x="0" y="18" fill="#64748b">---------------- AETHERPULSE SYSTEM STATUS ----------------</text>
+    <text x="0" y="34" fill="#94a3b8">  Device:             <tspan fill="#fff">ESP32-D0WD-V3 (Rev 3.1) @ 240 MHz</tspan></text>
+    <text x="0" y="50" fill="#94a3b8">  Die Temperature:    <tspan fill="#34d399">51.1 °C</tspan> (Thermal state: <tspan fill="#34d399">NORMAL</tspan>)</text>
+    <text x="0" y="66" fill="#94a3b8">  Free DRAM (Heap):   <tspan fill="#34d399">174,200 bytes</tspan> (Min Free: 171,560 bytes)</text>
     
-    <text x="0" y="96" fill="#06b6d4" font-weight="700">--- Upstream Station (STA) Link ---</text>
-    <text x="0" y="114" fill="#94a3b8">  Connected:          <tspan fill="#34d399" font-weight="700">YES</tspan> (SSID: <tspan fill="#fff">Nayatel</tspan>, Channel: <tspan fill="#fff">3</tspan>, Best: <tspan fill="#34d399">CH 6</tspan>)</text>
-    <text x="0" y="132" fill="#94a3b8">  Filtered RSSI:      <tspan fill="#34d399" font-weight="700">-71.4 dBm</tspan> (1D Kalman Filtered)</text>
-    <text x="0" y="150" fill="#94a3b8">  Assigned IP:        <tspan fill="#fff">192.168.18.77</tspan> (Gateway: <tspan fill="#fff">192.168.18.1</tspan>)</text>
+    <text x="0" y="86" fill="#38bdf8" font-weight="700">--- Upstream Station (STA) Link ---</text>
+    <text x="0" y="102" fill="#94a3b8">  Connected:          <tspan fill="#34d399" font-weight="700">YES</tspan> (SSID: <tspan fill="#fff">Office-Fiber-AP</tspan>, Channel: <tspan fill="#fff">7</tspan>, Best: <tspan fill="#34d399">CH 1</tspan>)</text>
+    <text x="0" y="118" fill="#94a3b8">  Filtered RSSI:      <tspan fill="#34d399" font-weight="700">-73.9 dBm</tspan> (1D Kalman Filtered)</text>
+    <text x="0" y="134" fill="#94a3b8">  Assigned IP:        <tspan fill="#fff">192.168.18.77</tspan> (Gateway: <tspan fill="#fff">192.168.18.1</tspan>)</text>
 
-    <text x="0" y="172" fill="#06b6d4" font-weight="700">--- Repeater SoftAP &amp; L3 NAPT Routing ---</text>
-    <text x="0" y="190" fill="#94a3b8">  SoftAP SSID:        <tspan fill="#fff">AetherPulse-Extender</tspan> (IP: <tspan fill="#fff">192.168.4.1</tspan>)</text>
-    <text x="0" y="208" fill="#94a3b8">  Connected Clients:  <tspan fill="#34d399">1 / 8</tspan> (Zeeshan Phone @ -38 dBm)</text>
-    <text x="0" y="226" fill="#94a3b8">  lwIP DNAPT:         <tspan fill="#34d399" font-weight="700">ACTIVE</tspan> | DNS Cache: <tspan fill="#34d399">&lt; 0.2 ms Lookups</tspan></text>
-    <text x="0" y="244" fill="#94a3b8">  DNS AdBlocker:      <tspan fill="#94a3b8">DISABLED</tspan> (Direct Line-Rate Google DNS 8.8.8.8)</text>
-    <text x="0" y="260" fill="#64748b">-----------------------------------------------------------</text>
+    <text x="0" y="154" fill="#38bdf8" font-weight="700">--- Repeater SoftAP &amp; Zero-Copy NAPT Routing ---</text>
+    <text x="0" y="170" fill="#94a3b8">  SoftAP SSID:        <tspan fill="#fff">AetherPulse-Extender</tspan> (IP: <tspan fill="#fff">192.168.4.1</tspan>)</text>
+    <text x="0" y="186" fill="#94a3b8">  lwIP DNAPT:         <tspan fill="#34d399" font-weight="700">ACTIVE</tspan> | TCP MSS Clamping: <tspan fill="#34d399">1412 bytes</tspan></text>
+    <text x="0" y="202" fill="#94a3b8">  Beacon Interval:    <tspan fill="#fff">100 TU</tspan> (180° Anti-Phase Offset: <tspan fill="#34d399">50 TU</tspan>)</text>
+    <text x="0" y="218" fill="#94a3b8">  Layer-2 Isolation:  <tspan fill="#34d399">DISABLED</tspan> (Multi-Tenant Secure Mode Ready)</text>
+    <text x="0" y="234" fill="#94a3b8">  Dynamic TPC:        <tspan fill="#34d399" font-weight="700">ACTIVE</tspan> (RF Power Auto-Scaled: <tspan fill="#38bdf8">20.50 dBm</tspan>)</text>
+    <text x="0" y="248" fill="#64748b">-----------------------------------------------------------</text>
 
-    <text x="0" y="286" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">spectrum</tspan></text>
-    <text x="0" y="306" fill="#94a3b8">[SPECTRUM] 2.4 GHz RF Channel Congestion Density Matrix:</text>
-    <text x="0" y="324" fill="#ef4444">  CH 01: [████████████████████] 88% Load (5 APs) - SATURATED</text>
-    <text x="0" y="342" fill="#f59e0b">  CH 03: [██████████░░░░░░░░░░] 48% Load (Active Uplink 'Nayatel')</text>
-    <text x="0" y="360" fill="#34d399" font-weight="700">  CH 06: [██░░░░░░░░░░░░░░░░░░] 10% Load (0 APs) - ★ CLEANEST RECOMMENDED</text>
-    <text x="0" y="378" fill="#ef4444">  CH 11: [████████████████░░░░] 74% Load (4 APs) - CONGESTED</text>
-    <text x="0" y="396" fill="#34d399">[SPECTRUM] Recommended cleanest channel: CH 6</text>
+    <text x="0" y="272" fill="#38bdf8" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">spectrum</tspan></text>
+    <text x="0" y="290" fill="#94a3b8">[SPECTRUM] 2.4 GHz RF Channel Congestion Density Matrix:</text>
+    <text x="0" y="306" fill="#34d399">  CH 01: [██░░░░░░░░░░░░░░░░░░] 10% Load (0 APs) - ★ CLEANEST RECOMMENDED</text>
+    <text x="0" y="322" fill="#f59e0b">  CH 07: [██████████░░░░░░░░░░] 45% Load (Active Uplink 'Office-Fiber-AP')</text>
+    <text x="0" y="338" fill="#ef4444">  CH 11: [████████████████████] 92% Load (6 APs) - SATURATED</text>
+    <text x="0" y="354" fill="#34d399">[SPECTRUM] Recommended cleanest channel: CH 1</text>
 
-    <text x="0" y="422" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">clients</tspan></text>
-    <text x="0" y="442" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
-    <text x="0" y="458" fill="#fff">| MAC Address       | RSSI    | Vendor (OUI)          | Alias / Friendly Name| Status            |</text>
-    <text x="0" y="474" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
-    <text x="0" y="490" fill="#94a3b8">| EE:F3:10:E1:B7:7A | <tspan fill="#34d399">-38 dBm</tspan> | <tspan fill="#06b6d4">Mobile Device (Apple)</tspan> | <tspan fill="#fff">Zeeshan Phone</tspan>        | <tspan fill="#34d399">CONNECTED (NAPT)</tspan>  |</text>
-    <text x="0" y="506" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
+    <text x="0" y="378" fill="#38bdf8" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">clients</tspan></text>
+    <text x="0" y="396" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
+    <text x="0" y="412" fill="#fff">| MAC Address       | RSSI    | Vendor (OUI)          | Alias / Device Name  | IP Address        |</text>
+    <text x="0" y="428" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
+    <text x="0" y="444" fill="#34d399">| 14:EB:08:3A:0E:2C | -42 dBm | Apple                 | MacBook Pro          | 192.168.4.2       |</text>
+    <text x="0" y="460" fill="#34d399">| EE:F3:10:E1:B7:7A | -55 dBm | Apple                 | iPhone 15 Pro        | 192.168.4.3       |</text>
+    <text x="0" y="476" fill="#34d399">| 68:DB:F5:21:49:18 | -61 dBm | Samsung Electronics   | Samsung Smart TV     | 192.168.4.4       |</text>
+    <text x="0" y="492" fill="#64748b">+-------------------+---------+-----------------------+----------------------+-------------------+</text>
 
-    <text x="0" y="530" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">ping google.com</tspan></text>
-    <text x="0" y="548" fill="#94a3b8">[PING] Testing connectivity to 'google.com'...</text>
-    <text x="0" y="564" fill="#94a3b8">  DNS Resolution: <tspan fill="#34d399">SUCCESS -&gt; 142.251.37.78</tspan> | TCP Handshake RTT: <tspan fill="#34d399">57 ms</tspan></text>
-    <text x="0" y="580" fill="#34d399" font-weight="700">  Internet Status: 100% ONLINE &amp; LINE-RATE REACHABLE</text>
-
-    <text x="0" y="604" fill="#06b6d4" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">_</tspan><animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite" /></text>
+    <text x="0" y="520" fill="#38bdf8" font-weight="700">aetherpulse&gt; <tspan fill="#ffffff">tpc on</tspan></text>
+    <text x="0" y="538" fill="#34d399">[CLI] Dynamic Transmit Power Control (TPC) is now ENABLED.</text>
+    <text x="0" y="554" fill="#94a3b8">[RF] Closed-loop evaluation engaged. Auto-scaling between +11.0 dBm and +20.5 dBm.</text>
   </g>
 </svg>
