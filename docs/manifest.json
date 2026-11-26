@@ -1,8 +1,8 @@
 {
-  "name": "AetherPulse v3.0.1",
-  "version": "3.0.1",
-  "home_assistant_domain": "esphome",
-  "new_install_prompt_erase": false,
+  "name": "AetherPulse",
+  "version": "3.1.0-beta.1",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
   "builds": [
     {
       "chipFamily": "ESP32",

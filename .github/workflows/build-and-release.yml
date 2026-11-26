@@ -32,51 +32,48 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install esptool
-        run: pip install esptool
+      - name: Cache PlatformIO & pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+          restore-keys: |
+            ${{ runner.os }}-pio-
 
-      - name: Install arduino-cli
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
-          sudo mv bin/arduino-cli /usr/local/bin/
+      - name: Install PlatformIO & esptool
+        run: pip install --upgrade pip platformio esptool
 
-      - name: Configure Arduino Core & Install ESP32 Platform
+      - name: Extract Version from config.h
+        id: ver
         run: |
-          arduino-cli config init
-          arduino-cli config set board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
-          arduino-cli core update-index
-          arduino-cli core install esp32:esp32
-          arduino-cli lib install ArduinoJson
+          VERSION=$(grep -E '#define\s+PROJECT_VERSION' config.h | awk -F'"' '{print $2}')
+          echo "version=${VERSION:-v3.1.0}" >> "$GITHUB_OUTPUT"
 
       - name: Compile AetherPulse Firmware
-        run: |
-          mkdir -p build_output
-          arduino-cli compile --fqbn esp32:esp32:esp32 --build-path build_output .
+        run: pio run -e esp32_repeater
 
-      - name: Merge 4MB Full Flash Binary
+      - name: Package Merged & Split Binaries
         run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          BOOT_APP0=$(find ~/.platformio -name "boot_app0.bin" | head -n 1)
           mkdir -p bin docs
-          cp build_output/AetherPulse-ESP32.ino.bootloader.bin bin/bootloader.bin
-          cp build_output/AetherPulse-ESP32.ino.partitions.bin bin/partitions.bin
-          cp build_output/boot_app0.bin bin/boot_app0.bin
-          cp build_output/AetherPulse-ESP32.ino.bin bin/firmware.bin
-          cp build_output/AetherPulse-ESP32.ino.bin bin/AetherPulse-v3.0.1.bin
-          cp build_output/AetherPulse-ESP32.ino.bin docs/AetherPulse-v3.0.1.bin
+          cp .pio/build/esp32_repeater/bootloader.bin bin/bootloader.bin
+          cp .pio/build/esp32_repeater/partitions.bin bin/partitions.bin
+          cp "$BOOT_APP0" bin/boot_app0.bin
+          cp .pio/build/esp32_repeater/firmware.bin bin/firmware.bin
+          cp .pio/build/esp32_repeater/firmware.bin "bin/AetherPulse-${VERSION}.bin"
 
-          # Merge binaries for 1-click web flash
-          esptool.py --chip esp32 merge_bin -o bin/AetherPulse-v3.0.1.merged.bin \
-            --flash_mode dio --flash_freq 80m --flash_size 4MB \
+          esptool.py --chip esp32 merge-bin -o "bin/AetherPulse-${VERSION}.merged.bin" \
+            --flash-mode dio --flash-freq 80m --flash-size 4MB \
             0x1000 bin/bootloader.bin \
             0x8000 bin/partitions.bin \
             0xe000 bin/boot_app0.bin \
             0x10000 bin/firmware.bin
 
-          cp bin/AetherPulse-v3.0.1.merged.bin bin/aetherpulse-esp32-full.bin
-          cp bin/AetherPulse-v3.0.1.merged.bin docs/AetherPulse-v3.0.1.merged.bin
-          cp bin/AetherPulse-v3.0.1.merged.bin docs/aetherpulse-esp32-full.bin
-
-          # Copy latest binaries to docs/ for ESP Web Tools WebSerial flasher
-          cp bin/*.bin docs/
+          cp bin/bootloader.bin bin/partitions.bin bin/boot_app0.bin bin/firmware.bin \
+             "bin/AetherPulse-${VERSION}.bin" "bin/AetherPulse-${VERSION}.merged.bin" docs/
 
       - name: Commit Updated Web Flasher Binaries
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -101,34 +98,27 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'latest' }}
-          name: ${{ startsWith(github.ref, 'refs/tags/') && format('AetherPulse {0}', github.ref_name) || 'AetherPulse (Latest Continuous Build)' }}
+          name: ${{ startsWith(github.ref, 'refs/tags/') && format('AetherPulse {0}', github.ref_name) || format('AetherPulse {0} (Latest)', steps.ver.outputs.version) }}
           body: |
-            ### AetherPulse — High-Performance ESP32 Wi-Fi Repeater & Routing Appliance
+            ### AetherPulse ${{ steps.ver.outputs.version }} — ESP32 Wi-Fi Repeater & lwIP NAPT Appliance
 
-            This release contains the automated production binaries compiled by GitHub Actions CI/CD.
+            Automated production binaries compiled with PlatformIO (`min_spiffs` partition scheme, 80 MHz DIO flash).
 
-            #### ⚡ 1-Click Browser Web Installation
-            Flash this firmware directly in your browser without installing command-line tools:
-            👉 **[Open AetherPulse Web Installer](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)**
+            #### 1-Click Browser Web Installer
+            [Open AetherPulse Web Installer](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)
 
-            #### 📦 Included Firmware Files
-            - `AetherPulse-v3.0.1.merged.bin`: Complete 4MB flash image (flash at offset `0x0000`)
-            - `AetherPulse-v3.0.1.bin`: Application firmware partition (offset `0x10000`)
-            - `firmware.bin`: Latest application firmware alias (offset `0x10000`)
-            - `bootloader.bin`: Second-stage bootloader (offset `0x1000`)
-            - `partitions.bin`: Partition table (offset `0x8000`)
-            - `boot_app0.bin`: Bootloader app descriptor (offset `0xe000`)
+            #### Included Firmware Files
+            - `AetherPulse-${{ steps.ver.outputs.version }}.merged.bin`: Complete flash image (offset `0x0`)
+            - `AetherPulse-${{ steps.ver.outputs.version }}.bin` / `firmware.bin`: Application image (offset `0x10000`)
+            - `bootloader.bin` (`0x1000`), `partitions.bin` (`0x8000`), `boot_app0.bin` (`0xe000`)
           files: |
-            bin/AetherPulse-v3.0.1.merged.bin
-            bin/AetherPulse-v3.0.1.bin
-            bin/aetherpulse-esp32-full.bin
+            bin/AetherPulse-${{ steps.ver.outputs.version }}.merged.bin
+            bin/AetherPulse-${{ steps.ver.outputs.version }}.bin
             bin/firmware.bin
             bin/bootloader.bin
             bin/partitions.bin
             bin/boot_app0.bin
-            bin/AetherPulse-ESP32-v2.0.0-Titanium.bin
-            bin/AetherPulse-ESP32-v2.0.0-Titanium.merged.bin
-          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') || contains(steps.ver.outputs.version, 'beta') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

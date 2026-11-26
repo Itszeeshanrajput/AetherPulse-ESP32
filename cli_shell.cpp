@@ -5,31 +5,54 @@
 #include "web_portal.h"
 #include "dns_cache.h"
 #include <esp_wifi.h>
+#include <esp_task_wdt.h>
+#include <lwip/netif.h>
+#include <lwip/ip4.h>
+#include <lwip/tcpip.h>
 #include <vector>
+#include <cstdarg>
 
 static std::vector<String> tokenizeArgs(const String& str) {
     std::vector<String> tokens;
     String cur = "";
+    bool hasToken = false;
     bool inQuote = false;
     char quoteChar = 0;
+
     for (size_t i = 0; i < str.length(); i++) {
         char c = str[i];
         if ((c == '"' || c == '\'') && !inQuote) {
             inQuote = true;
             quoteChar = c;
+            hasToken = true;
         } else if (inQuote && c == quoteChar) {
             inQuote = false;
         } else if (!inQuote && (c == ' ' || c == '\t')) {
-            if (cur.length() > 0) {
+            if (hasToken) {
                 tokens.push_back(cur);
                 cur = "";
+                hasToken = false;
             }
         } else {
             cur += c;
+            hasToken = true;
         }
     }
-    if (cur.length() > 0) tokens.push_back(cur);
+    if (hasToken) tokens.push_back(cur);
     return tokens;
+}
+
+static bool validateMacFormat(const String& macStr, uint8_t outMac[6]) {
+    if (macStr.length() != 17) return false;
+    for (int i = 0; i < 17; i++) {
+        if ((i % 3) == 2) {
+            if (macStr[i] != ':') return false;
+        } else if (!isxdigit((unsigned char)macStr[i])) {
+            return false;
+        }
+    }
+    return sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+                  &outMac[0], &outMac[1], &outMac[2], &outMac[3], &outMac[4], &outMac[5]) == 6;
 }
 
 CliShell& CliShell::instance() {
@@ -37,36 +60,131 @@ CliShell& CliShell::instance() {
     return shell;
 }
 
-CliShell::CliShell() {}
+CliShell::CliShell() : uartQueue(nullptr), ready(false), escState(0) {}
 
 void CliShell::init() {
     rxBuffer.reserve(CLI_BUFFER_SIZE);
-    Serial.println();
-    Serial.println("==================================================================");
-    Serial.printf("  %s %s\n", PROJECT_NAME, PROJECT_VERSION);
-    Serial.println("  Type 'help' for interactive command list");
-    Serial.println("==================================================================");
-    Serial.print("aetherpulse> ");
+
+    Serial.flush();
+    uart_driver_delete(UART_NUM_0);
+
+    const uart_port_t uart_num = UART_NUM_0;
+    uart_config_t uart_config = {
+        .baud_rate = CLI_BAUD_RATE,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 122,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+    uart_param_config(uart_num, &uart_config);
+    uart_set_pin(uart_num, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    uart_driver_install(uart_num, 1024, 1024, 24, &uartQueue, 0);
+    ready = true;
+
+    println();
+    println("==================================================================");
+    printf("  %s %s (ESP32 Repeater Core)\n", PROJECT_NAME, PROJECT_VERSION);
+    println("  Non-blocking UART driver active (FIFO: 1024 B @ 115200 8N1)");
+    println("  Type 'help' for interactive command list");
+    println("==================================================================");
+    print("aetherpulse> ");
+}
+
+void CliShell::print(const char* str) {
+    if (str && strlen(str) > 0) {
+        uart_write_bytes(UART_NUM_0, str, strlen(str));
+    }
+}
+
+void CliShell::print(const String& str) {
+    if (str.length() > 0) {
+        uart_write_bytes(UART_NUM_0, str.c_str(), str.length());
+    }
+}
+
+void CliShell::println(const char* str) {
+    if (str && strlen(str) > 0) {
+        uart_write_bytes(UART_NUM_0, str, strlen(str));
+    }
+    uart_write_bytes(UART_NUM_0, "\r\n", 2);
+}
+
+void CliShell::println(const String& str) {
+    if (str.length() > 0) {
+        uart_write_bytes(UART_NUM_0, str.c_str(), str.length());
+    }
+    uart_write_bytes(UART_NUM_0, "\r\n", 2);
+}
+
+void CliShell::printf(const char* format, ...) {
+    char buf[512];
+    va_list args;
+    va_start(args, format);
+    int len = vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+    if (len > 0) {
+        if (len >= (int)sizeof(buf)) len = sizeof(buf) - 1;
+        uart_write_bytes(UART_NUM_0, buf, len);
+    }
+}
+
+void CliShell::processRxByte(char c) {
+    // Strip ANSI escape sequences (e.g. arrow keys ESC [ A)
+    if (escState == 1) {
+        escState = (c == '[') ? 2 : 0;
+        return;
+    }
+    if (escState == 2) {
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '~') {
+            escState = 0;
+        }
+        return;
+    }
+    if (c == 0x1B) {
+        escState = 1;
+        return;
+    }
+
+    if (c == '\r' || c == '\n') {
+        println();
+        if (rxBuffer.length() > 0) {
+            handleCommand(rxBuffer);
+            rxBuffer = "";
+        }
+        print("aetherpulse> ");
+    } else if (c == 8 || c == 127) {
+        if (rxBuffer.length() > 0) {
+            rxBuffer.remove(rxBuffer.length() - 1);
+            print("\b \b");
+        }
+    } else if ((unsigned char)c >= 32 && (unsigned char)c < 127 && rxBuffer.length() < CLI_BUFFER_SIZE - 1) {
+        rxBuffer += c;
+        char echo[2] = {c, 0};
+        print(echo);
+    }
 }
 
 void CliShell::update() {
-    while (Serial.available()) {
-        char c = (char)Serial.read();
-        if (c == '\r' || c == '\n') {
-            if (rxBuffer.length() > 0) {
-                Serial.println();
-                handleCommand(rxBuffer);
-                rxBuffer = "";
-                Serial.print("aetherpulse> ");
+    StorageManager::instance().update();
+
+    uart_event_t event;
+    while (uartQueue && xQueueReceive(uartQueue, &event, 0) == pdTRUE) {
+        if (event.type == UART_DATA) {
+            size_t buffered = 0;
+            while (uart_get_buffered_data_len(UART_NUM_0, &buffered) == ESP_OK && buffered > 0) {
+                uint8_t temp[64];
+                int toRead = (buffered < sizeof(temp)) ? (int)buffered : (int)sizeof(temp);
+                int actual = uart_read_bytes(UART_NUM_0, temp, toRead, 0);
+                if (actual <= 0) break;
+                for (int i = 0; i < actual; i++) {
+                    processRxByte((char)temp[i]);
+                }
             }
-        } else if (c == 8 || c == 127) { // Backspace
-            if (rxBuffer.length() > 0) {
-                rxBuffer.remove(rxBuffer.length() - 1);
-                Serial.print("\b \b");
-            }
-        } else if (rxBuffer.length() < CLI_BUFFER_SIZE) {
-            rxBuffer += c;
-            Serial.print(c); // Local echo
+        } else if (event.type == UART_FIFO_OVF || event.type == UART_BUFFER_FULL) {
+            uart_flush_input(UART_NUM_0);
+            xQueueReset(uartQueue);
         }
     }
 }
@@ -76,11 +194,16 @@ void CliShell::handleCommand(const String& raw) {
     line.trim();
     if (line.length() == 0) return;
 
-    int firstSpace = line.indexOf(' ');
-    String cmd = (firstSpace == -1) ? line : line.substring(0, firstSpace);
-    String args = (firstSpace == -1) ? "" : line.substring(firstSpace + 1);
+    int splitIdx = -1;
+    for (int i = 0; i < (int)line.length(); i++) {
+        if (line[i] == ' ' || line[i] == '\t') {
+            splitIdx = i;
+            break;
+        }
+    }
+    String cmd = (splitIdx == -1) ? line : line.substring(0, splitIdx);
+    String args = (splitIdx == -1) ? "" : line.substring(splitIdx + 1);
     args.trim();
-
     cmd.toLowerCase();
 
     if (cmd == "help") {
@@ -96,171 +219,243 @@ void CliShell::handleCommand(const String& raw) {
     } else if (cmd == "disconnect") {
         RoamingEngine::instance().disconnect();
     } else if (cmd == "roam") {
-        Serial.println("[CLI] Forcing immediate multi-AP roam re-evaluation...");
+        println("[CLI] Evaluating multi-AP roam candidates...");
         RoamingEngine::instance().triggerRoamEvaluation();
     } else if (cmd == "set_tx") {
         handleSetTx(args);
     } else if (cmd == "list_known" || cmd == "list" || cmd == "saved") {
         auto known = StorageManager::instance().getKnownNetworks();
-        Serial.printf("\n[SAVED / KNOWN NETWORKS (%d stored)]:\n", (int)known.size());
-        Serial.println("+----+------------------------+----------------------+----------+");
-        Serial.println("| #  | SSID                   | PASSWORD             | PRIORITY |");
-        Serial.println("+----+------------------------+----------------------+----------+");
+        printf("\n[SAVED / KNOWN NETWORKS (%d stored)]:\n", (int)known.size());
+        println("+----+------------------------+----------+");
+        println("| #  | SSID                   | PRIORITY |");
+        println("+----+------------------------+----------+");
         for (size_t i = 0; i < known.size(); i++) {
-            Serial.printf("| %-2d | %-22.22s | %-20.20s | %-8d |\n", 
-                          (int)i+1, known[i].ssid.c_str(), known[i].password.c_str(), known[i].priority);
+            printf("| %-2d | %-22.22s | %-8d |\n",
+                   (int)i + 1, known[i].ssid.c_str(), known[i].priority);
         }
-        Serial.println("+----+------------------------+----------------------+----------+\n");
+        println("+----+------------------------+----------+\n");
     } else if (cmd == "add_known" || cmd == "add") {
         handleAddKnown(args);
     } else if (cmd == "del_known" || cmd == "del" || cmd == "remove" || cmd == "rm") {
         handleDelKnown(args);
     } else if (cmd == "mac") {
-        Serial.printf("Current Station MAC: %s\n", WiFi.macAddress().c_str());
+        printf("Current Station MAC: %s\n", WiFi.macAddress().c_str());
         auto s = StorageManager::instance().getSettings();
         if (s.clonedMac.length() > 0) {
-            Serial.printf("Cloned Custom MAC:   %s (Active in NVS)\n", s.clonedMac.c_str());
+            printf("Cloned Custom MAC:   %s (Active in NVS)\n", s.clonedMac.c_str());
         } else {
-            Serial.println("Cloned Custom MAC:   None (Using hardware factory MAC)");
+            println("Cloned Custom MAC:   None (Factory MAC)");
         }
     } else if (cmd == "set_mac") {
         auto tokens = tokenizeArgs(args);
         if (tokens.empty()) {
-            Serial.println("Usage: set_mac <XX:XX:XX:XX:XX:XX>");
+            println("Usage: set_mac <XX:XX:XX:XX:XX:XX>");
+        } else if (RoamingEngine::instance().applyClonedMac(tokens[0])) {
+            printf("[CLI] Station MAC set to %s\n", tokens[0].c_str());
         } else {
-            if (RoamingEngine::instance().applyClonedMac(tokens[0])) {
-                Serial.printf("[CLI] Station MAC successfully changed to %s\n", tokens[0].c_str());
-            } else {
-                Serial.println("[CLI] Error: Invalid MAC format. Use XX:XX:XX:XX:XX:XX");
-            }
+            println("[CLI] Error: Invalid unicast MAC format (use XX:XX:XX:XX:XX:XX).");
         }
     } else if (cmd == "reset_mac") {
         RoamingEngine::instance().resetMac();
-        Serial.println("[CLI] Station MAC restored to hardware default.");
     } else if (cmd == "portmap") {
         auto tokens = tokenizeArgs(args);
-        if (tokens.size() >= 5 && tokens[0] == "add") {
-            uint8_t proto = (tokens[1].equalsIgnoreCase("udp")) ? 17 : 6;
-            uint16_t extPort = tokens[2].toInt();
-            String intIp = tokens[3];
-            uint16_t intPort = tokens[4].toInt();
+        if (tokens.size() >= 5 && tokens[0].equalsIgnoreCase("add")) {
+            if (!tokens[1].equalsIgnoreCase("tcp") && !tokens[1].equalsIgnoreCase("udp")) {
+                println("[CLI] Error: Protocol must be 'tcp' or 'udp'.");
+                return;
+            }
+            uint8_t proto = tokens[1].equalsIgnoreCase("udp") ? 17 : 6;
+            long extP = tokens[2].toInt();
+            long intP = tokens[4].toInt();
+            IPAddress ipTest;
+            if (extP <= 0 || extP > 65535 || intP <= 0 || intP > 65535 || extP == 80 || extP == 53) {
+                println("[CLI] Error: Invalid port (1-65535; ports 53 & 80 reserved).");
+                return;
+            }
+            if (!ipTest.fromString(tokens[3]) || (uint32_t)ipTest == 0) {
+                println("[CLI] Error: Invalid target IPv4 address.");
+                return;
+            }
             String desc = tokens.size() >= 6 ? tokens[5] : "";
-            NaptEngine::instance().addPortForward(proto, extPort, intIp, intPort, desc);
-            Serial.println("[CLI] Port forward rule registered.");
-        } else if (tokens.size() >= 3 && tokens[0] == "del") {
-            uint8_t proto = (tokens[1].equalsIgnoreCase("udp")) ? 17 : 6;
-            uint16_t extPort = tokens[2].toInt();
-            NaptEngine::instance().removePortForward(proto, extPort);
-            Serial.println("[CLI] Port forward rule removed.");
+            if (NaptEngine::instance().addPortForward(proto, (uint16_t)extP, tokens[3], (uint16_t)intP, desc)) {
+                println("[CLI] Port forward rule registered.");
+            } else {
+                println("[CLI] Error: Failed to add rule (table full or NAPT error).");
+            }
+        } else if (tokens.size() >= 3 && tokens[0].equalsIgnoreCase("del")) {
+            if (!tokens[1].equalsIgnoreCase("tcp") && !tokens[1].equalsIgnoreCase("udp")) {
+                println("[CLI] Error: Protocol must be 'tcp' or 'udp'.");
+                return;
+            }
+            uint8_t proto = tokens[1].equalsIgnoreCase("udp") ? 17 : 6;
+            long extP = tokens[2].toInt();
+            if (extP <= 0 || extP > 65535) {
+                println("[CLI] Error: Invalid port.");
+                return;
+            }
+            if (NaptEngine::instance().removePortForward(proto, (uint16_t)extP)) {
+                println("[CLI] Port forward rule removed.");
+            } else {
+                println("[CLI] Rule not found.");
+            }
         } else {
             auto rules = StorageManager::instance().getPortForwards();
-            Serial.printf("\nACTIVE PORT FORWARD RULES (%d stored):\n", (int)rules.size());
-            Serial.println("+-------+----------+-----------------+----------+----------------------+");
-            Serial.println("| PROTO | EXT PORT | TARGET IP       | INT PORT | DESCRIPTION          |");
-            Serial.println("+-------+----------+-----------------+----------+----------------------+");
+            printf("\nACTIVE PORT FORWARD RULES (%d / %d):\n", (int)rules.size(), NAPT_MAX_PORTMAPS);
+            println("+-------+----------+-----------------+----------+----------------------+");
+            println("| PROTO | EXT PORT | TARGET IP       | INT PORT | DESCRIPTION          |");
+            println("+-------+----------+-----------------+----------+----------------------+");
             for (const auto& r : rules) {
-                Serial.printf("| %-5s | %-8d | %-15s | %-8d | %-20.20s |\n",
-                              r.protocol == 6 ? "TCP" : "UDP", r.externalPort, r.internalIp.c_str(), r.internalPort, r.description.c_str());
+                printf("| %-5s | %-8u | %-15s | %-8u | %-20.20s |\n",
+                       r.protocol == 6 ? "TCP" : "UDP", r.externalPort, r.internalIp.c_str(), r.internalPort, r.description.c_str());
             }
-            Serial.println("+-------+----------+-----------------+----------+----------------------+\n");
-            Serial.println("Usage:");
-            Serial.println("  portmap add <tcp|udp> <ext_port> <int_ip> <int_port> [desc]");
-            Serial.println("  portmap del <tcp|udp> <ext_port>\n");
-        }
-    } else if (cmd == "adblock") {
-        auto tokens = tokenizeArgs(args);
-        if (tokens.size() > 0) {
-            bool en = (tokens[0] == "on" || tokens[0] == "1" || tokens[0] == "true" || tokens[0] == "enable");
-            WebPortal::instance().toggleAdBlock(en);
-            Serial.printf("[CLI] DNS AdBlock sinkhole is now %s.\n", en ? "ENABLED" : "DISABLED");
-        } else {
-            bool active = WebPortal::instance().isAdBlockActive();
-            uint32_t count = StorageManager::instance().getAdBlockCount();
-            Serial.printf("DNS AdBlocker Sinkhole: %s\n", active ? "ENABLED" : "DISABLED");
-            Serial.printf("Total Blocked Queries:  %lu\n", (unsigned long)count);
-            Serial.println("Use 'adblock on' or 'adblock off' to toggle.\n");
+            println("+-------+----------+-----------------+----------+----------------------+\n");
+            println("Usage:");
+            println("  portmap add <tcp|udp> <ext_port> <int_ip> <int_port> [desc]");
+            println("  portmap del <tcp|udp> <ext_port>\n");
         }
     } else if (cmd == "isolation") {
         auto tokens = tokenizeArgs(args);
-        if (tokens.size() > 0) {
+        if (!tokens.empty()) {
             bool en = (tokens[0] == "on" || tokens[0] == "1" || tokens[0] == "true" || tokens[0] == "enable");
             StorageManager::instance().setClientIsolation(en);
-            Serial.printf("[CLI] Layer-2 Client Isolation is now %s.\n", en ? "ENABLED" : "DISABLED");
+            printf("[CLI] L2 Client Isolation: %s.\n", en ? "ENABLED" : "DISABLED");
         } else {
             auto s = StorageManager::instance().getSettings();
-            Serial.printf("Layer-2 Client Isolation: %s\n", s.clientIsolation ? "ENABLED" : "DISABLED");
-            Serial.println("Use 'isolation on' or 'isolation off' to toggle.\n");
+            printf("L2 Client Isolation: %s\n", s.clientIsolation ? "ENABLED" : "DISABLED");
         }
     } else if (cmd == "tpc") {
         auto tokens = tokenizeArgs(args);
-        if (tokens.size() > 0) {
+        if (!tokens.empty()) {
             bool en = (tokens[0] == "on" || tokens[0] == "1" || tokens[0] == "true" || tokens[0] == "enable");
             StorageManager::instance().setDynamicTpc(en);
             if (!en) {
                 auto s = StorageManager::instance().getSettings();
                 RoamingEngine::instance().setTxPowerDbm(s.txPowerDbm);
             }
-            Serial.printf("[CLI] Dynamic Transmit Power Control (TPC) is now %s.\n", en ? "ENABLED" : "DISABLED");
+            printf("[CLI] Dynamic TPC: %s.\n", en ? "ENABLED" : "DISABLED");
         } else {
             auto s = StorageManager::instance().getSettings();
-            Serial.printf("Dynamic Transmit Power Control: %s (Current: %.2f dBm)\n", 
-                          s.dynamicTpcEnabled ? "ENABLED" : "DISABLED", RoamingEngine::instance().getCurrentTxPowerDbm());
-            Serial.println("Use 'tpc on' or 'tpc off' to toggle.\n");
+            printf("Dynamic TPC: %s (Current: %.2f dBm)\n",
+                   s.dynamicTpcEnabled ? "ENABLED" : "DISABLED", RoamingEngine::instance().getCurrentTxPowerDbm());
         }
     } else if (cmd == "temp" || cmd == "temperature") {
         float tempC = temperatureRead();
         float tempF = (tempC * 1.8f) + 32.0f;
-        Serial.printf("\n[THERMAL] ESP32 Internal Die Temperature: %.1f °C / %.1f °F (%s)\n\n",
-                      tempC, tempF, tempC >= THERMAL_WARN_TEMP_C ? "WARNING: High Temperature" : "Optimal Range");
+        printf("\n[THERMAL] Internal Die Temperature: %.1f C / %.1f F (%s)\n\n",
+               tempC, tempF, tempC >= THERMAL_WARN_TEMP_C ? "WARNING: High" : "Optimal");
     } else if (cmd == "spectrum" || cmd == "congestion") {
         printSpectrum();
     } else if (cmd == "dns_cache" || cmd == "dns") {
         printDnsCache();
     } else if (cmd == "clear_dns") {
         DnsCache::instance().clear();
-        Serial.println("[CLI] Sub-Millisecond SRAM DNS Cache cleared.");
+        println("[CLI] SRAM DNS Cache cleared.");
+    } else if (cmd == "crashlog" || cmd == "crash") {
+        handleCrashLog(args);
     } else if (cmd == "kick") {
         handleKick(args);
     } else if (cmd == "rename") {
         handleRename(args);
     } else if (cmd == "ping" || cmd == "test") {
         handlePing(args);
+    } else if (cmd == "wan") {
+        handleWan(args);
+    } else if (cmd == "probe") {
+        handleProbe(args);
+    } else if (cmd == "netdebug") {
+        LOCK_TCPIP_CORE();
+        printf("netif_default=%p tcpip_input=%p dnsIP=%s\n",
+               (void*)netif_default, (void*)tcpip_input, WiFi.dnsIP().toString().c_str());
+        for (struct netif *n = netif_list; n != nullptr; n = n->next) {
+            printf("  netif %c%c%u ptr=%p ip=%s mask=%s gw=%s flags=0x%02x napt=%u input=%p\n",
+                   n->name[0], n->name[1], n->num, (void*)n,
+                   IPAddress(netif_ip4_addr(n)->addr).toString().c_str(),
+                   IPAddress(netif_ip4_netmask(n)->addr).toString().c_str(),
+                   IPAddress(netif_ip4_gw(n)->addr).toString().c_str(),
+                   n->flags, n->napt, (void*)n->input);
+        }
+        ip4_addr_t testDst;
+        testDst.addr = inet_addr("1.1.1.1");
+        struct netif *r = ip4_route(&testDst);
+        printf("ip4_route(1.1.1.1)=%p (%c%c%u)\n",
+               (void*)r, r ? r->name[0] : '-', r ? r->name[1] : '-', r ? r->num : 0);
+        UNLOCK_TCPIP_CORE();
     } else if (cmd == "reboot") {
-        Serial.println("[CLI] Rebooting ESP32...");
-        delay(500);
+        println("[CLI] Flushing shadow journal & rebooting...");
+        StorageManager::instance().commitJournal(true);
+        delay(200);
         ESP.restart();
     } else {
-        Serial.printf("Unknown command '%s'. Type 'help' for command manual.\n", cmd.c_str());
+        printf("Unknown command '%s'. Type 'help' for commands.\n", cmd.c_str());
     }
 }
 
+void CliShell::handleCrashLog(const String& args) {
+    auto tokens = tokenizeArgs(args);
+    if (!tokens.empty() && tokens[0].equalsIgnoreCase("clear")) {
+        StorageManager::clearCrashLog();
+        println("[CRASH] RTC Slow SRAM crash buffer cleared.");
+        return;
+    }
+
+    const auto& log = StorageManager::getCrashLog();
+    println("\n================ RTC SLOW SRAM HARDWARE CRASH LOG ================");
+    printf("  Buffer Magic:       0x%08lX (%s)\n",
+           (unsigned long)log.magic, log.magic == CRASH_LOG_MAGIC ? "VALID" : "INVALID");
+    printf("  Recorded Events:    %lu (Capacity: %d)\n",
+           (unsigned long)log.count, CRASH_LOG_MAX_ENTRIES);
+    println("------------------------------------------------------------------");
+
+    if (log.count == 0) {
+        println("  (Clean state: 0 abnormal resets recorded)\n");
+    } else {
+        println("+----+------------+----------------------+------------+------------+");
+        println("| #  | UPTIME (S) | RESET REASON         | MIN HEAP   | DETAIL     |");
+        println("+----+------------+----------------------+------------+------------+");
+        uint32_t num = (log.count < CRASH_LOG_MAX_ENTRIES) ? log.count : CRASH_LOG_MAX_ENTRIES;
+        uint32_t oldestIdx = (log.head + CRASH_LOG_MAX_ENTRIES - num) % CRASH_LOG_MAX_ENTRIES;
+        for (uint32_t i = 0; i < num; i++) {
+            uint32_t idx = (oldestIdx + i) % CRASH_LOG_MAX_ENTRIES;
+            const auto& e = log.entries[idx];
+            const char* reason = StorageManager::getResetReasonName((esp_reset_reason_t)e.reset_reason);
+            printf("| %-2lu | %-10lu | %-20.20s | %-10lu | %-10.10s |\n",
+                   (unsigned long)(i + 1), (unsigned long)e.timestamp_sec, reason,
+                   (unsigned long)e.min_free_heap, e.reason_str);
+        }
+        println("+----+------------+----------------------+------------+------------+\n");
+    }
+    println("Usage: crashlog [clear]\n");
+}
+
 void CliShell::printHelp() {
-    Serial.println("\nAVAILABLE SERIAL CLI COMMANDS:");
-    Serial.println("  status                            - Display system health, Wi-Fi link, NAPT & memory");
-    Serial.println("  scan                              - Trigger 2.4 GHz RF scan & display AP table");
-    Serial.println("  spectrum                          - Real-time 2.4 GHz spectrum congestion analysis");
-    Serial.println("  temp                              - Display on-chip internal die temperature");
-    Serial.println("  dns                               - Display sub-millisecond SRAM DNS cache stats & hosts");
-    Serial.println("  clear_dns                         - Flush DNS cache table");
-    Serial.println("  connect <ssid> <pass>             - Manually connect to an upstream AP (use \"\" for spaces)");
-    Serial.println("  disconnect                        - Drop upstream connection & return to standalone AP");
-    Serial.println("  roam                              - Trigger immediate background multi-AP roam check");
-    Serial.println("  clients                           - List active stations connected to repeater SoftAP");
-    Serial.println("  rename <mac> <alias>              - Assign friendly custom name to client device");
-    Serial.println("  kick <mac>                        - Disconnect / deauthenticate client station");
-    Serial.println("  set_tx <dbm>                      - Calibrate RF output power (+10.0 to +20.5 dBm)");
-    Serial.println("  list / saved                      - Display stored failover Wi-Fi network profiles");
-    Serial.println("  add <ssid> <pass> [prio]          - Add or update a saved network (e.g. add \"HomeNetwork\" \"Pass\" 8)");
-    Serial.println("  del / remove <ssid>               - Remove network from saved database (e.g. del \"HomeNetwork\")");
-    Serial.println("  mac                               - Display current station MAC & cloned status");
-    Serial.println("  set_mac <mac>                     - Clone/spoof Station MAC (XX:XX:XX:XX:XX:XX)");
-    Serial.println("  reset_mac                         - Restore default hardware factory MAC");
-    Serial.println("  portmap [add|del] ...             - List, add, or remove lwIP DNAPT port forwarding rules");
-    Serial.println("  adblock [on|off]                  - Check or toggle hardware DNS AdBlocker sinkhole");
-    Serial.println("  isolation [on|off]                - Check or toggle Layer-2 client isolation");
-    Serial.println("  tpc [on|off]                      - Check or toggle Dynamic Transmit Power Control (TPC)");
-    Serial.println("  ping <host>                       - Verify DNS resolution & TCP internet route (e.g. ping google.com)");
-    Serial.println("  reboot                            - Perform clean software reset of the ESP32\n");
+    printf("\nAVAILABLE SERIAL CLI COMMANDS (%s):\n", PROJECT_VERSION);
+    println("  status                             - System health, Wi-Fi link, NAPT & memory");
+    println("  scan                               - Trigger 2.4 GHz scan & display AP table");
+    println("  spectrum                           - 2.4 GHz channel congestion analysis");
+    println("  temp                               - Internal ESP32 die temperature");
+    println("  dns                                - SRAM DNS cache stats & active hosts");
+    println("  clear_dns                          - Flush DNS cache");
+    println("  connect <ssid> [pass]              - Associate with upstream AP");
+    println("  disconnect                         - Drop upstream link");
+    println("  roam                               - Trigger multi-AP roam evaluation");
+    println("  clients                            - List connected SoftAP stations");
+    println("  rename <mac> <alias>               - Assign custom alias to client MAC");
+    println("  kick <mac>                         - Deauthenticate client station");
+    println("  set_tx <dbm>                       - Set RF TX power (11.0 to 20.0 dBm)");
+    println("  list / saved                       - Display saved failover profiles");
+    println("  add <ssid> <pass> [prio]           - Save network to failover pool");
+    println("  del / remove <ssid>                - Remove network from failover pool");
+    println("  mac                                - Show station & cloned MAC status");
+    println("  set_mac <mac>                      - Spoof station MAC (XX:XX:XX:XX:XX:XX)");
+    println("  reset_mac                          - Restore factory MAC");
+    println("  portmap [add|del] ...              - Manage lwIP DNAPT port forwarding");
+    println("  isolation [on|off]                 - Toggle L2 client isolation");
+    println("  tpc [on|off]                       - Toggle Dynamic Transmit Power Control");
+    println("  crashlog [clear]                   - Inspect RTC Slow SRAM crash history");
+    println("  wan [on|off|interval|failover|clear] - WAN Internet Health Watchdog controls");
+    println("  probe [ip]                         - Non-blocking Anycast TCP probe (port 53)");
+    println("  ping [host]                        - Verify DNS resolution & TCP connectivity");
+    println("  reboot                             - Flush journal & restart ESP32\n");
 }
 
 void CliShell::printStatus() {
@@ -268,77 +463,105 @@ void CliShell::printStatus() {
     auto& napt = NaptEngine::instance();
     auto settings = StorageManager::instance().getSettings();
     auto dnsStats = DnsCache::instance().getStats();
+    float tempC = temperatureRead();
 
-    Serial.println("---------------- AETHERPULSE SYSTEM STATUS ----------------");
-    Serial.printf("  Device:             ESP32-D0WD-V3 (Rev 3.1) @ %d MHz\n", ESP.getCpuFreqMHz());
-    Serial.printf("  Die Temperature:    %.1f °C (Thermal state: %s)\n", 
-                  temperatureRead(), temperatureRead() >= THERMAL_WARN_TEMP_C ? "HIGH" : "NORMAL");
-    Serial.printf("  Free DRAM (Heap):   %d bytes (Min Free: %d bytes)\n", ESP.getFreeHeap(), ESP.getMinFreeHeap());
-    Serial.printf("  Uptime:             %lu seconds\n", millis() / 1000);
-    Serial.println("--- Upstream Station (STA) Link ---");
-    Serial.printf("  Connected:          %s\n", roam.isConnected() ? "YES" : "NO");
+    println("---------------- AETHERPULSE SYSTEM STATUS ----------------");
+    printf("  Firmware:           %s %s @ %u MHz\n", PROJECT_NAME, PROJECT_VERSION, (unsigned)ESP.getCpuFreqMHz());
+    printf("  Die Temperature:    %.1f C (%s)\n", tempC, tempC >= THERMAL_WARN_TEMP_C ? "HIGH" : "NORMAL");
+    printf("  Free Heap:          %u B (Min: %u B, Largest: %u B)\n",
+           (unsigned)ESP.getFreeHeap(), (unsigned)ESP.getMinFreeHeap(),
+           (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL));
+    printf("  Uptime:             %lu s\n", millis() / 1000);
+    println("--- Upstream Station (STA) ---");
+    printf("  Connected:          %s\n", roam.isConnected() ? "YES" : "NO");
     if (roam.isConnected()) {
-        Serial.printf("  SSID:               %s\n", roam.getCurrentSsid().c_str());
-        Serial.printf("  BSSID:              %s\n", roam.getCurrentBssid().c_str());
-        Serial.printf("  Channel:            %d (Best Recommended: CH %d)\n", roam.getCurrentChannel(), roam.getBestChannel());
-        Serial.printf("  Filtered RSSI:      %.1f dBm (Kalman Smoothed)\n", roam.getCurrentRssi());
-        Serial.printf("  Assigned IP:        %s (GW: %s)\n", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
+        printf("  SSID / BSSID:       %s (%s)\n", roam.getCurrentSsid().c_str(), roam.getCurrentBssid().c_str());
+        printf("  Channel:            %d (Cleanest: CH %d)\n", roam.getCurrentChannel(), roam.getBestChannel());
+        printf("  Kalman RSSI:        %.1f dBm\n", roam.getCurrentRssi());
+        printf("  STA IP / GW:        %s / %s\n", WiFi.localIP().toString().c_str(), WiFi.gatewayIP().toString().c_str());
     }
-    Serial.printf("  Station MAC:        %s\n", WiFi.macAddress().c_str());
-    Serial.println("--- Repeater SoftAP ---");
-    Serial.printf("  SoftAP SSID:        %s\n", settings.apSSID.c_str());
-    Serial.printf("  SoftAP IP:          %s (http://%s.local)\n", WiFi.softAPIP().toString().c_str(), MDNS_HOSTNAME);
-    Serial.printf("  Connected Clients:  %d / %d\n", WiFi.softAPgetStationNum(), settings.apMaxClients);
-    Serial.println("--- L3 Routing, NAPT & DNS Acceleration ---");
-    Serial.printf("  lwIP DNAPT:         %s\n", napt.isEnabled() ? "ACTIVE" : "INACTIVE");
-    Serial.printf("  Port Forward Rules: %d rules loaded\n", (int)StorageManager::instance().getPortForwards().size());
-    Serial.printf("  SRAM DNS Cache:     %lu Hits / %lu Misses (%lu Active Entries)\n",
-                  (unsigned long)dnsStats.totalHits, (unsigned long)dnsStats.totalMisses, (unsigned long)dnsStats.activeEntries);
-    Serial.printf("  DNS AdBlocker:      %s (%lu blocked queries)\n", 
-                  WebPortal::instance().isAdBlockActive() ? "ACTIVE" : "DISABLED", 
-                  (unsigned long)StorageManager::instance().getAdBlockCount());
-    Serial.printf("  Task Watchdog TWDT: 15s Hardware Timeout\n");
-    Serial.printf("  Modem Sleep:        DISABLED (WIFI_PS_NONE for zero jitter)\n");
-    Serial.printf("  Beacon Interval:    %d TU (Anti-Phase Scheduled)\n", SOFTAP_BEACON_INTERVAL_TU);
-    Serial.printf("  TCP MSS Clamping:   %d bytes (RFC 1624 anti-blackhole)\n", TCP_MSS_CLAMP_VALUE);
-    Serial.printf("  Layer-2 Isolation:  %s\n", settings.clientIsolation ? "ENABLED" : "DISABLED");
-    Serial.printf("  Dynamic TPC:        %s (RF Power: %.2f dBm)\n", settings.dynamicTpcEnabled ? "ACTIVE" : "DISABLED", roam.getCurrentTxPowerDbm());
-    Serial.println("-----------------------------------------------------------");
+    printf("  Station MAC:        %s\n", WiFi.macAddress().c_str());
+    println("--- Repeater SoftAP ---");
+    printf("  SoftAP SSID:        %s\n", settings.apSSID.c_str());
+    printf("  SoftAP IP:          %s (http://%s.local)\n", WiFi.softAPIP().toString().c_str(), MDNS_HOSTNAME);
+    printf("  Connected Clients:  %d / %d\n", WiFi.softAPgetStationNum(), settings.apMaxClients);
+    println("--- Routing, DNS & Security ---");
+    printf("  lwIP NAPT:          %s (MSS Clamped: %lu, Hairpin: %lu, Portmaps: %u)\n",
+           napt.isEnabled() ? "ACTIVE" : "INACTIVE",
+           (unsigned long)napt.getMssClampedCount(),
+           (unsigned long)napt.getHairpinCount(),
+           (unsigned)napt.getActivePortmapCount());
+    printf("  WAN Health:         %s (RTT: %.1f ms | Watchdog: %s | Failovers: %lu)\n",
+           roam.isWanOnline() ? "ONLINE" : (roam.isConnected() ? "DEGRADED" : "DOWN"),
+           roam.getWanRttMs(),
+           settings.wanWatchdogEnabled ? "ACTIVE" : "PAUSED",
+           (unsigned long)roam.getWanFailoverCount());
+    printf("  SRAM DNS Cache:     %lu Hits / %lu Misses (%lu / %lu Entries)\n",
+           (unsigned long)dnsStats.totalHits, (unsigned long)dnsStats.totalMisses,
+           (unsigned long)dnsStats.activeEntries, (unsigned long)dnsStats.capacity);
+    printf("  L2 Isolation:       %s (Anti-ARP Spoofing Active)\n",
+           settings.clientIsolation ? "ENABLED" : "DISABLED");
+    printf("  Dynamic TPC:        %s (TX Power: %.2f dBm)\n",
+           settings.dynamicTpcEnabled ? "ACTIVE" : "STATIC", roam.getCurrentTxPowerDbm());
+    printf("  RTC Crash Log:      %lu events\n", (unsigned long)StorageManager::getCrashLog().count);
+    println("-----------------------------------------------------------");
 }
 
 void CliShell::printScan() {
-    Serial.println("[CLI] Performing live Wi-Fi scan, please wait...");
-    int n = WiFi.scanNetworks(false, false);
-    Serial.printf("\nDISCOVERED 2.4 GHz NETWORKS (%d found):\n", n);
-    Serial.println("+----+------------------------+-------------------+---------+-----+--------+");
-    Serial.println("| #  | SSID                   | BSSID             | RSSI    | CH  | AUTH   |");
-    Serial.println("+----+------------------------+-------------------+---------+-----+--------+");
-    for (int i = 0; i < n; i++) {
-        String authmode;
-        switch (WiFi.encryptionType(i)) {
+    auto& roam = RoamingEngine::instance();
+    if (roam.isScanning()) {
+        println("[CLI] Waiting for active background scan...");
+        unsigned long w = millis();
+        while (roam.isScanning() && millis() - w < 6000) {
+            esp_task_wdt_reset();
+            roam.update();
+            delay(50);
+        }
+    } else {
+        println("[CLI] Scanning 2.4 GHz spectrum...");
+        roam.startScan();
+        unsigned long w = millis();
+        while (roam.isScanning() && millis() - w < 6000) {
+            esp_task_wdt_reset();
+            roam.update();
+            delay(50);
+        }
+    }
+
+    auto results = roam.getLastScanResults();
+    printf("\nDISCOVERED 2.4 GHz NETWORKS (%d found):\n", (int)results.size());
+    println("+----+------------------------+-------------------+---------+-----+--------+");
+    println("| #  | SSID                   | BSSID             | RSSI    | CH  | AUTH   |");
+    println("+----+------------------------+-------------------+---------+-----+--------+");
+    for (size_t i = 0; i < results.size(); i++) {
+        const auto& ap = results[i];
+        const char* authmode = "OTHER";
+        switch (ap.encryptionType) {
             case WIFI_AUTH_OPEN: authmode = "OPEN"; break;
-            case WIFI_AUTH_WEP:  authmode = "WEP"; break;
+            case WIFI_AUTH_WEP: authmode = "WEP"; break;
             case WIFI_AUTH_WPA_PSK: authmode = "WPA"; break;
             case WIFI_AUTH_WPA2_PSK: authmode = "WPA2"; break;
             case WIFI_AUTH_WPA_WPA2_PSK: authmode = "WPA/2"; break;
             case WIFI_AUTH_WPA3_PSK: authmode = "WPA3"; break;
-            default: authmode = "OTHER"; break;
         }
-        Serial.printf("| %-2d | %-22.22s | %-17s | %3d dBm | %3d | %-6s |\n",
-                      i+1, WiFi.SSID(i).c_str(), WiFi.BSSIDstr(i).c_str(), 
-                      WiFi.RSSI(i), WiFi.channel(i), authmode.c_str());
+        printf("| %-2d | %-22.22s | %-17s | %3d dBm | %3d | %-6s |\n",
+               (int)i + 1, ap.ssid.c_str(), ap.bssid.c_str(),
+               (int)ap.rssi, (int)ap.channel, authmode);
     }
-    Serial.println("+----+------------------------+-------------------+---------+-----+--------+");
-    WiFi.scanDelete();
+    println("+----+------------------------+-------------------+---------+-----+--------+");
 }
 
 void CliShell::printClients() {
     wifi_sta_list_t sta_list;
-    esp_wifi_ap_get_sta_list(&sta_list);
-    Serial.printf("\nACTIVE CONNECTED REPEATER CLIENTS (%d connected):\n", sta_list.num);
-    Serial.println("+----+-------------------+---------+----------------------+----------------------+");
-    Serial.println("| #  | MAC ADDRESS       | RSSI    | VENDOR               | ALIAS / NAME         |");
-    Serial.println("+----+-------------------+---------+----------------------+----------------------+");
+    memset(&sta_list, 0, sizeof(sta_list));
+    if (esp_wifi_ap_get_sta_list(&sta_list) != ESP_OK) {
+        println("[CLI] Failed to query SoftAP station list.");
+        return;
+    }
+    printf("\nACTIVE CONNECTED REPEATER CLIENTS (%d connected):\n", sta_list.num);
+    println("+----+-------------------+---------+----------------------+----------------------+");
+    println("| #  | MAC ADDRESS       | RSSI    | VENDOR               | ALIAS / NAME         |");
+    println("+----+-------------------+---------+----------------------+----------------------+");
     for (int i = 0; i < sta_list.num; i++) {
         wifi_sta_info_t sta = sta_list.sta[i];
         char mac_str[18];
@@ -347,16 +570,16 @@ void CliShell::printClients() {
         String alias = StorageManager::instance().getClientAlias(mac_str);
         String vendor = StorageManager::instance().getVendorName(mac_str);
         if (alias.length() == 0) alias = "-";
-        Serial.printf("| %-2d | %-17s | %3d dBm | %-20.20s | %-20.20s |\n", 
-                      i+1, mac_str, sta.rssi, vendor.c_str(), alias.c_str());
+        printf("| %-2d | %-17s | %3d dBm | %-20.20s | %-20.20s |\n",
+               i + 1, mac_str, sta.rssi, vendor.c_str(), alias.c_str());
     }
-    Serial.println("+----+-------------------+---------+----------------------+----------------------+\n");
+    println("+----+-------------------+---------+----------------------+----------------------+\n");
 }
 
 void CliShell::handleConnect(const String& args) {
     auto tokens = tokenizeArgs(args);
-    if (tokens.size() < 1) {
-        Serial.println("Usage: connect <ssid> [password] (use \"\" for spaces)");
+    if (tokens.empty()) {
+        println("Usage: connect <ssid> [password]");
         return;
     }
     String s = tokens[0];
@@ -366,23 +589,22 @@ void CliShell::handleConnect(const String& args) {
 
 void CliShell::handleSetTx(const String& args) {
     float dbm = args.toFloat();
-    if (dbm < 10.0f || dbm > 20.5f) {
-        Serial.println("Invalid dBm. Range: 10.0 to 20.5 dBm");
+    float minDbm = MIN_TX_POWER_RAW * 0.25f;
+    float maxDbm = MAX_TX_POWER_RAW * 0.25f;
+    if (dbm < minDbm || dbm > maxDbm) {
+        printf("Invalid dBm. Range: %.1f to %.1f dBm\n", minDbm, maxDbm);
         return;
     }
-    int raw = (int)(dbm * 4.0f);
-    esp_wifi_set_max_tx_power(raw);
+    RoamingEngine::instance().setTxPowerDbm(dbm);
     auto s = StorageManager::instance().getSettings();
-    s.txPowerDbm = dbm;
+    s.txPowerDbm = RoamingEngine::instance().getCurrentTxPowerDbm();
     StorageManager::instance().saveSettings(s);
-    Serial.printf("[CLI] RF Transmit Power calibrated to %.2f dBm (raw: %d).\n", dbm, raw);
 }
 
 void CliShell::handleAddKnown(const String& args) {
     auto tokens = tokenizeArgs(args);
     if (tokens.size() < 2) {
-        Serial.println("Usage: add <ssid> <password> [priority] (use \"\" for names with spaces)");
-        Serial.println("Example: add \"HomeNetwork\" \"SecretPass123\" 8");
+        println("Usage: add <ssid> <password> [priority]");
         return;
     }
     String s = tokens[0];
@@ -392,50 +614,60 @@ void CliShell::handleAddKnown(const String& args) {
         prio = tokens[2].toInt();
         if (prio <= 0) prio = 1;
     }
-    StorageManager::instance().addKnownNetwork(s, p, prio);
-    Serial.printf("[CLI] Network '%s' successfully saved with priority %d.\n", s.c_str(), prio);
+    if (StorageManager::instance().addKnownNetwork(s, p, prio)) {
+        printf("[CLI] Network '%s' saved (priority %d).\n", s.c_str(), prio);
+    } else {
+        println("[CLI] Error: Could not save network (invalid SSID or pool full).");
+    }
 }
 
 void CliShell::handleDelKnown(const String& args) {
     auto tokens = tokenizeArgs(args);
     if (tokens.empty()) {
-        Serial.println("Usage: del <ssid> (use \"\" for names with spaces)");
-        Serial.println("Example: del \"HomeNetwork\"");
+        println("Usage: del <ssid>");
         return;
     }
-    String s = tokens[0];
-    if (StorageManager::instance().removeKnownNetwork(s)) {
-        Serial.printf("[CLI] Network '%s' removed from saved database.\n", s.c_str());
+    if (StorageManager::instance().removeKnownNetwork(tokens[0])) {
+        printf("[CLI] Network '%s' removed.\n", tokens[0].c_str());
     } else {
-        Serial.printf("[CLI] Network '%s' was not found in saved database.\n", s.c_str());
+        printf("[CLI] Network '%s' not found.\n", tokens[0].c_str());
     }
 }
 
 void CliShell::handlePing(const String& args) {
     auto tokens = tokenizeArgs(args);
-    String target = (tokens.size() > 0) ? tokens[0] : "google.com";
-    Serial.printf("\n[PING] Testing connectivity to '%s'...\n", target.c_str());
+    String target = (!tokens.empty()) ? tokens[0] : "google.com";
+    printf("\n[PING] Testing connectivity to '%s'...\n", target.c_str());
 
+    esp_task_wdt_reset();
     IPAddress targetIp;
     if (WiFi.hostByName(target.c_str(), targetIp)) {
-        Serial.printf("  DNS Resolution:     SUCCESS -> %s\n", targetIp.toString().c_str());
+        printf("  DNS Resolution:     SUCCESS -> %s\n", targetIp.toString().c_str());
     } else {
-        Serial.printf("  DNS Resolution:     FAILED for '%s'\n", target.c_str());
+        printf("  DNS Resolution:     FAILED for '%s'\n", target.c_str());
         return;
     }
 
     WiFiClient client;
-    client.setTimeout(3);
+    client.setTimeout(2);
     unsigned long t0 = millis();
-    bool connected = client.connect(targetIp, 80) || client.connect(targetIp, 443) || client.connect(targetIp, 53);
+    bool connected = false;
+    const uint16_t ports[] = {80, 443, 53};
+    for (uint16_t port : ports) {
+        esp_task_wdt_reset();
+        if (client.connect(targetIp, port, 2000)) {
+            connected = true;
+            break;
+        }
+    }
     unsigned long rtt = millis() - t0;
 
     if (connected) {
-        Serial.printf("  TCP Handshake:      SUCCESS to %s (RTT: %lu ms)\n", targetIp.toString().c_str(), rtt);
-        Serial.println("  Internet Status:    100% ONLINE & REACHABLE\n");
+        printf("  TCP Handshake:      SUCCESS to %s (RTT: %lu ms)\n", targetIp.toString().c_str(), rtt);
+        println("  Internet Status:    ONLINE & REACHABLE\n");
         client.stop();
     } else {
-        Serial.printf("  TCP Handshake:      FAILED (Host unreachable or port filtered)\n\n");
+        println("  TCP Handshake:      FAILED (Host unreachable)\n");
     }
 }
 
@@ -444,26 +676,29 @@ void CliShell::printSpectrum() {
     int best = RoamingEngine::instance().getBestChannel();
     int current = RoamingEngine::instance().getCurrentChannel();
 
-    Serial.println("\n2.4 GHz RF SPECTRUM CONGESTION ANALYSIS:");
-    Serial.println("+---------+----------------------+------+---------------------------+");
-    Serial.println("| CHANNEL | CONGESTION DENSITY   | LOAD | STATUS                    |");
-    Serial.println("+---------+----------------------+------+---------------------------+");
+    println("\n2.4 GHz RF SPECTRUM CONGESTION ANALYSIS:");
+    println("+---------+----------------------+------+---------------------------+");
+    println("| CHANNEL | CONGESTION DENSITY   | LOAD | STATUS                    |");
+    println("+---------+----------------------+------+---------------------------+");
     for (int ch = 1; ch <= 13; ch++) {
-        int bars = (loads[ch] * 20) / 100;
-        char barStr[25];
+        int load = loads[ch];
+        if (load < 0) load = 0;
+        if (load > 100) load = 100;
+        int bars = (load * 20) / 100;
+        char barStr[21];
         memset(barStr, ' ', 20);
         for (int b = 0; b < bars && b < 20; b++) barStr[b] = '#';
         barStr[20] = '\0';
 
         String status = "";
         if (ch == current) status += "[ACTIVE] ";
-        if (ch == best) status += "*RECOMMENDED OPTIMAL*";
+        if (ch == best) status += "*RECOMMENDED*";
 
-        Serial.printf("| CH %-4d | [%-20s] | %3d%% | %-25.25s |\n",
-                      ch, barStr, loads[ch], status.c_str());
+        printf("| CH %-4d | [%-20s] | %3d%% | %-25.25s |\n",
+               ch, barStr, load, status.c_str());
     }
-    Serial.println("+---------+----------------------+------+---------------------------+");
-    Serial.printf("Suggested Cleanest Frequency: Channel %d\n\n", best);
+    println("+---------+----------------------+------+---------------------------+");
+    printf("Suggested Cleanest Frequency: Channel %d\n\n", best);
 }
 
 void CliShell::printDnsCache() {
@@ -472,54 +707,142 @@ void CliShell::printDnsCache() {
     uint32_t total = stats.totalHits + stats.totalMisses;
     float hitRate = total > 0 ? (float)stats.totalHits * 100.0f / total : 0.0f;
 
-    Serial.println("\n--- SUB-MILLISECOND SRAM DNS CACHE DAEMON ---");
-    Serial.printf("  Total Cache Hits:     %lu\n", (unsigned long)stats.totalHits);
-    Serial.printf("  Total Cache Misses:   %lu\n", (unsigned long)stats.totalMisses);
-    Serial.printf("  Cache Hit Ratio:      %.1f %%\n", hitRate);
-    Serial.printf("  Active Table Entries: %lu / %lu\n", (unsigned long)stats.activeEntries, (unsigned long)stats.capacity);
+    println("\n--- SRAM DNS CACHE DAEMON ---");
+    printf("  Total Hits / Misses:  %lu / %lu (%.1f %% hit rate)\n",
+           (unsigned long)stats.totalHits, (unsigned long)stats.totalMisses, hitRate);
+    printf("  Active Entries:       %lu / %lu\n",
+           (unsigned long)stats.activeEntries, (unsigned long)stats.capacity);
 
     if (!entries.empty()) {
-        Serial.println("\n+--------------------------------+-----------------+----------+----------+");
-        Serial.println("| DOMAIN HOSTNAME                | RESOLVED IP     | TTL REM  | HITS     |");
-        Serial.println("+--------------------------------+-----------------+----------+----------+");
-        unsigned long now = millis();
+        println("\n+--------------------------------+-----------------+----------+----------+");
+        println("| DOMAIN HOSTNAME                | RESOLVED IP     | TTL REM  | HITS     |");
+        println("+--------------------------------+-----------------+----------+----------+");
+        uint32_t now = millis();
         for (const auto& e : entries) {
-            uint32_t remSec = (e.expireTimeMs > now) ? (e.expireTimeMs - now) / 1000 : 0;
-            Serial.printf("| %-30.30s | %-15s | %5lu s  | %-8lu |\n",
-                          e.domain.c_str(), e.ip.toString().c_str(), (unsigned long)remSec, (unsigned long)e.hits);
+            uint32_t elapsed = (uint32_t)(now - e.insert_time_ms);
+            uint32_t remSec = (e.ttl_ms > elapsed) ? (e.ttl_ms - elapsed) / 1000 : 0;
+            printf("| %-30.30s | %-15s | %5lu s  | %-8lu |\n",
+                   e.domain.c_str(), e.ip.toString().c_str(), (unsigned long)remSec, (unsigned long)e.hits);
         }
-        Serial.println("+--------------------------------+-----------------+----------+----------+\n");
+        println("+--------------------------------+-----------------+----------+----------+\n");
     } else {
-        Serial.println("  (DNS Cache is currently empty)\n");
+        println("  (DNS Cache is currently empty)\n");
     }
 }
 
 void CliShell::handleKick(const String& args) {
     auto tokens = tokenizeArgs(args);
     if (tokens.empty()) {
-        Serial.println("Usage: kick <MAC_ADDRESS> (e.g. kick 12:34:56:78:9A:BC)");
+        println("Usage: kick <XX:XX:XX:XX:XX:XX>");
         return;
     }
-    String macStr = tokens[0];
     uint8_t mac[6];
-    if (sscanf(macStr.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-               &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+    if (validateMacFormat(tokens[0], mac)) {
         uint16_t aid = 0;
         if (esp_wifi_ap_get_sta_aid(mac, &aid) == ESP_OK) {
             esp_wifi_deauth_sta(aid);
-            Serial.printf("[CLI] Station '%s' has been deauthenticated.\n", macStr.c_str());
+            printf("[CLI] Station '%s' deauthenticated.\n", tokens[0].c_str());
             return;
         }
     }
-    Serial.printf("[CLI] Could not find connected station with MAC '%s'.\n", macStr.c_str());
+    printf("[CLI] Station '%s' not found.\n", tokens[0].c_str());
 }
 
 void CliShell::handleRename(const String& args) {
     auto tokens = tokenizeArgs(args);
     if (tokens.size() < 2) {
-        Serial.println("Usage: rename <MAC_ADDRESS> <ALIAS> (e.g. rename 12:34:56:78:9A:BC \"Living Room TV\")");
+        println("Usage: rename <XX:XX:XX:XX:XX:XX> <ALIAS>");
         return;
     }
-    StorageManager::instance().setClientAlias(tokens[0], tokens[1]);
-    Serial.printf("[CLI] Saved alias '%s' for MAC %s\n", tokens[1].c_str(), tokens[0].c_str());
+    uint8_t mac[6];
+    if (!validateMacFormat(tokens[0], mac)) {
+        println("[CLI] Error: Invalid MAC format.");
+        return;
+    }
+    if (StorageManager::instance().setClientAlias(tokens[0], tokens[1])) {
+        printf("[CLI] Saved alias '%s' for %s\n", tokens[1].c_str(), tokens[0].c_str());
+    } else {
+        println("[CLI] Failed to save alias.");
+    }
+}
+
+void CliShell::handleWan(const String& args) {
+    auto tokens = tokenizeArgs(args);
+    auto& roam = RoamingEngine::instance();
+    auto s = StorageManager::instance().getSettings();
+
+    if (tokens.empty()) {
+        println("\n================ WAN INTERNET HEALTH WATCHDOG ================");
+        printf("  Status:             %s\n", s.wanWatchdogEnabled ? "ACTIVE" : "PAUSED");
+        printf("  Internet Link:      %s\n", roam.isWanOnline() ? "ONLINE" : (roam.isConnected() ? "NO INTERNET" : "DISCONNECTED"));
+        printf("  Round-Trip Latency: %.1f ms\n", roam.getWanRttMs());
+        printf("  Probe Interval:     %lu s (Healthy) / %d ms (Degraded)\n",
+               (unsigned long)s.wanProbeIntervalSec, WAN_PROBE_INTERVAL_FAST_MS);
+        printf("  Failure Strikes:    %d / %d\n", roam.getWanConsecutiveFails(), WAN_FAIL_THRESHOLD);
+        printf("  Total Failovers:    %lu\n", (unsigned long)roam.getWanFailoverCount());
+
+        auto backoffs = roam.getWanBackoffList();
+        printf("  AP Backoffs (%d):\n", (int)backoffs.size());
+        unsigned long now = millis();
+        for (const auto& b : backoffs) {
+            unsigned long elapsed = (unsigned long)(now - b.lastFailTime);
+            unsigned long rem = (elapsed < b.backoffMs) ? ((b.backoffMs - elapsed) / 1000UL) : 0;
+            printf("    - %-20.20s | Fails: %d | Cooldown: %lu s\n",
+                   b.ssid.c_str(), b.failCount, rem);
+        }
+        println("--------------------------------------------------------------\n");
+        return;
+    }
+
+    String sub = tokens[0];
+    sub.toLowerCase();
+    if (sub == "on" || sub == "enable" || sub == "1") {
+        StorageManager::instance().setWanWatchdog(true, s.wanProbeIntervalSec);
+        println("[WAN-WD] Engaged.");
+    } else if (sub == "off" || sub == "disable" || sub == "0") {
+        StorageManager::instance().setWanWatchdog(false, s.wanProbeIntervalSec);
+        println("[WAN-WD] Paused.");
+    } else if (sub == "interval" && tokens.size() >= 2) {
+        uint32_t sec = tokens[1].toInt();
+        if (sec >= 2 && sec <= 300) {
+            StorageManager::instance().setWanWatchdog(s.wanWatchdogEnabled, sec);
+            printf("[WAN-WD] Interval set to %lu s.\n", (unsigned long)sec);
+        } else {
+            println("[WAN-WD] Error: Interval must be 2..300 s.");
+        }
+    } else if (sub == "failover") {
+        if (!roam.isConnected()) {
+            println("[WAN-WD] Not connected to upstream AP.");
+        } else {
+            roam.triggerWanFailover();
+        }
+    } else if (sub == "clear") {
+        roam.clearAllWanBackoff();
+    } else {
+        println("Usage: wan [on|off|interval <sec>|failover|clear]");
+    }
+}
+
+void CliShell::handleProbe(const String& args) {
+    auto tokens = tokenizeArgs(args);
+    auto& roam = RoamingEngine::instance();
+
+    if (!roam.isConnected()) {
+        println("[PROBE] Error: STA disconnected.");
+        return;
+    }
+
+    String target = (!tokens.empty()) ? tokens[0] : WAN_PRIMARY_PROBE_IP;
+    printf("[PROBE] Probing %s:%d...\n", target.c_str(), WAN_PROBE_PORT);
+
+    float rtt = 0.0f;
+    unsigned long start = millis();
+    bool ok = roam.executeWanProbe(&rtt, target.c_str());
+    unsigned long elapsed = millis() - start;
+
+    if (ok) {
+        printf("[PROBE] OK | RTT: %.2f ms (Elapsed: %lu ms)\n", rtt, elapsed);
+    } else {
+        printf("[PROBE] FAILED (%lu ms)\n", elapsed);
+    }
 }

@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 
 ### Hardware & Environment
 - **Device Hardware**: ESP32 (e.g., ESP32-D0WD-V3, ESP32-WROOM-32)
-- **Firmware Version**: v3.0.1 (or specific commit)
+- **Firmware Version**: v3.1.0 (or specific commit)
 - **Power Supply**: (e.g., USB 5V 1A, LDO regulator, external battery)
 - **Client Device**: (e.g., iPhone iOS 18, Windows 11, Android 14)
 

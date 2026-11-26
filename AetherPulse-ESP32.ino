@@ -7,21 +7,47 @@
 #include "dns_cache.h"
 #include <esp_task_wdt.h>
 #include <ESPmDNS.h>
+#include <cstdarg>
+
+void apLog(const char* format, ...) {
+    char buf[384];
+    va_list args;
+    va_start(args, format);
+    int len = vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+    if (len <= 0) return;
+    if (len >= (int)sizeof(buf)) len = sizeof(buf) - 1;
+
+    if (CliShell::instance().isReady()) {
+        CliShell::instance().print(buf);
+    } else {
+        Serial.write((const uint8_t*)buf, len);
+    }
+}
 
 void setup() {
     Serial.begin(CLI_BAUD_RATE);
-    delay(500);
+    delay(200);
 
-    // Hardware Task Watchdog (TWDT) for 100% resilient auto-recovery
+    // Task Watchdog (TWDT) monitoring Core 1 (loopTask) with 15s timeout.
+    // Core 0 idle task is intentionally excluded so Wi-Fi/lwIP bursts do not false-trip TWDT.
     esp_task_wdt_config_t twdt_config = {
         .timeout_ms = WDT_TIMEOUT_MS,
-        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+        .idle_core_mask = (1 << 1),
         .trigger_panic = true
     };
-    esp_task_wdt_init(&twdt_config);
-    esp_task_wdt_add(NULL);
+    esp_err_t wdtErr = esp_task_wdt_reconfigure(&twdt_config);
+    if (wdtErr == ESP_ERR_INVALID_STATE) {
+        wdtErr = esp_task_wdt_init(&twdt_config);
+    }
+    esp_err_t addErr = esp_task_wdt_add(NULL);
+    if (wdtErr == ESP_OK && (addErr == ESP_OK || addErr == ESP_ERR_INVALID_STATE)) {
+        apLog("[TWDT] Task Watchdog active (Core 1, %dms timeout).\n", WDT_TIMEOUT_MS);
+    } else {
+        apLog("[TWDT] Watchdog init warning (wdt=0x%x, add=0x%x).\n", wdtErr, addErr);
+    }
 
-    // Disable LCD Backlight (GPIO 27) to minimize heat and reserve 100% power/RAM
+    // Ensure optional TFT backlight pin stays off to conserve power and reduce heat
     pinMode(PIN_TFT_BL, OUTPUT);
     digitalWrite(PIN_TFT_BL, LOW);
 
@@ -41,37 +67,56 @@ void setup() {
     // Register Network Event Listener for NAPT Lifecycle & Client Tracking
     Network.onEvent([](arduino_event_id_t event, arduino_event_info_t info) {
         switch (event) {
-            case ARDUINO_EVENT_WIFI_STA_GOT_IP:
-                Serial.printf("\n[NET EVENT] STA Assigned IP: %s (GW: %s, DNS: %s)\n",
-                              WiFi.localIP().toString().c_str(),
-                              WiFi.gatewayIP().toString().c_str(),
-                              WiFi.dnsIP().toString().c_str());
+            case ARDUINO_EVENT_WIFI_STA_GOT_IP: {
+                apLog("\n[NET] STA IP: %s (GW: %s, DNS: %s)\n",
+                      WiFi.localIP().toString().c_str(),
+                      WiFi.gatewayIP().toString().c_str(),
+                      WiFi.dnsIP().toString().c_str());
                 if (RoamingEngine::instance().isSubnetConflict(WiFi.localIP())) {
-                    Serial.println("[NET WARN] Subnet conflict detected (192.168.4.x)! Auto-shifting SoftAP to 192.168.5.1...");
-                    IPAddress alt_ip(192, 168, 5, 1);
-                    IPAddress alt_dns(8, 8, 8, 8);
-                    WiFi.AP.config(alt_ip, alt_ip, IPAddress(255, 255, 255, 0), IPAddress(192, 168, 5, 2), alt_dns);
+                    IPAddress currentAp = WiFi.softAPIP();
+                    IPAddress targetAp = (currentAp == DEFAULT_AP_IP) ? DEFAULT_AP_ALT_IP : DEFAULT_AP_IP;
+                    IPAddress leaseStart(targetAp[0], targetAp[1], targetAp[2], 2);
+                    apLog("[NET] Upstream subnet conflict detected! Shifting SoftAP to %s...\n",
+                          targetAp.toString().c_str());
+                    WiFi.AP.config(targetAp, targetAp, DEFAULT_AP_NETMASK, leaseStart, targetAp);
+                    esp_wifi_deauth_sta(0);
                 }
                 NaptEngine::instance().enable(WiFi.localIP());
+                WebPortal::instance().onStaConnected();
                 break;
+            }
             case ARDUINO_EVENT_WIFI_STA_LOST_IP:
-            case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
-                Serial.println("\n[NET EVENT] STA Disconnected / Lost IP. Halting NAPT routing.");
+            case ARDUINO_EVENT_WIFI_STA_DISCONNECTED: {
+                apLog("\n[NET] STA Disconnected / Lost IP. Halting NAPT routing.\n");
                 NaptEngine::instance().disable();
+                WebPortal::instance().onStaDisconnected();
+                break;
+            }
+            case ARDUINO_EVENT_WIFI_AP_START:
+                apLog("\n[NET] SoftAP started.\n");
+                if (WiFi.status() == WL_CONNECTED && (uint32_t)WiFi.localIP() != 0) {
+                    NaptEngine::instance().enable(WiFi.localIP());
+                }
+                break;
+            case ARDUINO_EVENT_WIFI_AP_STOP:
+                apLog("\n[NET] SoftAP stopped.\n");
                 break;
             case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
-                Serial.println("\n[NET EVENT] Station client connected to AetherPulse SoftAP.");
+                apLog("\n[NET] SoftAP client connected.\n");
+                RoamingEngine::instance().updateDynamicTpc();
                 break;
             case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
-                Serial.println("\n[NET EVENT] Station client disconnected from AetherPulse SoftAP.");
+                apLog("\n[NET] SoftAP client disconnected.\n");
+                RoamingEngine::instance().updateDynamicTpc();
                 break;
             default:
                 break;
         }
     });
 
-    // Start Dual Wi-Fi (AP + Station)
-    Serial.println("[WIFI] Configuring Dual SoftAP + Station radio architecture...");
+    // Bring up Dual Wi-Fi (AP + Station) cleanly through WiFiGeneric
+    Network.begin();
+    apLog("[WIFI] Configuring Dual SoftAP + Station radio...\n");
     WiFi.mode(WIFI_AP_STA);
 
     // Apply Cloned Station MAC if configured in NVS
@@ -79,60 +124,63 @@ void setup() {
         RoamingEngine::instance().applyClonedMac(settings.clonedMac);
     }
 
-    // Configure SoftAP IP, Gateway, Subnet, Lease Start, and DNS Offer
-    IPAddress ap_ip(192, 168, 4, 1);
-    IPAddress ap_gw(192, 168, 4, 1);
-    IPAddress ap_mask(255, 255, 255, 0);
-    IPAddress ap_leaseStart(192, 168, 4, 2);
-    IPAddress ap_dns = settings.adBlockEnabled ? ap_ip : IPAddress(8, 8, 8, 8);
+    // Enforce 802.11 b/g/n and HT20 on both STA and SoftAP
+    esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+    esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20);
+    esp_wifi_set_protocol(WIFI_IF_AP, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N);
+    esp_wifi_set_bandwidth(WIFI_IF_AP, WIFI_BW_HT20);
 
+    // Disable modem sleep power-save for consistent low-latency forwarding
+    esp_wifi_set_ps(WIFI_PS_NONE);
+
+    // Configure SoftAP IP, Gateway, Subnet, Lease Start, and DNS Offer before creating AP
+    IPAddress ap_ip = DEFAULT_AP_IP;
+    IPAddress ap_leaseStart(ap_ip[0], ap_ip[1], ap_ip[2], 2);
     WiFi.AP.begin();
-    WiFi.AP.config(ap_ip, ap_gw, ap_mask, ap_leaseStart, ap_dns);
-    WiFi.AP.create(settings.apSSID.c_str(), 
-                   settings.apPassword.c_str(), 
-                   settings.apChannel, 
-                   settings.apHidden, 
+    WiFi.AP.config(ap_ip, ap_ip, DEFAULT_AP_NETMASK, ap_leaseStart, ap_ip);
+    WiFi.AP.create(settings.apSSID.c_str(),
+                   settings.apPassword.c_str(),
+                   settings.apChannel,
+                   settings.apHidden,
                    settings.apMaxClients);
     WiFi.AP.waitStatusBits(ESP_NETIF_STARTED_BIT, 1000);
 
-    // Low-Level RF & Physical Layer Anti-Jitter Optimization
-    esp_wifi_set_ps(WIFI_PS_NONE); // Disable modem sleep power-save for zero-jitter ping
-
+    // Tune SoftAP Beacon Interval & DTIM Period from config.h
     wifi_config_t ap_cfg;
     if (esp_wifi_get_config(WIFI_IF_AP, &ap_cfg) == ESP_OK) {
-        ap_cfg.ap.beacon_interval = SOFTAP_BEACON_INTERVAL_TU; // 100 TU
-        ap_cfg.ap.dtim_period = SOFTAP_DTIM_PERIOD;             // DTIM 1 for immediate delivery
+        ap_cfg.ap.beacon_interval = SOFTAP_BEACON_INTERVAL_TU;
+        ap_cfg.ap.dtim_period = SOFTAP_DTIM_PERIOD;
         esp_wifi_set_config(WIFI_IF_AP, &ap_cfg);
-        Serial.printf("[WIFI] SoftAP tuned: DTIM=%d, Beacon=%d TU (Anti-Phase Scheduled)\n", SOFTAP_DTIM_PERIOD, SOFTAP_BEACON_INTERVAL_TU);
+        apLog("[WIFI] SoftAP tuned: Beacon=%u TU, DTIM=%u.\n",
+              SOFTAP_BEACON_INTERVAL_TU, SOFTAP_DTIM_PERIOD);
     }
 
-    // Set calibrated RF Transmit Power
-    int rawTx = (int)(settings.txPowerDbm * 4.0f);
-    esp_wifi_set_max_tx_power(rawTx);
-    Serial.printf("[RF] RF Output Power calibrated to %.2f dBm (raw: %d)\n", settings.txPowerDbm, rawTx);
+    // Set calibrated RF Transmit Power clamped to physical limits
+    RoamingEngine::instance().setTxPowerDbm(settings.txPowerDbm);
 
-    // Initialize mDNS Responder (http://aetherpulse.local)
-    if (MDNS.begin(MDNS_HOSTNAME)) {
-        MDNS.addService("http", "tcp", 80);
-        Serial.printf("[mDNS] Responder active at http://%s.local\n", MDNS_HOSTNAME);
-    }
-
-    // Start Web Management Portal & Captive DNS
+    // Start Web Management Portal (coordinates Port 53 between Captive DNS & DnsCache)
     WebPortal::instance().init();
 
-    // Initialize Serial CLI Shell
+    // Initialize mDNS Responder (http://aetherpulse.local) after HTTP server starts
+    if (MDNS.begin(MDNS_HOSTNAME)) {
+        MDNS.setInstanceName("AetherPulse Wi-Fi Repeater");
+        MDNS.addService("http", "tcp", 80);
+        apLog("[mDNS] Responder active at http://%s.local\n", MDNS_HOSTNAME);
+    }
+
+    // Initialize Non-Blocking Serial CLI Shell (takes over UART0 cleanly)
     CliShell::instance().init();
 
     // Trigger initial background scan to auto-connect to known networks
     RoamingEngine::instance().startScan();
 
-    Serial.printf("\n>>> %s %s READY <<<\n", PROJECT_NAME, PROJECT_VERSION);
-    Serial.printf(">>> Connect to Wi-Fi '%s' (Pass: '%s') or browse to http://192.168.4.1 or http://%s.local <<<\n\n",
-                  settings.apSSID.c_str(), settings.apPassword.c_str(), MDNS_HOSTNAME);
+    apLog("\n>>> %s %s READY <<<\n", PROJECT_NAME, PROJECT_VERSION);
+    apLog(">>> SoftAP SSID: '%s' | Portal: http://%s or http://%s.local <<<\n\n",
+          settings.apSSID.c_str(), WiFi.softAPIP().toString().c_str(), MDNS_HOSTNAME);
 }
 
 void loop() {
-    esp_task_wdt_reset(); // Feed hardware watchdog
+    esp_task_wdt_reset();
     CliShell::instance().update();
     WebPortal::instance().update();
     RoamingEngine::instance().update();

@@ -5,6 +5,7 @@ credentials.h
 .pio/
 .vscode/
 build/
+build_output/
 *.elf
 *.map
 

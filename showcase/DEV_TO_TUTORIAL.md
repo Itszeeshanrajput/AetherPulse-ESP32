@@ -347,7 +347,7 @@ Instead of having the ESP32 render images or compute graph layouts (which would 
   "upstream": { "connected": true, "ssid": "Home-Fiber-5G", "rssi": -62, "channel": 6 },
   "repeater": { "ip": "192.168.4.1", "temp_c": 54.2, "tx_power_dbm": 16.5 },
   "clients": [
-    { "mac": "14:EB:08:3A:0E:2C", "ip": "192.168.4.2", "rssi": -45, "vendor": "Apple Inc.", "alias": "MacBook Pro" },
+    { "mac": "AA:BB:CC:DD:EE:FF", "ip": "192.168.4.2", "rssi": -45, "vendor": "Apple Inc.", "alias": "MacBook Pro" },
     { "mac": "80:D2:1D:9B:41:10", "ip": "192.168.4.3", "rssi": -71, "vendor": "Samsung", "alias": "Galaxy S23" }
   ]
 }
@@ -475,7 +475,7 @@ Many hotels and cruise ships charge **$15 to $30 per day per connected device** 
 - Note your phone's MAC address in Settings.
 - Open AetherPulse serial terminal or web portal, and use Station MAC Cloning:
   ```bash
-  set_mac 14:EB:08:3A:0E:2C
+  set_mac AA:BB:CC:DD:EE:FF
   ```
 - The hotel network now recognizes the ESP32 as your authenticated phone.
 - Connect your laptop, tablet, Kindle, and Nintendo Switch to AetherPulse. All devices share the single paid connection with zero extra fees!

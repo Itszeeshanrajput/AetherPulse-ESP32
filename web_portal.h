@@ -1,47 +1,57 @@
 #pragma once
 
 #include "config.h"
-#include "dns_cache.h"
 #include <WebServer.h>
 #include <DNSServer.h>
-#include <WiFiUdp.h>
 #include <Update.h>
-#include <ESPmDNS.h>
 
 class WebPortal {
 public:
     static WebPortal& instance();
 
     void init();
-    void update(); // Called in loop
+    void update();
 
-    void toggleAdBlock(bool enable);
-    bool isAdBlockActive() const { return adBlockActive; }
+    void onStaConnected();
+    void onStaDisconnected();
+    void startCaptiveDns();
+    void stopCaptiveDns();
+    bool isCaptiveDnsActive() const { return dnsRunning; }
 
 private:
     WebPortal();
     WebServer server;
     DNSServer* dnsServer;
-    WiFiUDP dnsAdUdp;
-    WiFiUDP dnsUpstreamUdp;
     bool dnsRunning;
-    bool adBlockActive;
 
-    void startCaptiveDns();
-    void stopCaptiveDns();
+    // Asynchronous connect & deferred reboot state
+    bool pendingConnectScheduled;
+    String pendingConnectSsid;
+    String pendingConnectPass;
+    unsigned long pendingConnectTime;
 
-    // Traffic telemetry tracking
+    bool pendingReboot;
+    unsigned long pendingRebootTime;
+
+    // OTA upload state tracking
+    bool otaInProgress;
+    bool otaValidHeader;
+
+    // Measured traffic telemetry (Kbps)
     unsigned long lastRateCalcTime;
     float rxRateKbps;
     float txRateKbps;
 
     void registerRoutes();
-    
+    bool isCaptivePortal();
+    bool isTrustedLocalRequest();
+    void sendSecurityHeaders();
+
     // Page handlers
     void handleRoot();
     void handleNotFound();
     void handleManifest();
-    
+
     // REST API endpoints
     void handleApiStatus();
     void handleApiScan();
@@ -54,16 +64,11 @@ private:
     void handleApiSaveSettings();
     void handleApiClients();
     void handleApiReboot();
-
-    // v2.0 Titanium Endpoints
     void handleApiPortmapGet();
     void handleApiPortmapAdd();
     void handleApiPortmapDelete();
     void handleApiMacSet();
     void handleApiMacReset();
-    void handleApiAdBlockToggle();
-
-    // v3.0.1 Professional Endpoints
     void handleApiSpectrum();
     void handleApiDnsStats();
     void handleApiDnsClear();
@@ -73,10 +78,6 @@ private:
     void handleApiTopology();
     void handleApiIsolationToggle();
     void handleApiTpcToggle();
-
-    // High-performance Port 53 DNS AdBlock Sinkhole
-    void processAdBlockDns();
-
-    // Captive Portal Helper
-    bool isCaptivePortal();
+    void handleApiWanToggle();
+    void handleApiWanProbe();
 };
